@@ -1,0 +1,35 @@
+{% extends "Rimborsi/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+{% block title %}Login{% endblock %}
+{% block h1title %}Login{% endblock %}
+
+{% block content %}
+
+    {% if form.errors %}
+        <p>Your username and password didn't match. Please try again.</p>
+    {% endif %}
+
+    {% if next %}
+        {% if user.is_authenticated %}
+            <p>Your account doesn't have access to this page. To proceed,
+                please login with an account that has access.</p>
+        {% else %}
+            <p>Please login to see this page.</p>
+        {% endif %}
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}">{% csrf_token %}
+        <div class="col-4">
+            {% crispy form %}
+            <input type="submit" value="login" class="btn btn-primary"/>
+            <input type="hidden" name="next" value="{{ next }}"/>
+        </div>
+    </form>
+
+    <hr>
+    <a href="{% url 'password_reset' %}">Password dimenticata?</a>
+
+{% endblock %}

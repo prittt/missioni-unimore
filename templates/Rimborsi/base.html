@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="shortcut icon" href="{% static "RimborsiApp/imgs/missioni_logo.png" %}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+          integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+            integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+            integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+            crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous"></script>
+    {#    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>#}
+    {% block head %}{% endblock %}
+
+    {#    <link rel="icon" href="{% static 'logo.png' %}">#}
+    <title>{% block title %}Missioni{% endblock %}</title>
+    {% block head_link %}{% endblock %}
+</head>
+
+<body style="padding-top: 70px;padding-bottom: 40px;">
+<div class="container">
+    {% include "Rimborsi/navbar.html" %}
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <h1 class="mt-2">{% block h1title %}{% endblock %}</h1>
+            <hr class="mt-0 mb-4">
+            {% block content %}{% endblock %}
+            <br class="mb-4">
+        </div>
+    </div>
+</div>
+
+
+{#{% block content %}{% endblock content %}#}
+
+</body>
+{% block after_body %}{% endblock %}
+
+<!-- Footer -->
+<nav id="footer" class="navbar navbar-expand-lg navbar-light bg-light fixed-bottom">
+    <div class="container">
+        <div class="font-italic">Powered by <a href="http://imagelab.ing.unimore.it">
+            <img src="https://dali.ing.unimore.it/sharelatex/aimagelab.png" height="25" alt="AImageLab"></a>
+        </div>
+        <div class="font-italic">Designed and Managed by M. Cancilla and F. Bolelli</div>
+    </div>
+</nav>
+<!-- Footer -->
+<style>
+    #footer {
+        font-size: large;
+    }
+</style>
+</html>

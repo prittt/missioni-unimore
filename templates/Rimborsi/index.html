@@ -1,0 +1,81 @@
+{% extends "Rimborsi/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Missioni{% endblock %}
+{% block h1title %}{% endblock %}
+{% block content %}
+    {% spaceless %}
+        {% if user.is_authenticated %}
+            {% if missioni_passate %}
+                <h2>Le mie missioni</h2>
+                <table class="table table-striped">
+                    <tbody>
+                    {% for m in missioni_passate %}
+                        <tr>
+                            <td class="col-9">
+                                <blockquote class="blockquote mb-0">
+                                    {{ m.inizio|date:"d/m/Y" }} - {{ m.stato_destinazione }}
+                                    - {{ m.citta_destinazione }}
+                                </blockquote>
+                                {#                                <btn>Cancella</btn>#}
+                            </td>
+                            <td>
+                                <a class="btn btn-primary"
+                                   href="{% url 'resoconto' id=m.id %}"
+                                   role="button">Resoconto</a>
+                            </td>
+                            <td>
+                                <a class="btn btn-primary"
+                                   href="{% url 'missione' id=m.id %}"
+                                   role="button">Modifica</a>
+                            </td>
+                            <td>
+                                <a class="btn btn-danger"
+                                   href="#"
+                                   data-href="{% url 'cancella_missione' id=m.id %}"
+                                   data-target="#confirm-delete"
+                                   data-toggle="modal"
+                                   role="button">Cancella</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+                <div id="confirm-delete" class="modal" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Danger!!!</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Vuoi davvero cancellare la missione?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <a class="btn btn-danger btn-ok">Sì</a>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    $('#confirm-delete').on('show.bs.modal', function (e) {
+                        $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+                    });
+                </script>
+            {% else %}
+                <h2>Nessuna missione presente.</h2>
+
+            {% endif %}
+        {% else %}
+            <h1>Benvenuto nel portale missioni!</h1>
+            <h1>Registrati per usare questo servizio.</h1>
+        {% endif %}
+
+    {% endspaceless %}
+{% endblock %}

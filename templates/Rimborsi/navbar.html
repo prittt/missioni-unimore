@@ -1,0 +1,86 @@
+{% load static %}
+{#<!-- Modal Login-->#}
+{#<div class="container">#}
+{#    <div class="row">#}
+{#        <div id="myModal" class="modal fade in">#}
+{#            <div class="modal-dialog">#}
+{#                <div class="modal-content">#}
+{#                    <div class="m-header text-center">#}
+{#                        <h4 class="modal-title">Login</h4>#}
+{#                    </div>#}
+{#                    <div class="modal-body text-center">#}
+{#                        <form method="post" action="{% url 'login' %}" name="login_form">{% csrf_token %}#}
+{#                            <p><input type="text" name="username" placeholder="username"/></p>#}
+{#                            <p><input type="password" name="password" placeholder="*********"/></p>#}
+{#                            <div class="btn-group">#}
+{#                                <button class="entra" {% comment %}data-dismiss="modal"{% endcomment %}type="submit">#}
+{#                                    ENTRA#}
+{#                                </button>#}
+{#                                <button class="recupera" disabled><a href="{% url 'password_reset' %}">Recupera#}
+{#                                    password</a></button>#}
+{#                            </div>#}
+{#                        </form>#}
+{#                    </div>#}
+{#                </div><!-- /.modal-content -->#}
+{#            </div><!-- /.modal-dalog -->#}
+{#        </div><!-- /.modal -->#}
+{#    </div>#}
+{#</div>#}
+
+<nav id="navbar" class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+    <div class="container">
+        <div class="navbar-brand">
+            <a href="/">
+                <img src="{% static "RimborsiApp/imgs/missioni_logo.png" %}" alt="Missioni logo"
+                     style="max-width:50px;"></a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+                </li>
+                {% if user.is_authenticated %}
+                    <li><a class="nav-link" href="{% url 'crea_missione' %}">Nuova Missione</a></li>
+                {% endif %}
+                <li><a class="nav-link" href="{% url 'regolamento' %}">Regolamento</a></li>
+            </ul>
+        </div>
+
+
+        <a class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
+           aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </a>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item dropdown show">
+                    {% if user.is_authenticated %}
+                        <a class="dropdown-toggle nav-link" href="{% url 'profile' %}"
+                           role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true"
+                           aria-expanded="false"><i class="fa fa-user" aria-hidden="true"></i> {{ user.username }}</a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            {#                            <a class="dropdown-item" href="{% url 'sacher:profile' %}">Pagina Utente</a>#}
+                            <a class="dropdown-item" href="{% url 'profile' %}">Profilo</a>
+
+                            <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
+                        </div>
+                    {% else %}
+                        <li class="nav-item">
+                            <a href="{% url 'login' %}" class="nav-link">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'register' %}" class="nav-link">Registrati</a>
+                        </li>
+                    {% endif %}
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<style>
+    #navbar {
+        font-size: large;
+    }
+</style>

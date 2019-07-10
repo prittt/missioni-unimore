@@ -1,0 +1,248 @@
+{% extends "Rimborsi/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Missione{% endblock %}
+{% block h1title %}Modifica Missione{% endblock %}
+
+{% block content %}
+    {#    {% spaceless %}#}
+    {% if user.is_authenticated %}
+        {% crispy missione_form %}
+
+        <h3>Pasti</h3>
+        <form action="{% url 'salva_pasti' id=missione.id %}" method="post">{% csrf_token %}
+            <table class="table table-striped">
+                {{ pasti_formset.management_form }}
+                {% for form in pasti_formset.forms %}
+                    {% if forloop.first %}
+                        <thead>
+                        <tr>
+                            {% for field in form.visible_fields %}
+                                <th>{{ field.label|capfirst }}</th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                    {% endif %}
+                    <tr class="{% cycle 'row1' 'row2' %} pasti_formset_row">
+                        {% for field in form.visible_fields %}
+                            <td>
+                                {# Include the hidden fields in the form #}
+                                {% if forloop.first %}
+                                    {% for hidden in form.hidden_fields %}
+                                        {{ hidden }}
+                                    {% endfor %}
+                                {% endif %}
+                                {{ field.errors.as_ul }}
+                                {{ field }}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+            <input class="btn btn-primary" type="submit" value="Salva">
+        </form>
+
+        <hr>
+        <h3>Pernottamenti:</h3>
+        <form action="{% url 'salva_pernottamenti' id=missione.id %}" method="post">{% csrf_token %}
+            <table class="table table-striped">
+                {{ pernottamenti_formset.management_form }}
+                {% for form in pernottamenti_formset.forms %}
+                    {% if forloop.first %}
+                        <thead>
+                        <tr>
+                            {% for field in form.visible_fields %}
+                                <th>{{ field.label|capfirst }}</th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                    {% endif %}
+                    <tr class="{% cycle 'row1' 'row2' %} pernottamenti_formset_row">
+                        {% for field in form.visible_fields %}
+                            <td>
+                                {# Include the hidden fields in the form #}
+                                {% if forloop.first %}
+                                    {% for hidden in form.hidden_fields %}
+                                        {{ hidden }}
+                                    {% endfor %}
+                                {% endif %}
+                                {{ field.errors.as_ul }}
+                                {{ field }}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+            <input class="btn btn-primary" type="submit" value="Salva">
+        </form>
+
+        <hr>
+        <h3>Trasporti:</h3>
+        <form action="{% url 'salva_trasporti'  id=missione.id %}" method="post">{% csrf_token %}
+            <table id="trasporti-table" class="table table-striped">
+                {{ trasporti_formset.management_form }}
+                {% for form in trasporti_formset.forms %}
+                    {% if forloop.first %}
+                        <thead>
+                        <tr>
+                            {% for field in form.visible_fields %}
+                                <th>{{ field.label|capfirst }}</th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                    {% endif %}
+                    <tr class="{% cycle 'row1' 'row2' %} trasporti_formset_row">
+                        {% for field in form.visible_fields %}
+                            <td>
+                                {# Include the hidden fields in the form #}
+                                {% if forloop.first %}
+                                    {% for hidden in form.hidden_fields %}
+                                        {{ hidden }}
+                                    {% endfor %}
+                                {% endif %}
+                                {{ field.errors.as_ul }}
+                                {{ field }}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+            <input class="btn btn-primary" type="submit" value="Salva">
+        </form>
+
+        <hr>
+        <h3>Iscrizione Convegni:</h3>
+        <form action="{% url 'salva_convegni' id=missione.id %}" method="post">{% csrf_token %}
+            <table class="table table-striped">
+                {{ convegni_formset.management_form }}
+                {% for form in convegni_formset.forms %}
+                    {% if forloop.first %}
+                        <thead>
+                        <tr>
+                            {% for field in form.visible_fields %}
+                                <th>{{ field.label|capfirst }}</th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                    {% endif %}
+                    <tr class="{% cycle 'row1' 'row2' %} convegni_formset_row">
+                        {% for field in form.visible_fields %}
+                            <td>
+                                {# Include the hidden fields in the form #}
+                                {% if forloop.first %}
+                                    {% for hidden in form.hidden_fields %}
+                                        {{ hidden }}
+                                    {% endfor %}
+                                {% endif %}
+                                {{ field.errors.as_ul }}
+                                {{ field }}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+            <input class="btn btn-primary" type="submit" value="Salva">
+        </form>
+
+        <hr>
+        <h3>Altre Spese:</h3>
+        <form action="{% url 'salva_altrespese' id=missione.id %}" method="post">{% csrf_token %}
+            <table class="table table-striped">
+                {{ altrespese_formset.management_form }}
+                {% for form in altrespese_formset.forms %}
+                    {% if forloop.first %}
+                        <thead>
+                        <tr>
+                            {% for field in form.visible_fields %}
+                                <th>{{ field.label|capfirst }}</th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                    {% endif %}
+                    <tr class="{% cycle 'row1' 'row2' %} altrespese_formset_row">
+                        {% for field in form.visible_fields %}
+                            <td>
+                                {# Include the hidden fields in the form #}
+                                {% if forloop.first %}
+                                    {% for hidden in form.hidden_fields %}
+                                        {{ hidden }}
+                                    {% endfor %}
+                                {% endif %}
+                                {{ field.errors.as_ul }}
+                                {{ field }}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+            <input class="btn btn-primary" type="submit" value="Salva">
+        </form>
+
+    {% endif %}
+
+    <script src="{% static 'RimborsiApp/formset/jquery_formset.js' %}"></script>
+    <script type="text/javascript">
+        $('.pasti_formset_row').formset({
+            addText: 'Aggiungi',
+            deleteText: 'Elimina',
+            prefix: 'pasti',
+            ifdelete: false,
+            {#formCssClass: 'dynamic-formset1',#}
+        });
+        $('.pernottamenti_formset_row').formset({
+            addText: 'Aggiungi',
+            deleteText: 'Elimina',
+            prefix: 'pernottamenti',
+            {#formCssClass: 'dynamic-formset2',#}
+
+        });
+        $('.trasporti_formset_row').formset({
+            addText: 'Aggiungi',
+            deleteText: 'Elimina',
+            prefix: 'trasporto_set',
+            {#formCssClass: 'dynamic-formset3',#}
+
+        });
+
+        $('.convegni_formset_row').formset({
+            addText: 'Aggiungi',
+            deleteText: 'Elimina',
+            prefix: 'convegni',
+            {#formCssClass: 'dynamic-formset4',#}
+
+        });
+
+        $('.altrespese_formset_row').formset({
+            addText: 'Aggiungi',
+            deleteText: 'Elimina',
+            prefix: 'altrespese',
+            {#formCssClass: 'dynamic-formset5',#}
+
+        });
+
+        $(document).ready(function () {
+            $('#form_scontrino').submit(function () {
+                $("#form_scontrino :disabled").removeAttr('disabled');
+            });
+        });
+    </script>
+
+    <style>
+        .trasporti-date {
+            width: 170px;
+        }
+
+        .trasporti-costo, .trasporti-km, {
+            width: 85px;
+        }
+
+        .trasporti-mezzo {
+            width: 87px;
+
+        }
+
+    </style>
+    {#    {% endspaceless %}#}
+{% endblock %}
+

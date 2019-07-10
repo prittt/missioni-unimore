@@ -1,0 +1,20 @@
+{% extends "Rimborsi/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+{% block content %}
+    <div class="container">
+        <div class="jumbotron">
+
+            <h1>Registrazione</h1>
+            <br>
+
+            <form method="POST">{% csrf_token %}
+                {% crispy user_form %}
+                <input type="submit" name="" value="Registrati" class="btn btn-primary">
+            </form>
+
+        </div>
+    </div>
+{% endblock %}

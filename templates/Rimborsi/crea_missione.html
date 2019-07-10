@@ -1,0 +1,20 @@
+{% extends "Rimborsi/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block title %}Nuova Missione{% endblock %}
+
+{% block h1title %}Inserisci una nuova missione{% endblock %}
+{% block content %}
+    {% spaceless %}
+        {% if user.is_authenticated %}
+            {% if user.first_name == '' or user.last_name == '' %}
+                <div class="alert alert-danger" role="alert">
+                    Compila i campi del <a href="{% url 'profile' %}" style="text-decoration: none;">
+                   <strong> profilo</strong></a> prima di creare una missione!
+                </div>
+            {% else %}
+                {% crispy missione_form %}
+            {% endif %}
+        {% endif %}
+    {% endspaceless %}
+{% endblock %}

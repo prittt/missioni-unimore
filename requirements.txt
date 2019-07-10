@@ -1,0 +1,11 @@
+Django
+mysqlclient
+python-codicefiscale
+django-crispy-forms
+reportlab
+PyPDF2
+python-docx
+beautifulsoup4
+requests
+
+# install libreoffice and tahoma font (https://www.wfonts.com/font/tahoma)
