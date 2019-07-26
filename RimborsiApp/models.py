@@ -113,129 +113,20 @@ class Trasporto(models.Model):
         verbose_name_plural = "Trasporti"
 
 
-class Comune(models.Model):
-    name = models.CharField(max_length=50)
+class Indirizzo(models.Model):
+    via = models.CharField(max_length=100)
+    n = models.CharField(max_length=20)
+    comune = models.ForeignKey('comuni_italiani.Comune', on_delete=models.PROTECT, null=True)
+    provincia = models.ForeignKey('comuni_italiani.Provincia', on_delete=models.PROTECT, null=True)
 
     def __str__(self):
-        return self.name
+        return f'{self.via} {self.n}, {self.comune.name}, {self.provincia.name} ({self.provincia.codice_targa})'
 
     class Meta:
-        verbose_name_plural = "Comuni"
+        verbose_name_plural = "Indirizzi"
 
 
 class Profile(models.Model):
-    PROVINCIA_CHOICES = (
-        ('AG', 'Agrigento'),
-        ('AL', 'Alessandria'),
-        ('AN', 'Ancona'),
-        ('AO', 'Aosta'),
-        ('AR', 'Arezzo'),
-        ('AP', 'Ascoli Piceno'),
-        ('AT', 'Asti'),
-        ('AV', 'Avellino'),
-        ('BA', 'Bari'),
-        ('BT', 'Barletta-Andria-Trani'),
-        ('BL', 'Belluno'),
-        ('BN', 'Benevento'),
-        ('BG', 'Bergamo'),
-        ('BI', 'Biella'),
-        ('BO', 'Bologna'),
-        ('BZ', 'Bolzano/Bozen'),
-        ('BS', 'Brescia'),
-        ('BR', 'Brindisi'),
-        ('CA', 'Cagliari'),
-        ('CL', 'Caltanissetta'),
-        ('CB', 'Campobasso'),
-        ('CI', 'Carbonia-Iglesias'),
-        ('CE', 'Caserta'),
-        ('CT', 'Catania'),
-        ('CZ', 'Catanzaro'),
-        ('CH', 'Chieti'),
-        ('CO', 'Como'),
-        ('CS', 'Cosenza'),
-        ('CR', 'Cremona'),
-        ('KR', 'Crotone'),
-        ('CN', 'Cuneo'),
-        ('EN', 'Enna'),
-        ('FM', 'Fermo'),
-        ('FE', 'Ferrara'),
-        ('FI', 'Firenze'),
-        ('FG', 'Foggia'),
-        ('FC', 'Forli-Cesena'),
-        ('FR', 'Frosinone'),
-        ('GE', 'Genova'),
-        ('GO', 'Gorizia'),
-        ('GR', 'Grosseto'),
-        ('IM', 'Imperia'),
-        ('IS', 'Isernia'),
-        ('SP', 'La Spezia'),
-        ('AQ', 'L\'Aquila'),
-        ('LT', 'Latina'),
-        ('LE', 'Lecce'),
-        ('LC', 'Lecco'),
-        ('LI', 'Livorno'),
-        ('LO', 'Lodi'),
-        ('LU', 'Lucca'),
-        ('MC', 'Macerata'),
-        ('MN', 'Mantova'),
-        ('MS', 'Massa-Carrara'),
-        ('MT', 'Matera'),
-        ('VS', 'Medio Campidano'),
-        ('ME', 'Messina'),
-        ('MI', 'Milano'),
-        ('MO', 'Modena'),
-        ('MB', 'Monza e della Brianza'),
-        ('NA', 'Napoli'),
-        ('NO', 'Novara'),
-        ('NU', 'Nuoro'),
-        ('OG', 'Ogliastra'),
-        ('OT', 'Olbia-Tempio'),
-        ('OR', 'Oristano'),
-        ('PD', 'Padova'),
-        ('PA', 'Palermo'),
-        ('PR', 'Parma'),
-        ('PV', 'Pavia'),
-        ('PG', 'Perugia'),
-        ('PU', 'Pesaro e Urbino'),
-        ('PE', 'Pescara'),
-        ('PC', 'Piacenza'),
-        ('PI', 'Pisa'),
-        ('PT', 'Pistoia'),
-        ('PN', 'Pordenone'),
-        ('PZ', 'Potenza'),
-        ('PO', 'Prato'),
-        ('RG', 'Ragusa'),
-        ('RA', 'Ravenna'),
-        ('RC', 'Reggio di Calabria'),
-        ('RE', 'Reggio nell\'Emilia'),
-        ('RI', 'Rieti'),
-        ('RN', 'Rimini'),
-        ('RM', 'Roma'),
-        ('RO', 'Rovigo'),
-        ('SA', 'Salerno'),
-        ('SS', 'Sassari'),
-        ('SV', 'Savona'),
-        ('SI', 'Siena'),
-        ('SR', 'Siracusa'),
-        ('SO', 'Sondrio'),
-        ('TA', 'Taranto'),
-        ('TE', 'Teramo'),
-        ('TR', 'Terni'),
-        ('TO', 'Torino'),
-        ('TP', 'Trapani'),
-        ('TN', 'Trento'),
-        ('TV', 'Treviso'),
-        ('TS', 'Trieste'),
-        ('UD', 'Udine'),
-        ('VA', 'Varese'),
-        ('VE', 'Venezia'),
-        ('VB', 'Verbano-Cusio-Ossola'),
-        ('VC', 'Vercelli'),
-        ('VR', 'Verona'),
-        ('VV', 'Vibo Valentia'),
-        ('VI', 'Vicenza'),
-        ('VT', 'Viterbo'),
-    )
     QUALIFICA_CHOICES = (
         ('DOTTORANDO', 'Dottorando'),
         ('ASSEGNISTA', 'Assegnista'),
@@ -244,12 +135,13 @@ class Profile(models.Model):
     )
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     data_nascita = models.DateField(null=True)
-    luogo_nascita = models.ForeignKey(Comune, on_delete=models.SET_NULL, null=True)
+    luogo_nascita = models.ForeignKey('comuni_italiani.Comune', on_delete=models.PROTECT, null=True)
     sesso = models.CharField(max_length=1, choices=(('M', 'Maschio'), ('F', 'Femmina')), null=True)
-    domicilio_fiscale = models.CharField(max_length=300, null=True)
-    domicilio_fiscale_provincia = models.CharField(max_length=2, choices=PROVINCIA_CHOICES, null=True)
     qualifica = models.CharField(max_length=10, choices=QUALIFICA_CHOICES, null=True)
     datore_lavoro = models.CharField(max_length=100, blank=True, null=True)
+
+    residenza = models.OneToOneField(Indirizzo, on_delete=models.SET_NULL, related_name='residenza', null=True)
+    domicilio = models.OneToOneField(Indirizzo, on_delete=models.SET_NULL, related_name='domicilio', null=True)
 
     @property
     def cf(self):
@@ -258,7 +150,7 @@ class Profile(models.Model):
         date = str(self.data_nascita)
         cf = codicefiscale.encode(surname=self.user.last_name, name=self.user.first_name, sex=self.sesso,
                                   birthdate=date,
-                                  birthplace=str(self.luogo_nascita))
+                                  birthplace=str(self.luogo_nascita.name))
         return cf
 
     # Campi per dottorando
@@ -286,11 +178,13 @@ class ModuliMissione(models.Model):
     parte_1 = models.DateField()
     parte_2 = models.DateField()
     kasko = models.DateField()
+    atto_notorio = models.DateField()
     dottorandi = models.DateField()
 
     parte_1_file = models.FileField(upload_to='moduli/', null=True, blank=True)
     parte_2_file = models.FileField(upload_to='moduli/', null=True, blank=True)
     kasko_file = models.FileField(upload_to='moduli/', null=True, blank=True)
+    atto_notorio_file = models.FileField(upload_to='moduli/', null=True, blank=True)
     dottorandi_file = models.FileField(upload_to='moduli/', null=True, blank=True)
 
     class Meta:

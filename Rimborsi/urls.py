@@ -39,8 +39,12 @@ urlpatterns = [
     path('salva_altrespese/<int:id>', views.salva_altrespese, name='salva_altrespese'),
 
     path('resoconto/<int:id>', views.resoconto, name='resoconto'),
-    path('compila_autorizz_dottorandi/<int:id>', compila_pdf.compila_autorizz_dottorandi, name='compila_autorizz_dottorandi'),
+    path('compila_autorizz_dottorandi/<int:id>', compila_pdf.compila_autorizz_dottorandi,
+         name='compila_autorizz_dottorandi'),
     path('genera_pdf/<int:id>', compila_pdf.genera_pdf, name='genera_pdf'),
+
+    path('comuni_italiani/', include('comuni_italiani.urls', namespace='comuni_italiani')),
+    path('ac/comuni/', include('comuni_italiani.autocomplete.urls')),
 ]
 
 if settings.DEBUG:

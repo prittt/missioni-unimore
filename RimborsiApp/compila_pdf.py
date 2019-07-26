@@ -4,13 +4,13 @@ import io
 import os
 import re
 from PyPDF2 import PdfFileReader, PdfFileWriter
+from PyPDF2.generic import BooleanObject, NameObject, IndirectObject, NumberObject
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseBadRequest
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from docx import Document
 from docx.shared import Cm
 from reportlab.pdfgen import canvas
-
 from Rimborsi import settings
 from .forms import *
 from .views import load_json
@@ -19,7 +19,7 @@ from .views import load_json
 @login_required
 def genera_pdf(request, id):
     if request.method == 'POST':
-        moduli_missione = ModuliMissione.objects.get(missione_id=id)
+        moduli_missione = get_object_or_404(ModuliMissione, missione_id=id)
         moduli_missione_form = ModuliMissioneForm(request.POST, instance=moduli_missione)
         if moduli_missione_form.is_valid():
             moduli_missione_form.save()
@@ -27,7 +27,9 @@ def genera_pdf(request, id):
 
         compila_parte_1(request, id)
         compila_parte_2(request, id)
-        compila_autorizz_dottorandi(request, id)
+        if request.user.profile.qualifica == 'DOTTORANDO':
+            compila_autorizz_dottorandi(request, id)
+        compila_atto_notorio(request, id)
         return redirect('resoconto', id)
     else:
         return HttpResponseBadRequest()
@@ -82,8 +84,8 @@ def compila_parte_1(request, id):
         "luogo_nascita": profile.luogo_nascita.name,
         "data_nascita": profile.data_nascita.strftime('%d/%m/%Y'),
         "cf": profile.cf,
-        "domicilio": profile.domicilio_fiscale,
-        "prov": profile.domicilio_fiscale_provincia,
+        "domicilio": f'{profile.domicilio.via} {profile.domicilio.n}, {profile.domicilio.comune.name}',
+        "prov": profile.domicilio.provincia.codice_targa,
         "qualifica": profile.qualifica,
         "datore": profile.datore_lavoro,
         "destinazione": missione.citta_destinazione + ", " + missione.stato_destinazione.nome,
@@ -291,7 +293,7 @@ def compila_autorizz_dottorandi(request, id):
         'data_richiesta': date_richiesta.parte_1.strftime('%d/%m/%Y'),
         'tutor': profile.tutor,
         'nomecognome': f'{profile.user.first_name} {profile.user.last_name}',
-        'anno_dottorato': f'{profile.anno_dottorato}',
+        'anno_dottorato': f'{profile.anno_dottorato if profile.anno_dottorato is not None else ""}',
         'scuola_dottorato': profile.scuola_dottorato,
         'destinazione': f'{missione.citta_destinazione} - {missione.stato_destinazione.nome}',
         'inizio': missione.inizio.strftime('%d/%m/%Y'),
@@ -337,6 +339,82 @@ def compila_autorizz_dottorandi(request, id):
     outputStream = open(output_name_tmp, "rb")
     moduli_missione = ModuliMissione.objects.get(missione=missione)
     moduli_missione.dottorandi_file.save(output_name, outputStream)
+
+    # Elimino il file temporaneo
+    os.remove(output_name_tmp)
+
+
+def set_need_appearances_writer(writer):
+    try:
+        catalog = writer._root_object
+        # get the AcroForm tree and add "/NeedAppearances attribute
+        if "/AcroForm" not in catalog:
+            writer._root_object.update({NameObject("/AcroForm"): IndirectObject(len(writer._objects), 0, writer)})
+        need_appearances = NameObject("/NeedAppearances")
+        writer._root_object["/AcroForm"][need_appearances] = BooleanObject(True)
+    except Exception as e:
+        print('set_need_appearances_writer() catch : ', repr(e))
+
+    return writer
+
+
+def compila_atto_notorio(request, id):
+    moduli_input_path = os.path.join(settings.STATIC_ROOT, settings.STATIC_URL[1:], 'RimborsiApp', 'moduli')
+    moduli_output_path = os.path.join(settings.MEDIA_ROOT, 'moduli')
+    missione = Missione.objects.get(user=request.user, id=id)
+    input_file = os.path.join(moduli_input_path, 'dichiarazione_atto_notorieta.pdf')
+
+    # open the pdf
+    input_stream = open(input_file, "rb")
+    pdf_reader = PdfFileReader(input_stream, strict=False)
+    if "/AcroForm" in pdf_reader.trailer["/Root"]:
+        pdf_reader.trailer["/Root"]["/AcroForm"].update({NameObject("/NeedAppearances"): BooleanObject(True)})
+
+    pdf_writer = PdfFileWriter()
+    set_need_appearances_writer(pdf_writer)
+    if "/AcroForm" in pdf_writer._root_object:
+        # Acro form is form field, set needs appearances to fix printing issues
+        pdf_writer._root_object["/AcroForm"].update({NameObject("/NeedAppearances"): BooleanObject(True)})
+
+    data_dict = {
+        '1': missione.user.last_name,
+        '2': missione.user.first_name,
+        '3': missione.user.profile.luogo_nascita,
+        '4': missione.user.profile.luogo_nascita.provincia.codice_targa,
+        '5': missione.user.profile.data_nascita.strftime('%d/%m/%Y'),
+        '6': missione.user.profile.residenza.comune.name,
+        '7': missione.user.profile.residenza.provincia.codice_targa,
+        '8': missione.user.profile.residenza.via,
+        '9': missione.user.profile.residenza.n,
+        '10': missione.user.profile.domicilio.comune.name,
+        '11': missione.user.profile.domicilio.provincia.codice_targa,
+        '12': missione.user.profile.domicilio.via,
+        '13': missione.user.profile.domicilio.n,
+        # '14': non ci scrive dentro, perche?
+        '15': f'Di essersi recato a {missione.citta_destinazione} - {missione.stato_destinazione.nome}',
+        '16': f'dal {missione.inizio.strftime("%d/%m/%Y")} al {missione.fine.strftime("%d/%m/%Y")}',
+        '17': f'per {missione.motivazione}',
+    }
+
+    pdf_writer.addPage(pdf_reader.getPage(0))
+    page = pdf_writer.getPage(0)
+    pdf_writer.updatePageFormFieldValues(page, data_dict)
+
+    # Disable the fillable fields
+    for j in range(0, len(page['/Annots'])):
+        writer_annot = page['/Annots'][j].getObject()
+        writer_annot.update({NameObject("/Ff"): NumberObject(1)})
+
+    output_name_tmp = os.path.join(moduli_output_path, f'Missione_{missione.id}_atto_notorio_tmp.pdf')
+    outputStream = open(output_name_tmp, "wb")
+    pdf_writer.write(outputStream)
+    outputStream.close()
+
+    # Salvo il pdf appena creato dentro a un FileField
+    output_name = f'Missione_{missione.id}_atto_notorio.pdf'
+    outputStream = open(output_name_tmp, "rb")
+    moduli_missione = ModuliMissione.objects.get(missione=missione)
+    moduli_missione.atto_notorio_file.save(output_name, outputStream)
 
     # Elimino il file temporaneo
     os.remove(output_name_tmp)

@@ -1,5 +1,5 @@
 Django
-mysqlclient
+mysqlclient  # Requires `sudo apt install python3-dev mysql-server libmysqlclient-dev`
 python-codicefiscale
 django-crispy-forms
 reportlab
@@ -7,5 +7,7 @@ PyPDF2
 python-docx
 beautifulsoup4
 requests
+django-autocomplete-light
+django-comuni-italiani
 
 # install libreoffice and tahoma font (https://www.wfonts.com/font/tahoma)

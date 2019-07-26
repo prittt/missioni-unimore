@@ -23,9 +23,14 @@
                             <td class="table-success">
                                 {{ moduli_missione_form.kasko|as_crispy_field }}
                             </td>
-                            <td class="table-warning">
-                                {{ moduli_missione_form.dottorandi|as_crispy_field }}
+                            <td class="table-info">
+                                {{ moduli_missione_form.atto_notorio|as_crispy_field }}
                             </td>
+                            {% if user.profile.qualifica == 'DOTTORANDO' %}
+                                <td class="table-warning">
+                                    {{ moduli_missione_form.dottorandi|as_crispy_field }}
+                                </td>
+                            {% endif %}
                         </tr>
                         <tr align="center">
                             <td class="table-primary">
@@ -51,14 +56,26 @@
                                 {% else %}
                                     <p>Kasko</p>
                                 {% endif %}
-                            <td class="table-warning">
-                                {% if missione.modulimissione.dottorandi_file %}
-                                    <a class="download" href="{{ missione.modulimissione.dottorandi_file.url }}"
-                                       target="_blank"><i class="fa fa-file-pdf-o fa-2x"></i> Autorizzazione Dottorando</a>
+                            </td>
+                            <td class="table-info">
+                                {% if missione.modulimissione.atto_notorio_file %}
+                                    <a class="download" href="{{ missione.modulimissione.atto_notorio_file.url }}"
+                                       target="_blank"><i class="fa fa-file-pdf-o fa-2x"></i> Atto di notorietà</a>
                                 {% else %}
-                                    <p>Autorizzazione Dottorando</p>
+                                    <p>Atto di notorietà</p>
                                 {% endif %}
                             </td>
+                            {% if user.profile.qualifica == 'DOTTORANDO' %}
+                                <td class="table-warning">
+                                    {% if missione.modulimissione.dottorandi_file %}
+                                        <a class="download" href="{{ missione.modulimissione.dottorandi_file.url }}"
+                                           target="_blank"><i class="fa fa-file-pdf-o fa-2x"></i> Autorizzazione
+                                            Dottorando</a>
+                                    {% else %}
+                                        <p>Autorizzazione Dottorando</p>
+                                    {% endif %}
+                                </td>
+                            {% endif %}
                         </tr>
                     </table>
                     <input class="btn btn-primary" type="submit" value="Compila PDF">

@@ -9,8 +9,8 @@ class ProfileAdmin(admin.ModelAdmin):
     list_display.append('cf')
 
 
-class ComuneAdmin(admin.ModelAdmin):
-    list_display = [f.name for f in Comune._meta.fields]
+class IndirizzoAdmin(admin.ModelAdmin):
+    list_display = [f.name for f in Indirizzo._meta.fields]
 
 
 class AutomobileAdmin(admin.ModelAdmin):
@@ -44,7 +44,7 @@ admin_site = admin.site
 admin_site.register(Profile, ProfileAdmin)
 admin_site.register(Automobile, AutomobileAdmin)
 admin_site.register(Missione, MissioneAdmin)
-admin_site.register(Comune, ComuneAdmin)
+admin_site.register(Indirizzo, IndirizzoAdmin)
 admin_site.register(Categoria, CategoriaAdmin)
 admin_site.register(Stato, StatoAdmin)
 admin_site.register(Trasporto, TrasportoAdmin)

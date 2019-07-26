@@ -11,27 +11,43 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+import json
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+with open(os.path.join(BASE_DIR, 'secrets.json')) as secrets_file:
+    secrets = json.load(secrets_file)
+
+
+def get_secret(setting, secrets=secrets):
+    """Get secret setting or fail with ImproperlyConfigured"""
+    try:
+        return secrets[setting]
+    except KeyError:
+        raise ImproperlyConfigured("Set the {} setting".format(setting))
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = ''
+SECRET_KEY = get_secret('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 CRISPY_FAIL_SILENTLY = not DEBUG
 
 ALLOWED_HOSTS = [
-    'localhost', '127.0.0.1', 'turner',
+    'localhost', '127.0.0.1', 'turner', 'missioni', 'missioni.ing.unimore.it'
 ]
 
 # Application definition
 
 INSTALLED_APPS = [
+    'dal',
+    'dal_select2',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,6 +56,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'RimborsiApp.apps.RimborsiappConfig',
     'crispy_forms',
+    'comuni_italiani',
+    'comuni_italiani.autocomplete',
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -88,9 +106,9 @@ WSGI_APPLICATION = 'Rimborsi.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'rimborsi',
-        'USER': '',
-        'PASSWORD': '',
+        'NAME': 'missioni',
+        'USER': get_secret('DB_USER'),
+        'PASSWORD': get_secret('DB_PASSWORD'),
         'HOST': '127.0.0.1',
         # 'HOST': 'turner',
         'PORT': '3306',
@@ -127,8 +145,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
+EMAIL_HOST_USER = get_secret('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = get_secret('EMAIL_HOST_PASSWORD')
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/

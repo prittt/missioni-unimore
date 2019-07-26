@@ -71,8 +71,34 @@ def profile(request):
                                                          'automobili_formset': afs})
     elif request.method == 'POST':
         profile_form = ProfileForm(request.POST, instance=profile)
+
         if profile_form.is_valid():
-            profile_form.save()
+            profile = profile_form.save(commit=False)
+            if profile.residenza is None:
+                # Residenza mai creata
+                residenza = Indirizzo()
+            else:
+                residenza = profile.residenza
+
+            if profile.domicilio is None:
+                # Domicilio mai creato
+                domicilio = Indirizzo()
+            else:
+                domicilio = profile.domicilio
+            residenza.via = profile_form.cleaned_data['residenza_via']
+            residenza.n = profile_form.cleaned_data['residenza_n']
+            residenza.comune = profile_form.cleaned_data['residenza_comune']
+            residenza.provincia = profile_form.cleaned_data['residenza_provincia']
+            residenza.save()
+            domicilio.via = profile_form.cleaned_data['domicilio_via']
+            domicilio.n = profile_form.cleaned_data['domicilio_n']
+            domicilio.comune = profile_form.cleaned_data['domicilio_comune']
+            domicilio.provincia = profile_form.cleaned_data['domicilio_provincia']
+            domicilio.save()
+            profile.residenza = residenza
+            profile.domicilio = domicilio
+
+            profile.save()
             return redirect('profile')
         else:
             return HttpResponseServerError()

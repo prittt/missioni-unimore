@@ -4,7 +4,7 @@
 
 **/secrets.json
 **/secrets.*
-**/db_utils/**
+**/db_utils
 
 ### Django ###
 *.log

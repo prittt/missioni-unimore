@@ -70,7 +70,48 @@
             } else {
                 disableDottorandi(true);
             }
-        })
+        });
+        $('#domicilio-fieldset legend').append(" <input type='button' name='copy-domicilio' value='Copia da residenza' class='btn btn-sm btn-info' id='button-id-copy-domicilio'>")
+
+        $('#button-id-copy-domicilio').click(function () {
+            let values = $();
+            $('#residenza-row :input[type=text]').each(function () {
+                values.push($(this).val());
+            });
+            $('#domicilio-row :input[type=text]').each(function (index) {
+                $(this).val(values[index]);
+            });
+            let residenza_comune = $('#select2-id_residenza_comune-container');
+            let domicilio_comune = $('#select2-id_domicilio_comune-container');
+            let residenza_provincia = $('#select2-id_residenza_provincia-container');
+            let domicilio_provincia = $('#select2-id_domicilio_provincia-container');
+            $(domicilio_comune).prop('title', $(residenza_comune).prop('title'));
+            $(domicilio_provincia).prop('title', $(residenza_provincia).prop('title'));
+
+            $('#id_domicilio_comune').empty();
+            $('#id_domicilio_provincia').empty();
+            $('#select2-id_residenza_comune-container span').clone().appendTo($('#select2-id_domicilio_comune-container'));
+            $('#select2-id_residenza_provincia-container span').clone().appendTo($('#select2-id_domicilio_provincia-container'));
+            $('#id_residenza_comune option').each(function () {
+                if ($(this).prop('selected') === true) {
+                    $(this).clone().appendTo($('#id_domicilio_comune'));
+                }
+            });
+            $('#id_residenza_provincia option').each(function () {
+                if ($(this).prop('selected') === true) {
+                    $(this).clone().appendTo($('#id_domicilio_provincia'));
+                }
+            });
+        });
+
     </script>
+    <style>
+        .select2-container, .select2-container .select2-selection--single {
+            min-width: 0 !important;
+            min-height: 0 !important;
+            width: 100% !important;
+            height: 38px !important;
+        }
+    </style>
     {#    {% endspaceless %}#}
 {% endblock %}

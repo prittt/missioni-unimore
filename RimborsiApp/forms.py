@@ -1,10 +1,11 @@
 from crispy_forms.bootstrap import Div, InlineCheckboxes
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Row, Submit
+from crispy_forms.layout import Layout, Row, Submit, Fieldset, Column, Button
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.forms.models import formset_factory, inlineformset_factory
-
+from dal import autocomplete
+from comuni_italiani import models as comuni_italiani_models
 from .models import *
 
 
@@ -13,22 +14,44 @@ class ProfileForm(forms.ModelForm):
     nome = forms.CharField(max_length=30)
     cognome = forms.CharField(max_length=30)
 
-    # luogo_nascita = forms.ModelChoiceField(queryset=Comune.objects.all(), empty_label="---")
+    residenza_via = forms.CharField(max_length=100, label='Via')
+    residenza_n = forms.CharField(max_length=20, label='Civico')
+    residenza_comune = forms.ModelChoiceField(queryset=comuni_italiani_models.Comune.objects.all(), label='Comune',
+                                              widget=autocomplete.ModelSelect2(url='comune-autocomplete',
+                                                                               attrs={'data-html': True,
+                                                                                      'data-theme': 'bootstrap4', }))
+    residenza_provincia = forms.ModelChoiceField(queryset=comuni_italiani_models.Provincia.objects.all(),
+                                                 label='Provincia',
+                                                 widget=autocomplete.ModelSelect2(url='provincia-autocomplete',
+                                                                                  attrs={'data-html': True,
+                                                                                         'data-theme': 'bootstrap4', }))
+
+    domicilio_via = forms.CharField(max_length=100, label='Via')
+    domicilio_n = forms.CharField(max_length=20, label='Civico')
+    domicilio_comune = forms.ModelChoiceField(queryset=comuni_italiani_models.Comune.objects.all(), label='Comune',
+                                              widget=autocomplete.ModelSelect2(url='comune-autocomplete',
+                                                                               attrs={'data-html': True,
+                                                                                      'data-theme': 'bootstrap4', }))
+    domicilio_provincia = forms.ModelChoiceField(queryset=comuni_italiani_models.Provincia.objects.all(),
+                                                 label='Provincia',
+                                                 widget=autocomplete.ModelSelect2(url='provincia-autocomplete',
+                                                                                  attrs={'data-html': True,
+                                                                                         'data-theme': 'bootstrap4', }))
 
     class Meta:
         model = Profile
 
-        exclude = ['user', ]  # todo uncomment
-        # exclude = ['user', 'luogo_nascita']  # todo uncomment
+        exclude = ['user', 'residenza', 'domicilio']
         widgets = {
             'data_nascita': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'tutor': forms.TextInput(attrs={'disabled': 'disabled', 'placeholder': 'Prof/Prof.ssa'}),
             'anno_dottorato': forms.NumberInput(attrs={'disabled': 'disabled', 'placeholder': '1, 2, 3'}),
             'scuola_dottorato': forms.TextInput(attrs={'disabled': 'disabled'}, ),
+            'luogo_nascita': autocomplete.ModelSelect2(url='comune-autocomplete',
+                                                       attrs={'data-html': True, 'data-theme': 'bootstrap4', }),
         }
         labels = {
             'data_nascita': 'Data di nascita',
-            'domicilio_fiscale_provincia': 'Domicilio fiscale Provincia',
             'datore_lavoro': 'Datore di lavoro',
             'tutor': 'Nome e cognome del tutor',
             'anno_dottorato': 'Anno di dottorato',
@@ -41,27 +64,52 @@ class ProfileForm(forms.ModelForm):
         self.fields['cognome'].initial = self.instance.user.last_name
         self.fields['cf'].initial = self.instance.cf
 
+        if self.instance.residenza is not None:
+            self.fields['residenza_via'].initial = self.instance.residenza.via
+            self.fields['residenza_n'].initial = self.instance.residenza.n
+            self.fields['residenza_comune'].initial = self.instance.residenza.comune
+            self.fields['residenza_provincia'].initial = self.instance.residenza.provincia
+
+        if self.instance.domicilio is not None:
+            self.fields['domicilio_via'].initial = self.instance.domicilio.via
+            self.fields['domicilio_n'].initial = self.instance.domicilio.n
+            self.fields['domicilio_comune'].initial = self.instance.domicilio.comune
+            self.fields['domicilio_provincia'].initial = self.instance.domicilio.provincia
+
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.form_action = 'profile'
         self.helper.add_input(Submit('submit', 'Aggiorna'))
 
         self.helper.layout = Layout(
-            Row(Div('nome', css_class="col-6"), Div('cognome', css_class="col-6")),
-            Row(Div('data_nascita', css_class="col-3"), Div('luogo_nascita', css_class="col-3"),
-                Div('cf', css_class="col-3"), Div('sesso', css_class="col-3")),
-            Row(Div('domicilio_fiscale', css_class="col-6"), Div('domicilio_fiscale_provincia', css_class="col-6")),
-            Row(Div('qualifica', css_class="col-6"), Div('datore_lavoro', css_class="col-6")),
-            Row(Div('tutor', css_class="col-4"), Div('anno_dottorato', css_class="col-2"),
-                Div('scuola_dottorato', css_class="col-6")),
+            Row(Column('nome', css_class="col-6"), Column('cognome', css_class="col-6")),
+            Row(Column('data_nascita', css_class="col-3"), Column('luogo_nascita', css_class="col-3"),
+                Column('cf', css_class="col-3"), Column('sesso', css_class="col-3")),
+            Fieldset("Residenza", Row(
+                Column('residenza_via', css_class='col-4'),
+                Column('residenza_n', css_class='col-2'),
+                Column('residenza_comune', css_class='col-3'),
+                Column('residenza_provincia', css_class='col-3'), css_id='residenza-row')),
+
+            Fieldset("Domicilio", Row(
+                Column('domicilio_via', css_class='col-4'),
+                Column('domicilio_n', css_class='col-2'),
+                Column('domicilio_comune', css_class='col-3'),
+                Column('domicilio_provincia', css_class='col-3'), css_id='domicilio-row'), css_id='domicilio-fieldset'),
+
+            Row(Column('qualifica', css_class="col-6"), Column('datore_lavoro', css_class="col-6")),
+            Row(Column('tutor', css_class="col-4"), Column('anno_dottorato', css_class="col-2"),
+                Column('scuola_dottorato', css_class="col-6")),
 
         )
 
-    def save(self, *args, **kwargs):
-        super(ProfileForm, self).save(*args, **kwargs)
+    def save(self, commit=True):
+        super(ProfileForm, self).save(commit)
         self.instance.user.first_name = self.cleaned_data.get('nome')
         self.instance.user.last_name = self.cleaned_data.get('cognome')
-        self.instance.user.save()
+        if commit:
+            self.instance.user.save()
+        return self.instance
 
 
 class MissioneForm(forms.ModelForm):
@@ -201,12 +249,14 @@ class ModuliMissioneForm(forms.ModelForm):
             'parte_2': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', }),
             'kasko': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', }),
             'dottorandi': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', }),
+            'atto_notorio': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', }),
         }
         labels = {
             'parte_1': 'Data Richiesta',
             'parte_2': 'Data Richiesta',
             'kasko': 'Data Richiesta',
             'dottorandi': 'Data Richiesta',
+            'atto_notorio': 'Atto di notorietà',
         }
 
     def __init__(self, *args, **kwargs):
