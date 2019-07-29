@@ -7,10 +7,10 @@
 {% block content %}
     {% spaceless %}
         {% if user.is_authenticated %}
-            {% if user.first_name == '' or user.last_name == '' %}
+            {% if user.first_name == '' or user.last_name == '' or user.profile.residenza is None or user.profile.domicilio is None %}
                 <div class="alert alert-danger" role="alert">
                     Compila i campi del <a href="{% url 'profile' %}" style="text-decoration: none;">
-                   <strong> profilo</strong></a> prima di creare una missione!
+                    <strong> profilo</strong></a> prima di creare una missione!
                 </div>
             {% else %}
                 {% crispy missione_form %}

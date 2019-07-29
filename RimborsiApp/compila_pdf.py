@@ -1,16 +1,19 @@
+import textwrap
 from itertools import zip_longest
 
 import io
 import os
 import re
 from PyPDF2 import PdfFileReader, PdfFileWriter
-from PyPDF2.generic import BooleanObject, NameObject, IndirectObject, NumberObject
+from PyPDF2.generic import BooleanObject, IndirectObject, NameObject
 from django.contrib.auth.decorators import login_required
+from django.db.models import Sum
 from django.http import HttpResponseBadRequest
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from docx import Document
 from docx.shared import Cm
 from reportlab.pdfgen import canvas
+
 from Rimborsi import settings
 from .forms import *
 from .views import load_json
@@ -21,15 +24,19 @@ def genera_pdf(request, id):
     if request.method == 'POST':
         moduli_missione = get_object_or_404(ModuliMissione, missione_id=id)
         moduli_missione_form = ModuliMissioneForm(request.POST, instance=moduli_missione)
+        dichiarazione_check_pers = None
+        dichiarazione_check_std = None
         if moduli_missione_form.is_valid():
             moduli_missione_form.save()
             # return redirect('profile')
+            dichiarazione_check_pers = moduli_missione_form.cleaned_data['dichiarazione_check_pers']
+            dichiarazione_check_std = moduli_missione_form.cleaned_data['dichiarazione_check_std']
 
         compila_parte_1(request, id)
         compila_parte_2(request, id)
         if request.user.profile.qualifica == 'DOTTORANDO':
             compila_autorizz_dottorandi(request, id)
-        compila_atto_notorio(request, id)
+        compila_atto_notorio(request, id, dichiarazione_check_std, dichiarazione_check_pers)
         return redirect('resoconto', id)
     else:
         return HttpResponseBadRequest()
@@ -154,7 +161,7 @@ def compila_parte_2(request, id):
     date_richiesta = ModuliMissione.objects.get(missione=missione)
     profile = Profile.objects.get(user=request.user)
     trasporto = Trasporto.objects.filter(missione=missione)
-
+    km_totali = trasporto.filter(mezzo='AUTO').aggregate(Sum('km'))['km__sum']
     trasporto_set = set()
     for t in trasporto:
         trasporto_set.add(t.mezzo)
@@ -182,15 +189,15 @@ def compila_parte_2(request, id):
         missione.inizio.strftime('%d/%m/%Y'),
         missione.fine_ora.strftime('%H:%M'),
         missione.fine.strftime('%d/%m/%Y')])
-    config.append('DICHIARA di aver ricevuto', ['aaa'])
-    config.append('nel caso di utilizzo di mezzo proprio', ['aaa'])  # todo mancano km in model),
-    config.append('che il costo del biglietto', ['cosa ci va?'])  # todo cosa ci va?),
-    config.append('che l’originale del fattura/ricevuta cumulativa', ['aaa', 'aaa', 'aaa'])
-    config.append('che il costo della fattura/ricevuta _', ['aa'])
-    config.append('che l’originale del fattura/ricevuta cumulativa, relativo a ___', ['aaa', 'aaa', 'aaa'])
-    config.append('che l’originale del fattura/ricevuta cumulativa, relativo a __________________________ ',
-                  ['aaa', 'aaa', 'aaa'])
-    config.append('che il costo della fattura/ricevuta __________________________ ', ['aa'])
+    config.append('DICHIARA di aver ricevuto', ['TODO'])
+    config.append('nel caso di utilizzo di mezzo proprio', [f'{km_totali}'])
+    # config.append('che il costo del biglietto', ['cosa ci va?'])
+    # config.append('che l’originale del fattura/ricevuta cumulativa', ['aaa', 'aaa', 'aaa'])
+    # config.append('che il costo della fattura/ricevuta _', ['aa'])
+    # config.append('che l’originale del fattura/ricevuta cumulativa, relativo a ___', ['aaa', 'aaa', 'aaa'])
+    # config.append('che l’originale del fattura/ricevuta cumulativa, relativo a __________________________ ',
+    #               ['aaa', 'aaa', 'aaa'])
+    # config.append('che il costo della fattura/ricevuta __________________________ ', ['aa'])
     config.append('Data richiesta', [date_richiesta.parte_2.strftime('%d/%m/%Y')])
 
     for k, values, excludes in config:
@@ -218,7 +225,7 @@ def compila_parte_2(request, id):
     for i, t in enumerate(trasporto, start=1):
         table.cell(i, 0).text = t.data.strftime('%d/%m/%Y')
         table.cell(i, 1).text = f'da {t.da}'
-        table.cell(i, 2).text = f'da {t.a}'
+        table.cell(i, 2).text = f'a {t.a}'
         table.cell(i, 3).text = t.mezzo
         table.cell(i, 4).text = t.tipo_costo
         table.cell(i, 5).text = f'{t.costo:.2f}'
@@ -358,11 +365,12 @@ def set_need_appearances_writer(writer):
     return writer
 
 
-def compila_atto_notorio(request, id):
+def compila_atto_notorio(request, id, dichiarazione_check_std=False, dichiarazione_check_pers=False):
     moduli_input_path = os.path.join(settings.STATIC_ROOT, settings.STATIC_URL[1:], 'RimborsiApp', 'moduli')
     moduli_output_path = os.path.join(settings.MEDIA_ROOT, 'moduli')
     missione = Missione.objects.get(user=request.user, id=id)
     input_file = os.path.join(moduli_input_path, 'dichiarazione_atto_notorieta.pdf')
+    modulo_missione = ModuliMissione.objects.get(missione=missione)
 
     # open the pdf
     input_stream = open(input_file, "rb")
@@ -376,10 +384,19 @@ def compila_atto_notorio(request, id):
         # Acro form is form field, set needs appearances to fix printing issues
         pdf_writer._root_object["/AcroForm"].update({NameObject("/NeedAppearances"): BooleanObject(True)})
 
+    dichiarazione = ''
+    if dichiarazione_check_std:
+        dichiarazione += f'per {missione.motivazione}.'
+    if dichiarazione_check_pers:
+        dichiarazione += f' {modulo_missione.atto_notorio_dichiarazione}'
+
+    dichiarazione_lines = textwrap.wrap(dichiarazione, 94)
+    assert (len(dichiarazione_lines) < 4)
+
     data_dict = {
         '1': missione.user.last_name,
         '2': missione.user.first_name,
-        '3': missione.user.profile.luogo_nascita,
+        '3': missione.user.profile.luogo_nascita.name,
         '4': missione.user.profile.luogo_nascita.provincia.codice_targa,
         '5': missione.user.profile.data_nascita.strftime('%d/%m/%Y'),
         '6': missione.user.profile.residenza.comune.name,
@@ -390,20 +407,25 @@ def compila_atto_notorio(request, id):
         '11': missione.user.profile.domicilio.provincia.codice_targa,
         '12': missione.user.profile.domicilio.via,
         '13': missione.user.profile.domicilio.n,
-        # '14': non ci scrive dentro, perche?
-        '15': f'Di essersi recato a {missione.citta_destinazione} - {missione.stato_destinazione.nome}',
-        '16': f'dal {missione.inizio.strftime("%d/%m/%Y")} al {missione.fine.strftime("%d/%m/%Y")}',
-        '17': f'per {missione.motivazione}',
+        # '14': 'non ci scrive dentro, perche?',
+        '15': f'Di essersi recato a {missione.citta_destinazione} - {missione.stato_destinazione.nome} dal {missione.inizio.strftime("%d/%m/%Y")} al {missione.fine.strftime("%d/%m/%Y")}',
+        # '16': f'per {missione.motivazione}',
+        # '17': f'',
+        # '18': f'',
+        '20': f'Modena, {modulo_missione.atto_notorio.strftime("%d/%m/%Y")}',
     }
+
+    for n, line in enumerate(dichiarazione_lines, start=16):
+        data_dict[str(n)] = line
 
     pdf_writer.addPage(pdf_reader.getPage(0))
     page = pdf_writer.getPage(0)
     pdf_writer.updatePageFormFieldValues(page, data_dict)
 
     # Disable the fillable fields
-    for j in range(0, len(page['/Annots'])):
-        writer_annot = page['/Annots'][j].getObject()
-        writer_annot.update({NameObject("/Ff"): NumberObject(1)})
+    # for j in range(0, len(page['/Annots'])):
+    #     writer_annot = page['/Annots'][j].getObject()
+    #     writer_annot.update({NameObject("/Ff"): NumberObject(1)})
 
     output_name_tmp = os.path.join(moduli_output_path, f'Missione_{missione.id}_atto_notorio_tmp.pdf')
     outputStream = open(output_name_tmp, "wb")
@@ -413,8 +435,7 @@ def compila_atto_notorio(request, id):
     # Salvo il pdf appena creato dentro a un FileField
     output_name = f'Missione_{missione.id}_atto_notorio.pdf'
     outputStream = open(output_name_tmp, "rb")
-    moduli_missione = ModuliMissione.objects.get(missione=missione)
-    moduli_missione.atto_notorio_file.save(output_name, outputStream)
+    modulo_missione.atto_notorio_file.save(output_name, outputStream)
 
     # Elimino il file temporaneo
     os.remove(output_name_tmp)

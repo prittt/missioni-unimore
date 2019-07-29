@@ -21,7 +21,6 @@
     {#    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>#}
     {% block head %}{% endblock %}
 
-    {#    <link rel="icon" href="{% static 'logo.png' %}">#}
     <title>{% block title %}Missioni{% endblock %}</title>
     {% block head_link %}{% endblock %}
 </head>
@@ -46,7 +45,7 @@
 {% block after_body %}{% endblock %}
 
 <!-- Footer -->
-<nav id="footer" class="navbar navbar-expand-lg navbar-light bg-light fixed-bottom">
+<nav id="footer" class="navbar navbar-expand-lg navbar-light fixed-bottom">
     <div class="container">
         <div class="font-italic">Powered by <a href="http://imagelab.ing.unimore.it">
             <img src="https://dali.ing.unimore.it/sharelatex/aimagelab.png" height="25" alt="AImageLab"></a>
@@ -58,6 +57,8 @@
 <style>
     #footer {
         font-size: large;
+        background-color: #ECECEC;
+        color: #F94018;
     }
 </style>
 </html>

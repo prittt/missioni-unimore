@@ -5,9 +5,10 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import Sum
 from django.http import Http404, HttpResponseBadRequest, HttpResponseNotFound, HttpResponseServerError
 from django.shortcuts import redirect, render, reverse
-from django.db.models import Sum
+
 from .forms import *
 from .models import *
 from .utils import *
@@ -19,6 +20,17 @@ def home(request):
         return render(request, 'Rimborsi/index.html', {'missioni_passate': missioni_passate})
     else:
         return render(request, 'Rimborsi/index.html')
+
+
+def load_json(missione, field_name):
+    field_value = getattr(missione, field_name)
+    if isinstance(field_value, str) and field_value != '':
+        db_field = json.loads(field_value, parse_float=decimal.Decimal)
+        for d in db_field:
+            d['data'] = datetime.datetime.strptime(d['data'], '%Y-%m-%d').date()
+    else:
+        db_field = []
+    return db_field
 
 
 @login_required
@@ -40,20 +52,51 @@ def resoconto(request, id):
                 parte_2 = missione.fine + datetime.timedelta(days=1)
 
             moduli_missione = ModuliMissione.objects.create(missione=missione, parte_1=parte_1, parte_2=parte_2,
-                                                            kasko=parte_1, dottorandi=parte_2)
+                                                            kasko=parte_1, dottorandi=parte_2, atto_notorio=parte_2)
 
         moduli_missione_form = ModuliMissioneForm(instance=moduli_missione)
 
+        db_dict = {
+            'scontrino': ['s1', 's2', 's3', ],
+            'pernottamento': ['s1'],
+            'convegno': ['s1'],
+            'altrespese': ['s1'],
+        }
+
+        totali = {
+            'scontrino': 0.,
+            'pernottamento': 0.,
+            'convegno': 0.,
+            'altrespese': 0.,
+            'trasporto': 0,
+
+            'totale': 0.,
+            'totale_indennita': 0.,
+        }
+
+        # Sommo le spese per questa missione
+        for k, sub_dict in db_dict.items():
+            tmp = load_json(missione, k)
+            for entry in tmp:
+                for sub_k in sub_dict:
+                    totali[k] += float(entry[sub_k] or 0.)
+
+        # Aggiungo il trasporto
+        totali['trasporto'] = float(missione.trasporto_set.all().aggregate(Sum('costo'))['costo__sum'] or 0.)
+        totali['totale'] = sum(totali.values())
+
         # Recupero il totale dei km in auto
-        km = missione.trasporto_set.filter(mezzo='AUTO').aggregate(Sum('km'))['km__sum']
+        km = float(missione.trasporto_set.filter(mezzo='AUTO').aggregate(Sum('km'))['km__sum'] or 0.)
         prezzo = get_prezzo_carburante()
-        if km is None:
-            km = 0
-        indennita = prezzo / 5 * km
+        indennita = float(prezzo / 5 * km)
+
+        totali['totale_indennita'] = totali['totale'] + indennita
+
         return render(request, 'Rimborsi/resoconto.html', {'missione': missione,
                                                            'moduli_missione_form': moduli_missione_form,
                                                            'km': km,
                                                            'indennita': indennita,
+                                                           'totali': totali,
                                                            })
         # else:
         #     return render(request, 'Rimborsi/resoconto.html')
@@ -148,17 +191,6 @@ def crea_missione(request):
             return render(request, 'Rimborsi/crea_missione.html', response)
     else:
         raise Http404
-
-
-def load_json(missione, field_name):
-    field_value = getattr(missione, field_name)
-    if isinstance(field_value, str) and field_value != '':
-        db_field = json.loads(field_value, parse_float=decimal.Decimal)
-        for d in db_field:
-            d['data'] = datetime.datetime.strptime(d['data'], '%Y-%m-%d').date()
-    else:
-        db_field = []
-    return db_field
 
 
 @login_required

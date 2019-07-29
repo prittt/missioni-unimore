@@ -1,11 +1,12 @@
+from comuni_italiani import models as comuni_italiani_models
 from crispy_forms.bootstrap import Div, InlineCheckboxes
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Row, Submit, Fieldset, Column, Button
+from crispy_forms.layout import Column, Fieldset, Layout, Row, Submit
+from dal import autocomplete
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.forms.models import formset_factory, inlineformset_factory
-from dal import autocomplete
-from comuni_italiani import models as comuni_italiani_models
+
 from .models import *
 
 
@@ -44,9 +45,8 @@ class ProfileForm(forms.ModelForm):
         exclude = ['user', 'residenza', 'domicilio']
         widgets = {
             'data_nascita': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'tutor': forms.TextInput(attrs={'disabled': 'disabled', 'placeholder': 'Prof/Prof.ssa'}),
-            'anno_dottorato': forms.NumberInput(attrs={'disabled': 'disabled', 'placeholder': '1, 2, 3'}),
-            'scuola_dottorato': forms.TextInput(attrs={'disabled': 'disabled'}, ),
+            'tutor': forms.TextInput(attrs={'placeholder': 'Prof/Prof.ssa'}),
+            'anno_dottorato': forms.NumberInput(attrs={'placeholder': '1, 2, 3'}),
             'luogo_nascita': autocomplete.ModelSelect2(url='comune-autocomplete',
                                                        attrs={'data-html': True, 'data-theme': 'bootstrap4', }),
         }
@@ -99,7 +99,7 @@ class ProfileForm(forms.ModelForm):
 
             Row(Column('qualifica', css_class="col-6"), Column('datore_lavoro', css_class="col-6")),
             Row(Column('tutor', css_class="col-4"), Column('anno_dottorato', css_class="col-2"),
-                Column('scuola_dottorato', css_class="col-6")),
+                Column('scuola_dottorato', css_class="col-6"), css_id="dottorando-details"),
 
         )
 
@@ -240,6 +240,10 @@ class AutomobileForm(forms.ModelForm):
 
 
 class ModuliMissioneForm(forms.ModelForm):
+    dichiarazione_check_std = forms.BooleanField(label='Dichiarazione precompilata di partecipazione evento',
+                                                 required=False, initial=True)
+    dichiarazione_check_pers = forms.BooleanField(label='Dichiarazione personalizzata:', required=False)
+
     class Meta:
         model = ModuliMissione
         fields = '__all__'
@@ -250,13 +254,14 @@ class ModuliMissioneForm(forms.ModelForm):
             'kasko': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', }),
             'dottorandi': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', }),
             'atto_notorio': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', }),
+            'atto_notorio_dichiarazione': forms.Textarea(attrs={'rows': 4, 'disabled': 'disabled'}, )
         }
         labels = {
             'parte_1': 'Data Richiesta',
             'parte_2': 'Data Richiesta',
             'kasko': 'Data Richiesta',
             'dottorandi': 'Data Richiesta',
-            'atto_notorio': 'Atto di notorietà',
+            'atto_notorio': 'Data Richiesta',
         }
 
     def __init__(self, *args, **kwargs):
@@ -268,6 +273,7 @@ class ModuliMissioneForm(forms.ModelForm):
         # self.helper.field_template = 'bootstrap4/layout/inline_field.html'
         # self.helper.form_class = 'form-inline'
         self.helper.form_tag = False
+        self.fields['atto_notorio_dichiarazione'].label = ''
 
 
 automobile_formset = inlineformset_factory(User, Automobile, AutomobileForm, extra=1, can_delete=True,

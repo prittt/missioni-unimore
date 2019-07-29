@@ -1,6 +1,6 @@
+import re
 import requests
 from bs4 import BeautifulSoup
-import re
 
 
 def get_prezzo_carburante():

@@ -1,10 +1,9 @@
 import datetime
-import os
 
 from codicefiscale import codicefiscale
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 MEZZO_CHOICES = (
@@ -148,9 +147,11 @@ class Profile(models.Model):
         if self.data_nascita is None:
             return ''
         date = str(self.data_nascita)
+        if self.luogo_nascita is None:
+            return ''
         cf = codicefiscale.encode(surname=self.user.last_name, name=self.user.first_name, sex=self.sesso,
                                   birthdate=date,
-                                  birthplace=str(self.luogo_nascita.name))
+                                  birthplace=self.luogo_nascita.name)
         return cf
 
     # Campi per dottorando
@@ -175,6 +176,7 @@ def save_user_profile(sender, instance, **kwargs):
 
 class ModuliMissione(models.Model):
     missione = models.OneToOneField(Missione, on_delete=models.CASCADE)
+
     parte_1 = models.DateField()
     parte_2 = models.DateField()
     kasko = models.DateField()
@@ -186,6 +188,8 @@ class ModuliMissione(models.Model):
     kasko_file = models.FileField(upload_to='moduli/', null=True, blank=True)
     atto_notorio_file = models.FileField(upload_to='moduli/', null=True, blank=True)
     dottorandi_file = models.FileField(upload_to='moduli/', null=True, blank=True)
+
+    atto_notorio_dichiarazione = models.TextField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Moduli missione"

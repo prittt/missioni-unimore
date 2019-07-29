@@ -1,33 +1,5 @@
 {% load static %}
-{#<!-- Modal Login-->#}
-{#<div class="container">#}
-{#    <div class="row">#}
-{#        <div id="myModal" class="modal fade in">#}
-{#            <div class="modal-dialog">#}
-{#                <div class="modal-content">#}
-{#                    <div class="m-header text-center">#}
-{#                        <h4 class="modal-title">Login</h4>#}
-{#                    </div>#}
-{#                    <div class="modal-body text-center">#}
-{#                        <form method="post" action="{% url 'login' %}" name="login_form">{% csrf_token %}#}
-{#                            <p><input type="text" name="username" placeholder="username"/></p>#}
-{#                            <p><input type="password" name="password" placeholder="*********"/></p>#}
-{#                            <div class="btn-group">#}
-{#                                <button class="entra" {% comment %}data-dismiss="modal"{% endcomment %}type="submit">#}
-{#                                    ENTRA#}
-{#                                </button>#}
-{#                                <button class="recupera" disabled><a href="{% url 'password_reset' %}">Recupera#}
-{#                                    password</a></button>#}
-{#                            </div>#}
-{#                        </form>#}
-{#                    </div>#}
-{#                </div><!-- /.modal-content -->#}
-{#            </div><!-- /.modal-dalog -->#}
-{#        </div><!-- /.modal -->#}
-{#    </div>#}
-{#</div>#}
-
-<nav id="navbar" class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+<nav id="navbar" class="navbar navbar-expand-lg navbar-light fixed-top">
     <div class="container">
         <div class="navbar-brand">
             <a href="/">
@@ -62,7 +34,6 @@
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                             {#                            <a class="dropdown-item" href="{% url 'sacher:profile' %}">Pagina Utente</a>#}
                             <a class="dropdown-item" href="{% url 'profile' %}">Profilo</a>
-
                             <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
                         </div>
                     {% else %}
@@ -82,5 +53,6 @@
 <style>
     #navbar {
         font-size: large;
+        background-color: #ECECEC;
     }
 </style>

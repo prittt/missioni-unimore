@@ -3,12 +3,19 @@
 {% load crispy_forms_tags %}
 
 {% block title %}Missioni{% endblock %}
-{% block h1title %}{% endblock %}
+{% block h1title %}
+    {% if missioni_passate %}
+        Le mie missioni
+    {% else %}
+        Nessuna missione presente
+    {% endif %}
+{% endblock %}
+
+
 {% block content %}
     {% spaceless %}
         {% if user.is_authenticated %}
             {% if missioni_passate %}
-                <h2>Le mie missioni</h2>
                 <table class="table table-striped">
                     <tbody>
                     {% for m in missioni_passate %}
@@ -68,9 +75,6 @@
                         $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
                     });
                 </script>
-            {% else %}
-                <h2>Nessuna missione presente.</h2>
-
             {% endif %}
         {% else %}
             <h1>Benvenuto nel portale missioni!</h1>

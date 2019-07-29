@@ -10,10 +10,48 @@
     {% spaceless %}
         {% if user.is_authenticated %}
             {% if missione %}
+                <table class="table table-sm table-borderless">
+                    <tbody>
+                    <tr>
+                        <td>Trasporto</td>
+                        <td>{{ totali.trasporto |floatformat:2 }} €</td>
+                    </tr>
+                    <tr>
+                        <td>Pasti</td>
+                        <td>{{ totali.scontrino |floatformat:2 }} €</td>
+                    </tr>
+                    <tr>
+                        <td>Pernottamenti</td>
+                        <td>{{ totali.pernottamento |floatformat:2 }} €</td>
+                    </tr>
+                    <tr>
+                        <td>Convegni</td>
+                        <td>{{ totali.convegno |floatformat:2 }} €</td>
+                    </tr>
+                    <tr class="bordered">
+                        <td>Altro</td>
+                        <td>{{ totali.altrespese |floatformat:2 }} €</td>
+                    </tr>
+                    </tbody>
+                    <tr>
+                        <td class="right"><b>Totale</b></td>
+                        <td>{{ totali.totale |floatformat:2 }} €</td>
+                    </tr>
+                    <tr class="bordered">
+                        <td>Indennità Chilometrica ({{ km|floatformat:2 }} km)</td>
+                        <td>{{ indennita|floatformat:2 }} €</td>
+                    </tr>
+                    <tfoot>
+                    <tr>
+                        <td class="right"><b>Totale</b></td>
+                        <td>{{ totali.totale_indennita|floatformat:2 }} €</td>
+                    </tr>
+                    </tfoot>
+                </table>
                 <form action="{% url 'genera_pdf' id=missione.id %}" method="post">{% csrf_token %}
-                    <table class="table table-borderless table-sm rounded">
+                    <table id="table-moduli" class="table table-borderless table-sm rounded">
                         {{ moduli_missione_form.management_form }}
-                        <tr>
+                        <tr class="center">
                             <td class="table-primary">
                                 {{ moduli_missione_form.parte_1|as_crispy_field }}
                             </td>
@@ -23,16 +61,13 @@
                             <td class="table-success">
                                 {{ moduli_missione_form.kasko|as_crispy_field }}
                             </td>
-                            <td class="table-info">
-                                {{ moduli_missione_form.atto_notorio|as_crispy_field }}
-                            </td>
                             {% if user.profile.qualifica == 'DOTTORANDO' %}
                                 <td class="table-warning">
                                     {{ moduli_missione_form.dottorandi|as_crispy_field }}
                                 </td>
                             {% endif %}
                         </tr>
-                        <tr align="center">
+                        <tr class="center">
                             <td class="table-primary">
                                 {% if missione.modulimissione.parte_1_file %}
                                     <a class="download" href="{{ missione.modulimissione.parte_1_file.url }}"
@@ -57,16 +92,8 @@
                                     <p>Kasko</p>
                                 {% endif %}
                             </td>
-                            <td class="table-info">
-                                {% if missione.modulimissione.atto_notorio_file %}
-                                    <a class="download" href="{{ missione.modulimissione.atto_notorio_file.url }}"
-                                       target="_blank"><i class="fa fa-file-pdf-o fa-2x"></i> Atto di notorietà</a>
-                                {% else %}
-                                    <p>Atto di notorietà</p>
-                                {% endif %}
-                            </td>
                             {% if user.profile.qualifica == 'DOTTORANDO' %}
-                                <td class="table-warning">
+                                <td class="table-warning center">
                                     {% if missione.modulimissione.dottorandi_file %}
                                         <a class="download" href="{{ missione.modulimissione.dottorandi_file.url }}"
                                            target="_blank"><i class="fa fa-file-pdf-o fa-2x"></i> Autorizzazione
@@ -77,6 +104,28 @@
                                 </td>
                             {% endif %}
                         </tr>
+                        <tr>
+                            <td class="table-info center">
+                                {{ moduli_missione_form.atto_notorio|as_crispy_field }}
+                            </td>
+                            <td class="table-info" rowspan="2"
+                                colspan=" {% if user.profile.qualifica == 'DOTTORANDO' %}3{% else %}2{% endif %}">
+                                {{ moduli_missione_form.dichiarazione_check_std|as_crispy_field }}
+                                {{ moduli_missione_form.dichiarazione_check_pers|as_crispy_field }}
+                                {{ moduli_missione_form.atto_notorio_dichiarazione|as_crispy_field }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-info center">
+                                {% if missione.modulimissione.atto_notorio_file %}
+                                    <a class="download" href="{{ missione.modulimissione.atto_notorio_file.url }}"
+                                       target="_blank"><i class="fa fa-file-pdf-o fa-2x"></i> Atto Notorio</a>
+                                {% else %}
+                                    <p>Atto di notorietà</p>
+                                {% endif %}
+                            </td>
+                        </tr>
+
                     </table>
                     <input class="btn btn-primary" type="submit" value="Compila PDF">
 
@@ -84,15 +133,31 @@
                     {#                        PDF</a>#}
                 </form>
 
-                <p>km percorsi: {{ km|floatformat:2 }}</p>
-                <p>Indennità totale: {{ indennita|floatformat:2 }} €</p>
             {% endif %}
         {% endif %}
 
+        <script>
+        $('#id_dichiarazione_check_pers').change(function () {
+            $('#id_atto_notorio_dichiarazione').prop('disabled', function(i, v) { return !v; });
+        })
+        </script>
         <style>
             a.download {
                 text-decoration: none;
                 color: #212529;
+            }
+
+            .center {
+                text-align: center;
+                vertical-align: center;
+            }
+
+            .right {
+                text-align: right;
+            }
+
+            tr.bordered {
+                border-bottom: 1px solid #dee2e6;
             }
         </style>
     {% endspaceless %}
