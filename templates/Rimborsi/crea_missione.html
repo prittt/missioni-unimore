@@ -9,11 +9,43 @@
         {% if user.is_authenticated %}
             {% if user.first_name == '' or user.last_name == '' or user.profile.residenza is None or user.profile.domicilio is None %}
                 <div class="alert alert-danger" role="alert">
-                    Compila i campi del <a href="{% url 'profile' %}" style="text-decoration: none;">
+                    Compila i campi del <a href="{% url 'RimborsiApp:profile' %}" style="text-decoration: none;">
                     <strong> profilo</strong></a> prima di creare una missione!
                 </div>
             {% else %}
                 {% crispy missione_form %}
+
+                <script>
+                    $('#div_id_automobile').hide();
+                    $('#div_id_motivazione_automobile').hide();
+                    $('#div_id_automobile_altrui').hide();
+                    $(document).ready(function () {
+                        let mezzi = $('#id_mezzi_previsti_1');
+                        let mezzi_altrui = $('#id_mezzi_previsti_2');
+                        let toggle_mezzi = function () {
+                            $('#div_id_automobile').toggle();
+                            $('#div_id_motivazione_automobile').toggle();
+                        };
+                        let toggle_mezzi_altrui = function () {
+                            $('#div_id_automobile_altrui').toggle();
+                        };
+                        mezzi.click(function () {
+                            if (mezzi_altrui.is(":checked")) {
+                                toggle_mezzi_altrui();
+                                mezzi_altrui.prop('checked', false);
+                            }
+                            toggle_mezzi();
+                        });
+                        mezzi_altrui.click(function () {
+                            if (mezzi.is(":checked")) {
+                                toggle_mezzi();
+                                mezzi.prop('checked', false);
+                            }
+                            toggle_mezzi_altrui();
+                        });
+
+                    });
+                </script>
             {% endif %}
         {% endif %}
     {% endspaceless %}

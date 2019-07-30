@@ -5,12 +5,15 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from RimborsiApp.storage import OverwriteStorage
 
 MEZZO_CHOICES = (
     ("AUTO", "Auto"),
+    ("A_ALT", "Auto altrui"),
     ("AEREO", "Aereo"),
     ("TRENO", "Treno"),
     ("BUS", "Bus"),
+    ("TAXI", "Taxi"),
 )
 
 MOTIVAZIONE_AUTO_CHOICES = (
@@ -72,6 +75,8 @@ class Missione(models.Model):
     motivazione = models.CharField(max_length=100, null=True, blank=True)
     struttura_fondi = models.CharField(max_length=200)
     automobile = models.ForeignKey(Automobile, null=True, blank=True, on_delete=models.SET_NULL)
+    automobile_altrui = models.CharField(max_length=100, null=True, blank=True)
+
     scontrino = models.TextField(null=True, blank=True)
     pernottamento = models.TextField(null=True, blank=True)
     convegno = models.TextField(null=True, blank=True)
@@ -101,10 +106,10 @@ class Missione(models.Model):
 class Trasporto(models.Model):
     missione = models.ForeignKey(Missione, on_delete=models.CASCADE)
     data = models.DateField()
-    da = models.CharField(max_length=100)
-    a = models.CharField(max_length=100)
+    da = models.CharField(max_length=100, null=True, blank=True)
+    a = models.CharField(max_length=100, null=True, blank=True)
     mezzo = models.CharField(max_length=5, choices=MEZZO_CHOICES)
-    tipo_costo = models.CharField(max_length=50)
+    tipo_costo = models.CharField(max_length=50, null=True, blank=True)
     costo = models.FloatField()
     km = models.FloatField(null=True, blank=True)
 
@@ -130,7 +135,11 @@ class Profile(models.Model):
         ('DOTTORANDO', 'Dottorando'),
         ('ASSEGNISTA', 'Assegnista'),
         ('STUDENTE', 'Studente'),
-        ('DOCENTE', 'Docente'),
+        ('PO', 'Professore Ordinario'),
+        ('PA', 'Professore Associato'),
+        ('RU', 'Ricercatore Universitario'),
+        ('RTDA', 'Ricercatore a tempo determinato A'),
+        ('RTDB', 'Ricercatore a tempo determinato B'),
     )
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     data_nascita = models.DateField(null=True)
@@ -183,11 +192,11 @@ class ModuliMissione(models.Model):
     atto_notorio = models.DateField()
     dottorandi = models.DateField()
 
-    parte_1_file = models.FileField(upload_to='moduli/', null=True, blank=True)
-    parte_2_file = models.FileField(upload_to='moduli/', null=True, blank=True)
-    kasko_file = models.FileField(upload_to='moduli/', null=True, blank=True)
-    atto_notorio_file = models.FileField(upload_to='moduli/', null=True, blank=True)
-    dottorandi_file = models.FileField(upload_to='moduli/', null=True, blank=True)
+    parte_1_file = models.FileField(upload_to='moduli/', storage=OverwriteStorage(), null=True, blank=True)
+    parte_2_file = models.FileField(upload_to='moduli/', storage=OverwriteStorage(), null=True, blank=True)
+    kasko_file = models.FileField(upload_to='moduli/', storage=OverwriteStorage(), null=True, blank=True)
+    atto_notorio_file = models.FileField(upload_to='moduli/', storage=OverwriteStorage(), null=True, blank=True)
+    dottorandi_file = models.FileField(upload_to='moduli/', storage=OverwriteStorage(), null=True, blank=True)
 
     atto_notorio_dichiarazione = models.TextField(null=True, blank=True)
 

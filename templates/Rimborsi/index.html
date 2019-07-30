@@ -29,18 +29,18 @@
                             </td>
                             <td>
                                 <a class="btn btn-primary"
-                                   href="{% url 'resoconto' id=m.id %}"
+                                   href="{% url 'RimborsiApp:resoconto' id=m.id %}"
                                    role="button">Resoconto</a>
                             </td>
                             <td>
                                 <a class="btn btn-primary"
-                                   href="{% url 'missione' id=m.id %}"
+                                   href="{% url 'RimborsiApp:missione' id=m.id %}"
                                    role="button">Modifica</a>
                             </td>
                             <td>
                                 <a class="btn btn-danger"
                                    href="#"
-                                   data-href="{% url 'cancella_missione' id=m.id %}"
+                                   data-href="{% url 'RimborsiApp:cancella_missione' id=m.id %}"
                                    data-target="#confirm-delete"
                                    data-toggle="modal"
                                    role="button">Cancella</a>

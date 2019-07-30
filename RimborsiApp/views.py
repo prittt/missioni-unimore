@@ -8,15 +8,16 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Sum
 from django.http import Http404, HttpResponseBadRequest, HttpResponseNotFound, HttpResponseServerError
 from django.shortcuts import redirect, render, reverse
-
+from django.core.mail import send_mail
 from .forms import *
 from .models import *
 from .utils import *
+from Rimborsi import settings
 
 
 def home(request):
     if request.user.is_authenticated:
-        missioni_passate = Missione.objects.filter(user=request.user)
+        missioni_passate = Missione.objects.filter(user=request.user).order_by('-inizio')
         return render(request, 'Rimborsi/index.html', {'missioni_passate': missioni_passate})
     else:
         return render(request, 'Rimborsi/index.html')
@@ -142,7 +143,7 @@ def profile(request):
             profile.domicilio = domicilio
 
             profile.save()
-            return redirect('profile')
+            return redirect('RimborsiApp:profile')
         else:
             return HttpResponseServerError()
     else:
@@ -156,7 +157,7 @@ def automobili(request):
         afs = automobile_formset(request.POST, instance=request.user, queryset=automobili)
         if afs.is_valid():
             afs.save()
-        return redirect('profile')
+        return redirect('RimborsiApp:profile')
     else:
         return HttpResponseBadRequest()
 
@@ -173,7 +174,7 @@ def crea_missione(request):
                                               'inizio_ora': '09:00',
                                               'fine_ora': '09:00',
                                               })
-        missione_form.helper.form_action = 'crea_missione'
+        missione_form.helper.form_action = 'RimborsiApp:crea_missione'
 
         response = {'missione_form': missione_form}
         return render(request, 'Rimborsi/crea_missione.html', response)
@@ -199,7 +200,7 @@ def missione(request, id):
 
         missione_form = MissioneForm(user=request.user, instance=missione,
                                      initial={'automobile': missione.automobile})
-        missione_form.helper.form_action = reverse('missione', args=[id])
+        missione_form.helper.form_action = reverse('RimborsiApp:missione', args=[id])
 
         db_dict = {
             'scontrino': [],  # pasti
@@ -262,7 +263,7 @@ def missione(request, id):
         # missione_form = MissioneForm(request.user, request.POST)
         if missione_form.is_valid():
             missione_form.save()
-            return redirect('missione', id)
+            return redirect('RimborsiApp:missione', id)
         else:
             response = missione_response(missione)
             response['missione_form'] = missione_form
@@ -280,7 +281,7 @@ def salva_pasti(request, id):
             pasti = [f.cleaned_data for f in pasti_formset.forms]
             missione.scontrino = json.dumps(pasti, cls=DjangoJSONEncoder)
             missione.save()
-            return redirect('missione', id)
+            return redirect('RimborsiApp:missione', id)
         else:
             return HttpResponseServerError('Form non valido')
     else:
@@ -297,7 +298,7 @@ def salva_pernottamenti(request, id):
                              and not f.cleaned_data['DELETE']]
             missione.pernottamento = json.dumps(pernottamenti, cls=DjangoJSONEncoder)
             missione.save()
-            return redirect('missione', id)
+            return redirect('RimborsiApp:missione', id)
         else:
             return HttpResponseServerError('Form non valido')
     else:
@@ -311,7 +312,7 @@ def salva_trasporti(request, id):
         trasporti_formset = trasporto_formset(request.POST, instance=missione)
         if trasporti_formset.is_valid():
             trasporti_formset.save()
-            return redirect('missione', id)
+            return redirect('RimborsiApp:missione', id)
         else:
             return HttpResponseServerError('Form non valido')
     else:
@@ -328,7 +329,7 @@ def salva_altrespese(request, id):
                           and not f.cleaned_data['DELETE']]
             missione.altrespese = json.dumps(altrespese, cls=DjangoJSONEncoder)
             missione.save()
-            return redirect('missione', id)
+            return redirect('RimborsiApp:missione', id)
         else:
             return HttpResponseServerError('Form non valido')
     else:
@@ -345,7 +346,7 @@ def salva_convegni(request, id):
                         and not f.cleaned_data['DELETE']]
             missione.convegno = json.dumps(convegni, cls=DjangoJSONEncoder)
             missione.save()
-            return redirect('missione', id)
+            return redirect('RimborsiApp:missione', id)
         else:
             return HttpResponseServerError('Form non valido')
     else:
@@ -380,3 +381,24 @@ def register(request):
 def regolamento(request):
     if request.method == 'GET':
         return render(request, 'Rimborsi/regolamento.html')
+
+
+@login_required
+def invia_email_autorizzazione(request, id):
+    if request.method == 'GET':
+        return redirect('home')
+    elif request.method == 'POST':
+        data = request.POST
+        emails = data.get('emails')
+        text = data.get('textarea-email')
+
+        emails = emails.split(' ')
+        send_mail(
+            'Autorizzazione missione',
+            text,
+            settings.EMAIL_HOST_USER,
+            ['mcancilla@unimore.it'],
+            # emails,
+            fail_silently=False,
+        )
+        return redirect('RimborsiApp:resoconto', id)

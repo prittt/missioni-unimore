@@ -21,15 +21,57 @@
         {% endif %}
     {% endif %}
 
-    <form method="post" action="{% url 'login' %}">{% csrf_token %}
-        <div class="col-4">
-            {% crispy form %}
-            <input type="submit" value="login" class="btn btn-primary"/>
-            <input type="hidden" name="next" value="{{ next }}"/>
-        </div>
-    </form>
 
-    <hr>
-    <a href="{% url 'password_reset' %}">Password dimenticata?</a>
+    <div class="row">
+        <div class="column col-6">
+            <h4>Single Sign-On Unimore</h4>
+            {#                    <p>Clicca il logo <b>Single SignOn</b> per il login sicuro con le credenziali della posta#}
+            {#                        elettronica di ateneo.#}
+            {#                    </p>#}
+            <a href="{% url 'shibboleth:login' %}?{{ request.GET.urlencode }}"><img
+                    src="{% static 'RimborsiApp/imgs/unimore-sso.png' %}"
+                    alt="Login with Shibboleth"></a>
+            <p>L'accesso al portale è consentito solo agli studenti regolarmente iscritti, ai docenti e al
+                personale dell'Ateneo.</p>
+            {#                    <h4 onclick='#}
+            {#(function() {#}
+            {#    let content = document.getElementById("staff_login");#}
+            {#    if (content.style.display === "block") {#}
+            {#        content.style.display = "none";#}
+            {#    } else {#}
+            {#        content.style.display = "block";#}
+            {#    }#}
+            {# })();'#}
+            {#                    ><a href="#" onclick="event.preventDefault();">Clicca qui per accedere al login per gli#}
+            {#                        amministratori del#}
+            {#                        sito</a></h4>#}
+            {#                    <div style="display: none;" id="staff_login">#}
+            {#                        <form method="post">#}
+            {#                            {% csrf_token %}#}
+            {#                            {{ form.as_p }}#}
+            {#                            <button type="submit">Login</button>#}
+            {#                        </form>#}
+            {#                    </div>#}
+        </div>
+
+        <div class="column col-6">
+            <h4>Login per amministratore</h4>
+
+            <form method="post" action="{% url 'login' %}">{% csrf_token %}
+                <div class="col-6">
+                    {% crispy form %}
+                    <input type="submit" value="login" class="btn btn-primary"/>
+                    <input type="hidden" name="next" value="{{ next }}"/>
+                </div>
+            </form>
+            <hr>
+            <a href="{% url 'password_reset' %}">Password dimenticata?</a>
+        </div>
+    </div>
+
+
+
+
+
 
 {% endblock %}

@@ -17,12 +17,12 @@ def shibboleth_login(request):
     if created:
         user.set_unusable_password()
 
-    if "mail" in meta:
+    if user.email == '' and "mail" in meta:
         user.email = meta["mail"]
-    if "givenName" in meta:
-        user.first_name = meta["givenName"]
-    if "sn" in meta:
-        user.last_name = meta["sn"]
+    if user.first_name == '' and "givenName" in meta:
+        user.first_name = str(meta["givenName"]).capitalize()
+    if user.last_name == '' and "sn" in meta:
+        user.last_name = str(meta["sn"]).capitalize()
     user.save()
 
     user.backend = 'django.contrib.auth.backends.ModelBackend'

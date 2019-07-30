@@ -1,7 +1,7 @@
 from comuni_italiani import models as comuni_italiani_models
 from crispy_forms.bootstrap import Div, InlineCheckboxes
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Column, Fieldset, Layout, Row, Submit
+from crispy_forms.layout import Column, Fieldset, Layout, Row, Submit, Button
 from dal import autocomplete
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
@@ -78,7 +78,7 @@ class ProfileForm(forms.ModelForm):
 
         self.helper = FormHelper()
         self.helper.form_method = 'post'
-        self.helper.form_action = 'profile'
+        self.helper.form_action = 'RimborsiApp:profile'
         self.helper.add_input(Submit('submit', 'Aggiorna'))
 
         self.helper.layout = Layout(
@@ -113,10 +113,12 @@ class ProfileForm(forms.ModelForm):
 
 
 class MissioneForm(forms.ModelForm):
-    automobile = forms.ModelChoiceField(queryset=None, empty_label="---", required=False)
     mezzi_previsti = forms.MultipleChoiceField(choices=MEZZO_CHOICES, required=False)
+    automobile = forms.ModelChoiceField(queryset=None, empty_label="---", required=False)
     motivazione_automobile = forms.MultipleChoiceField(choices=MOTIVAZIONE_AUTO_CHOICES, required=False,
                                                        widget=forms.CheckboxSelectMultiple)
+
+    # automobile_altrui = forms.CharField(label='Proprietario auto', required=False)
 
     class Meta:
         model = Missione
@@ -133,6 +135,7 @@ class MissioneForm(forms.ModelForm):
             'stato_destinazione': 'Stato di destinazione',
             'citta_destinazione': 'Città di destinazione',
             'mezzi_previsti': 'Mezzi',
+            'automobile_altrui': 'Proprietario auto',
         }
 
     def clean(self):
@@ -169,7 +172,8 @@ class MissioneForm(forms.ModelForm):
                 Div('fine', css_class="col-3"), Div('fine_ora', css_class="col-3")),
             Row(Div('fondo', css_class="col-6"), Div('struttura_fondi', css_class="col-6")),
             Row(Div('motivazione', css_class="col-12")),
-            Row(Div(InlineCheckboxes('mezzi_previsti'), css_class="col-6"), Div('automobile', css_class="col-6")),
+            Row(Div(InlineCheckboxes('mezzi_previsti'), css_class="col-6"), Div('automobile', css_class="col-6"),
+                Div('automobile_altrui', css_class="col-6")),
             Row(Div(InlineCheckboxes('motivazione_automobile'), css_class="col-12")),
         )
 
@@ -201,13 +205,15 @@ class TrasportoForm(forms.ModelForm):
         model = Trasporto
         fields = '__all__'
         widgets = {
-            'data': forms.DateInput(attrs={'type': 'date', 'class': 'form-control trasporti-date', }),
+            'data': forms.DateInput(
+                attrs={'type': 'date', 'class': 'form-control trasporti-date', 'required': 'required', }),
             'da': forms.TextInput(attrs={'class': 'form-control', }),
             'a': forms.TextInput(attrs={'class': 'form-control', }),
-            'mezzo': forms.Select(attrs={'class': 'form-control trasporti-mezzo', }),
-            'km': forms.NumberInput(attrs={'class': 'form-control trasporti-km', }),
+            'mezzo': forms.Select(attrs={'class': 'form-control trasporti-mezzo', 'required': 'required', }),
             'tipo_costo': forms.TextInput(attrs={'class': 'form-control', }),
-            'costo': forms.NumberInput(attrs={'class': 'form-control trasporti-costo', }),
+            'costo': forms.NumberInput(
+                attrs={'class': 'form-control trasporti-costo', 'step': 0.01, 'required': 'required', }),
+            'km': forms.NumberInput(attrs={'class': 'form-control trasporti-km', 'step': 0.01}),
         }
         labels = {
             'costo': 'Spesa',
@@ -278,7 +284,7 @@ class ModuliMissioneForm(forms.ModelForm):
 
 automobile_formset = inlineformset_factory(User, Automobile, AutomobileForm, extra=1, can_delete=True,
                                            exclude=('user',))
-trasporto_formset = inlineformset_factory(Missione, Trasporto, TrasportoForm, extra=1, can_delete=True,
+trasporto_formset = inlineformset_factory(Missione, Trasporto, TrasportoForm, extra=0, can_delete=True,
                                           fields='__all__')
 scontrino_formset = formset_factory(ScontrinoForm, extra=0)
 scontrino_extra_formset = formset_factory(ScontrinoExtraForm, can_delete=True)

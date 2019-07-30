@@ -37,13 +37,13 @@ def genera_pdf(request, id):
         if request.user.profile.qualifica == 'DOTTORANDO':
             compila_autorizz_dottorandi(request, id)
         compila_atto_notorio(request, id, dichiarazione_check_std, dichiarazione_check_pers)
-        return redirect('resoconto', id)
+        return redirect('RimborsiApp:resoconto', id)
     else:
         return HttpResponseBadRequest()
 
 
 def compila_parte_1(request, id):
-    moduli_input_path = os.path.join(settings.STATIC_ROOT, settings.STATIC_URL[1:], 'RimborsiApp', 'moduli')
+    moduli_input_path = os.path.join(settings.STATIC_ROOT, 'RimborsiApp', 'moduli')
     moduli_output_path = os.path.join(settings.MEDIA_ROOT, 'moduli')
 
     input_file = os.path.join(moduli_input_path, 'ModuloMissione_Part1.pdf')
@@ -84,6 +84,13 @@ def compila_parte_1(request, id):
         targa = missione.automobile.targa
         motivazione_auto = ' + '.join(t.lower() for t in eval(missione.motivazione_automobile))
 
+    new_list = eval(missione.mezzi_previsti)
+    if "A_ALT" in new_list:
+        for n, elem in enumerate(new_list):
+            if elem == "A_ALT":
+                new_list[n] = f'AUTO ALTRUI (di proprietà di {missione.automobile_altrui})'
+    mezzo = ' + '.join(t for t in new_list)
+
     value_dict = {
         "struttura_appartenenza": missione.struttura_fondi,
         "cognome": profile.user.last_name,
@@ -102,7 +109,7 @@ def compila_parte_1(request, id):
         "durata": str(missione.durata_gg.days),
         "fondo": missione.fondo,
         # "mezzo": ' + '.join(t for t in trasporto_set),
-        "mezzo": ' + '.join(t for t in eval(missione.mezzi_previsti)),
+        "mezzo": mezzo,
         "motivazione_mezzi": motivazione_auto,
         "targa": targa,
         "data_richiesta": date_richiesta.parte_1.strftime('%d/%m/%Y'),
@@ -152,7 +159,7 @@ def compila_parte_1(request, id):
 
 
 def compila_parte_2(request, id):
-    moduli_input_path = os.path.join(settings.STATIC_ROOT, settings.STATIC_URL[1:], 'RimborsiApp', 'moduli')
+    moduli_input_path = os.path.join(settings.STATIC_ROOT, 'RimborsiApp', 'moduli')
     moduli_output_path = os.path.join(settings.MEDIA_ROOT, 'moduli')
 
     input_file = os.path.join(moduli_input_path, 'ModuloMissione_Part2.docx')
@@ -276,7 +283,7 @@ def compila_parte_2(request, id):
 
 
 def compila_autorizz_dottorandi(request, id):
-    moduli_input_path = os.path.join(settings.STATIC_ROOT, settings.STATIC_URL[1:], 'RimborsiApp', 'moduli')
+    moduli_input_path = os.path.join(settings.STATIC_ROOT, 'RimborsiApp', 'moduli')
     moduli_output_path = os.path.join(settings.MEDIA_ROOT, 'moduli')
 
     input_file = os.path.join(moduli_input_path, 'AutorizzazioneDottorandi.pdf')
@@ -366,7 +373,7 @@ def set_need_appearances_writer(writer):
 
 
 def compila_atto_notorio(request, id, dichiarazione_check_std=False, dichiarazione_check_pers=False):
-    moduli_input_path = os.path.join(settings.STATIC_ROOT, settings.STATIC_URL[1:], 'RimborsiApp', 'moduli')
+    moduli_input_path = os.path.join(settings.STATIC_ROOT, 'RimborsiApp', 'moduli')
     moduli_output_path = os.path.join(settings.MEDIA_ROOT, 'moduli')
     missione = Missione.objects.get(user=request.user, id=id)
     input_file = os.path.join(moduli_input_path, 'dichiarazione_atto_notorieta.pdf')

@@ -4,6 +4,7 @@
 
 **/secrets.json
 **/secrets.*
+/static
 **/db_utils
 
 ### Django ###
