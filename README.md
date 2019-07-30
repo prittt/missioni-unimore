@@ -1,4 +1,6 @@
-<p align="center"> ![LOGO](/RimborsiApp/static/RimborsiApp/imgs/missioni_logo.png?raw=true) </p>
+<!-- ![LOGO](/RimborsiApp/static/RimborsiApp/imgs/missioni_logo.png?raw=true) --> 
+
+<img url="/RimborsiApp/static/RimborsiApp/imgs/missioni_logo.png?raw=true>
 
 # Rimborso Missioni UNIMORE
 
