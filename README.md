@@ -1,7 +1,7 @@
 <!-- ![LOGO](/RimborsiApp/static/RimborsiApp/imgs/missioni_logo.png?raw=true) --> 
 
 <p align="center">
-  <a href="https://missioni.ing.unimore.it"><img src="/RimborsiApp/static/RimborsiApp/imgs/missioni_logo.png" width="300">
+  <a href="https://missioni.ing.unimore.it"><img src="/RimborsiApp/static/RimborsiApp/imgs/missioni_logo.png" width="300"></a>
 </p>
 
 # Rimborso Missioni UNIMORE
