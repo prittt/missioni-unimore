@@ -18,7 +18,7 @@
 1. <p align="justify">Calcolo automatico dei km percorsi a mezzo macchina utilizzando API di qualche tipo. Purtroppo quelle di Via Michelin sono a pagamento e quelle di google "sottostimano" i km totali;</p>
 1. <p align="justify">Calcolo del rimborso chilometrico come da regolamento. Attualmente vengono presi i dati dei prezzi benzina dell'ultima settimana (e non quelli della settimana missione) da <a href="https://dgsaie.mise.gov.it/prezzi_carburanti_settimanali.php?lang=it_IT">qui</a>, quindi non si dovrebbe discostare di molto da quello reale. Questa feature serve solamente per stimare il totale e verificare la correttezza del rimborso in quanto i calcoli finali verranno in ogni caso fatti dall'amministrazione.</p>
 1. <p align="justify"><b>Per strutturati</b> invio automatico della mail (Sig.ra Mariagrazia Ianni + Didattica) di richiesta di autorizzazione al Consiglio di Dipartimento per missioni all'estero. Attualmente funziona, ma le mail vengono inviate da un account di posta poco consono. Siamo in attesa dell'attivazione dell'account di posta missioni@unimore.it</p>
-1. <p align="justify">Autocompletamento dati scontrini da foto :metal:</p>
+1. <p align="justify">Autocompletamento dati scontrini da foto (con relativa app smartphone) :metal:</p>
 
 # Suggerimenti/Contributi?
 
