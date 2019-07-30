@@ -6,7 +6,7 @@
 
 # Rimborso Missioni UNIMORE
 
-<p align="justify">L'applicazione è disponibile a <a href="https://missione.ing.unimore.it">missioni.ing.unimore.it</a> ed è accessibile anche dall'esterno. L'autenticazione avviene mediante shibboleth quindi non è richiesta alcuna registrazione. Enjoy!</p>
+<p align="justify">L'applicazione è disponibile a <a href="https://missioni.ing.unimore.it">missioni.ing.unimore.it</a> ed è accessibile anche dall'esterno. L'autenticazione avviene mediante shibboleth quindi non è richiesta alcuna registrazione. Enjoy!</p>
 
 # News
 
