@@ -1,3 +1,5 @@
+<p align="center"> ![LOGO](/RimborsiApp/static/RimborsiApp/imgs/missioni_logo.png?raw=true) </p>
+
 # Rimborso Missioni UNIMORE
 
 <p align="justify">L'applicazione è disponibile a <a href="https://missione.ing.unimore.it">missioni.ing.unimore.it</a> ed è accessibile anche dall'esterno. L'autenticazione avviene mediante shibboleth quindi non è richiesta alcuna registrazione. Enjoy!</p>
