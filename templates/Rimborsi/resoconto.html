@@ -3,7 +3,8 @@
 {% load crispy_forms_tags %}
 
 {% block title %}Resoconto{% endblock %}
-{% block h1title %}Resoconto Missione{% endblock %}
+{% block h1title %}Resoconto Missione <h4>a {{ missione.citta_destinazione }} dal {{ missione.inizio|date:"d/m/Y" }}
+    al {{ missione.fine|date:"d/m/Y" }}</h4>{% endblock %}
 
 
 {% block content %}
@@ -78,8 +79,8 @@
                             <td class="table-primary">
                                 {% if missione.modulimissione.parte_1_file %}
                                     <a class="download"
-                                       href="{% url 'RimborsiApp:download' missione.id 'parte_1_file' %}"
-                                       target="_blank"> <i class="fa fa-file-pdf-o fa-2x"></i> Missione Parte I</a>
+                                       href="{% url 'RimborsiApp:download' missione.id 'parte_1_file' %}"> <i
+                                            class="fa fa-file-pdf-o fa-2x"></i> Missione Parte I</a>
                                 {% else %}
                                     <p>Missione Parte I</p>
                                 {% endif %}
@@ -87,8 +88,8 @@
                             <td class="table-secondary">
                                 {% if missione.modulimissione.parte_2_file %}
                                     <a class="download"
-                                       href="{% url 'RimborsiApp:download' missione.id 'parte_2_file' %}"
-                                       target="_blank"><i class="fa fa-file-word-o fa-2x"></i> Missione Parte II</a>
+                                       href="{% url 'RimborsiApp:download' missione.id 'parte_2_file' %}"><i
+                                            class="fa fa-file-word-o fa-2x"></i> Missione Parte II</a>
                                 {% else %}
                                     <p>Missione Parte II</p>
                                 {% endif %}
@@ -96,7 +97,7 @@
                             <td class="table-success">
                                 {% if missione.modulimissione.kasko_file %}
                                     <a class="download" href="{% url 'RimborsiApp:download' missione.id 'kasko_file' %}"
-                                       target="_blank"><i class="fa fa-file-pdf-o fa-2x"></i> Kasko</a>
+                                    ><i class="fa fa-file-pdf-o fa-2x"></i> Kasko</a>
                                 {% else %}
                                     <p>Kasko</p>
                                 {% endif %}
@@ -106,7 +107,7 @@
                                     {% if missione.modulimissione.dottorandi_file %}
                                         <a class="download"
                                            href="{% url 'RimborsiApp:download' missione.id 'dottorandi_file' %}"
-                                           target="_blank"><i class="fa fa-file-pdf-o fa-2x"></i> Autorizzazione
+                                        ><i class="fa fa-file-pdf-o fa-2x"></i> Autorizzazione
                                             Dottorando</a>
                                     {% else %}
                                         <p>Autorizzazione Dottorando</p>
@@ -130,7 +131,7 @@
                                 {% if missione.modulimissione.atto_notorio_file %}
                                     <a class="download"
                                        href="{% url 'RimborsiApp:download' missione.id 'atto_notorio_file' %}"
-                                       target="_blank"><i class="fa fa-file-pdf-o fa-2x"></i> Atto Notorio</a>
+                                    ><i class="fa fa-file-pdf-o fa-2x"></i> Atto Notorio</a>
                                 {% else %}
                                     <p>Atto di notorietà</p>
                                 {% endif %}

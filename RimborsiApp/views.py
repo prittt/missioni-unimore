@@ -82,13 +82,16 @@ def resoconto(request, id):
         try:
             moduli_missione = ModuliMissione.objects.get(missione=missione)
         except ObjectDoesNotExist:
-            parte_1 = datetime.date.today()
-            if missione.inizio - parte_1 < datetime.timedelta(days=0):
+            today = datetime.date.today()
+            parte_1 = today - datetime.timedelta(days=(today.weekday() // 4) * (today.weekday() % 4))
+            if missione.inizio - parte_1 <= datetime.timedelta(days=0):
                 parte_1 = missione.inizio - datetime.timedelta(days=1)
+                parte_1 -= datetime.timedelta(days=(parte_1.weekday() // 4) * (parte_1.weekday() % 4))
 
-            parte_2 = datetime.date.today()
-            if missione.fine - parte_2 > datetime.timedelta(days=0):
+            parte_2 = today + datetime.timedelta(days=(today.weekday() // 4) * (today.weekday() % 2 + 1))
+            if missione.fine - parte_2 >= datetime.timedelta(days=0):
                 parte_2 = missione.fine + datetime.timedelta(days=1)
+                parte_2 += datetime.timedelta(days=(parte_2.weekday() // 4) * (parte_2.weekday() % 2 + 1))
 
             moduli_missione = ModuliMissione.objects.create(missione=missione, parte_1=parte_1, parte_2=parte_2,
                                                             kasko=parte_1, dottorandi=parte_2, atto_notorio=parte_2)

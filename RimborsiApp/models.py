@@ -75,7 +75,7 @@ class Missione(models.Model):
     fine = models.DateField()
     fine_ora = models.TimeField()
     fondo = models.CharField(max_length=100)
-    motivazione = models.CharField(max_length=100, null=True, blank=True)
+    motivazione = models.CharField(max_length=100)
     struttura_fondi = models.CharField(max_length=200)
     automobile = models.ForeignKey(Automobile, null=True, blank=True, on_delete=models.SET_NULL)
     automobile_altrui = models.CharField(max_length=100, null=True, blank=True)

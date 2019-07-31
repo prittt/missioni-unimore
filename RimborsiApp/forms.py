@@ -8,6 +8,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.forms.models import formset_factory, inlineformset_factory
 
 from .models import *
+import datetime
 
 
 class ProfileForm(forms.ModelForm):
@@ -260,7 +261,7 @@ class ModuliMissioneForm(forms.ModelForm):
             'kasko': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', }),
             'dottorandi': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', }),
             'atto_notorio': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', }),
-            'atto_notorio_dichiarazione': forms.Textarea(attrs={'rows': 4, 'disabled': 'disabled'}, )
+            'atto_notorio_dichiarazione': forms.Textarea(attrs={'rows': 4, }, )
         }
         labels = {
             'parte_1': 'Data Richiesta',
@@ -281,24 +282,42 @@ class ModuliMissioneForm(forms.ModelForm):
         kasko_data = cleaned_data.get("kasko")
 
         errors = {}
-        if atto_notorio_data < missione_fine:
+        if atto_notorio_data.weekday() >= 5:
             errors['atto_notorio'] = \
-                f"Atto notorio deve avere una data successiva a quella di fine missione ({missione_fine.strftime('%d/%m/%Y')})"
+                f"Atto notorio deve avere una data di compilazione che non sia sabato o domenica"
 
         if parte_2_data < missione_fine:
             errors['parte_2'] = \
-                f"Missione parte II deve avere una data successiva a quella di fine missione ({missione_fine.strftime('%d/%m/%Y')})"
+                f"Missione parte II deve avere una data di compilazione che non sia sabato o domenica"
 
         if parte_1_data > missione_inizio:
-            errors['parte_1'] = \
-                f"Missione parte I deve avere una data antecedente a quella di inizio missione ({missione_inizio.strftime('%d/%m/%Y')})"
+            errors['parte_1'] = f"Missione parte I deve avere una data di compilazione che non sia sabato o domenica"
 
         if dottorandi_data > missione_inizio:
             errors['dottorandi'] = \
-                f"Autorizzazione dottorandi deve avere una data antecedente a quella di inizio missione ({missione_inizio.strftime('%d/%m/%Y')})"
+                f"Autorizzazione dottorandi deve avere una data di compilazione che non sia sabato o domenica"
+
+        if kasko_data > missione_inizio:
+            errors['kasko'] = f"Kasko deve avere una data di compilazione che non sia sabato o domenica"
+
+        if atto_notorio_data < missione_fine:
+            errors['atto_notorio'] = \
+                f"Atto notorio deve avere una data di compilazione successiva a quella di fine missione ({missione_fine.strftime('%d/%m/%Y')})"
+
+        if parte_2_data < missione_fine:
+            errors['parte_2'] = \
+                f"Missione parte II deve avere una data di compilazione successiva a quella di fine missione ({missione_fine.strftime('%d/%m/%Y')})"
+
+        if parte_1_data > missione_inizio:
+            errors['parte_1'] = \
+                f"Missione parte I deve avere una data di compilazione antecedente a quella di inizio missione ({missione_inizio.strftime('%d/%m/%Y')})"
+
+        if dottorandi_data > missione_inizio:
+            errors['dottorandi'] = \
+                f"Autorizzazione dottorandi deve avere una data di compilazione antecedente a quella di inizio missione ({missione_inizio.strftime('%d/%m/%Y')})"
         if kasko_data > missione_inizio:
             errors['kasko'] = \
-                f"Kasko deve avere una data antecedente a quella di inizio missione ({missione_inizio.strftime('%d/%m/%Y')})"
+                f"Kasko deve avere una data di compilazione antecedente a quella di inizio missione ({missione_inizio.strftime('%d/%m/%Y')})"
 
         if len(errors) > 0:
             raise forms.ValidationError(errors)
@@ -314,6 +333,10 @@ class ModuliMissioneForm(forms.ModelForm):
         # self.helper.form_class = 'form-inline'
         self.helper.form_tag = False
         self.fields['atto_notorio_dichiarazione'].label = ''
+        if self.instance.atto_notorio_dichiarazione != '':
+            self.fields['dichiarazione_check_pers'].initial = True
+        else:
+            self.fields['atto_notorio_dichiarazione'].disable = True
 
 
 automobile_formset = inlineformset_factory(User, Automobile, AutomobileForm, extra=1, can_delete=True,
