@@ -9,14 +9,14 @@ from PyPDF2.generic import BooleanObject, IndirectObject, NameObject
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 from django.http import HttpResponseBadRequest
-from django.shortcuts import get_object_or_404, redirect
 from docx import Document
 from docx.shared import Cm
 from reportlab.pdfgen import canvas
+from django.shortcuts import redirect, render, get_object_or_404
 
 from Rimborsi import settings
 from .forms import *
-from .views import load_json
+from .views import load_json, resoconto_data
 
 
 @login_required
@@ -31,6 +31,14 @@ def genera_pdf(request, id):
             # return redirect('profile')
             dichiarazione_check_pers = moduli_missione_form.cleaned_data['dichiarazione_check_pers']
             dichiarazione_check_std = moduli_missione_form.cleaned_data['dichiarazione_check_std']
+        else:
+            km, indennita, totali = resoconto_data(missione=moduli_missione.missione)
+            return render(request, 'Rimborsi/resoconto.html', {'missione': moduli_missione.missione,
+                                                               'moduli_missione_form': moduli_missione_form,
+                                                               'km': km,
+                                                               'indennita': indennita,
+                                                               'totali': totali,
+                                                               })
 
         compila_parte_1(request, id)
         compila_parte_2(request, id)
@@ -88,7 +96,7 @@ def compila_parte_1(request, id):
     if "A_ALT" in new_list:
         for n, elem in enumerate(new_list):
             if elem == "A_ALT":
-                new_list[n] = f'AUTO ALTRUI (di proprietà di {missione.automobile_altrui})'
+                new_list[n] = f'AUTO ALTRUI (di proprietà di {missione.automobile_altrui or ""})'
     mezzo = ' + '.join(t for t in new_list)
 
     value_dict = {
@@ -231,10 +239,10 @@ def compila_parte_2(request, id):
 
     for i, t in enumerate(trasporto, start=1):
         table.cell(i, 0).text = t.data.strftime('%d/%m/%Y')
-        table.cell(i, 1).text = f'da {t.da}'
-        table.cell(i, 2).text = f'a {t.a}'
+        table.cell(i, 1).text = f'da {t.da or ""}'
+        table.cell(i, 2).text = f'a {t.a or ""}'
         table.cell(i, 3).text = t.mezzo
-        table.cell(i, 4).text = t.tipo_costo
+        table.cell(i, 4).text = t.tipo_costo or ''
         table.cell(i, 5).text = f'{t.costo:.2f}'
         table.rows[i].height = Cm(0.61)
 
@@ -304,7 +312,7 @@ def compila_autorizz_dottorandi(request, id):
     profile = Profile.objects.get(user=request.user)
 
     value_dict = {
-        'data_richiesta': date_richiesta.parte_1.strftime('%d/%m/%Y'),
+        'data_richiesta': date_richiesta.dottorandi.strftime('%d/%m/%Y'),
         'tutor': profile.tutor,
         'nomecognome': f'{profile.user.first_name} {profile.user.last_name}',
         'anno_dottorato': f'{profile.anno_dottorato if profile.anno_dottorato is not None else ""}',

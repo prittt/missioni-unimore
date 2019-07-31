@@ -34,6 +34,46 @@ def load_json(missione, field_name):
     return db_field
 
 
+def resoconto_data(missione):
+    db_dict = {
+        'scontrino': ['s1', 's2', 's3', ],
+        'pernottamento': ['s1'],
+        'convegno': ['s1'],
+        'altrespese': ['s1'],
+    }
+
+    totali = {
+        'scontrino': 0.,
+        'pernottamento': 0.,
+        'convegno': 0.,
+        'altrespese': 0.,
+        'trasporto': 0,
+
+        'totale': 0.,
+        'totale_indennita': 0.,
+    }
+
+    # Sommo le spese per questa missione
+    for k, sub_dict in db_dict.items():
+        tmp = load_json(missione, k)
+        for entry in tmp:
+            for sub_k in sub_dict:
+                totali[k] += float(entry[sub_k] or 0.)
+
+    # Aggiungo il trasporto
+    totali['trasporto'] = float(missione.trasporto_set.all().aggregate(Sum('costo'))['costo__sum'] or 0.)
+    totali['totale'] = sum(totali.values())
+
+    # Recupero il totale dei km in auto
+    km = float(missione.trasporto_set.filter(mezzo='AUTO').aggregate(Sum('km'))['km__sum'] or 0.)
+    prezzo = get_prezzo_carburante()
+    indennita = float(prezzo / 5 * km)
+
+    totali['totale_indennita'] = totali['totale'] + indennita
+
+    return km, indennita, totali
+
+
 @login_required
 def resoconto(request, id):
     if request.method == 'GET':
@@ -57,41 +97,43 @@ def resoconto(request, id):
 
         moduli_missione_form = ModuliMissioneForm(instance=moduli_missione)
 
-        db_dict = {
-            'scontrino': ['s1', 's2', 's3', ],
-            'pernottamento': ['s1'],
-            'convegno': ['s1'],
-            'altrespese': ['s1'],
-        }
+        # db_dict = {
+        #     'scontrino': ['s1', 's2', 's3', ],
+        #     'pernottamento': ['s1'],
+        #     'convegno': ['s1'],
+        #     'altrespese': ['s1'],
+        # }
+        #
+        # totali = {
+        #     'scontrino': 0.,
+        #     'pernottamento': 0.,
+        #     'convegno': 0.,
+        #     'altrespese': 0.,
+        #     'trasporto': 0,
+        #
+        #     'totale': 0.,
+        #     'totale_indennita': 0.,
+        # }
+        #
+        # # Sommo le spese per questa missione
+        # for k, sub_dict in db_dict.items():
+        #     tmp = load_json(missione, k)
+        #     for entry in tmp:
+        #         for sub_k in sub_dict:
+        #             totali[k] += float(entry[sub_k] or 0.)
+        #
+        # # Aggiungo il trasporto
+        # totali['trasporto'] = float(missione.trasporto_set.all().aggregate(Sum('costo'))['costo__sum'] or 0.)
+        # totali['totale'] = sum(totali.values())
+        #
+        # # Recupero il totale dei km in auto
+        # km = float(missione.trasporto_set.filter(mezzo='AUTO').aggregate(Sum('km'))['km__sum'] or 0.)
+        # prezzo = get_prezzo_carburante()
+        # indennita = float(prezzo / 5 * km)
+        #
+        # totali['totale_indennita'] = totali['totale'] + indennita
 
-        totali = {
-            'scontrino': 0.,
-            'pernottamento': 0.,
-            'convegno': 0.,
-            'altrespese': 0.,
-            'trasporto': 0,
-
-            'totale': 0.,
-            'totale_indennita': 0.,
-        }
-
-        # Sommo le spese per questa missione
-        for k, sub_dict in db_dict.items():
-            tmp = load_json(missione, k)
-            for entry in tmp:
-                for sub_k in sub_dict:
-                    totali[k] += float(entry[sub_k] or 0.)
-
-        # Aggiungo il trasporto
-        totali['trasporto'] = float(missione.trasporto_set.all().aggregate(Sum('costo'))['costo__sum'] or 0.)
-        totali['totale'] = sum(totali.values())
-
-        # Recupero il totale dei km in auto
-        km = float(missione.trasporto_set.filter(mezzo='AUTO').aggregate(Sum('km'))['km__sum'] or 0.)
-        prezzo = get_prezzo_carburante()
-        indennita = float(prezzo / 5 * km)
-
-        totali['totale_indennita'] = totali['totale'] + indennita
+        km, indennita, totali = resoconto_data(missione)
 
         return render(request, 'Rimborsi/resoconto.html', {'missione': missione,
                                                            'moduli_missione_form': moduli_missione_form,

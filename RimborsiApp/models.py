@@ -190,7 +190,7 @@ class ModuliMissione(models.Model):
     parte_2 = models.DateField()
     kasko = models.DateField()
     atto_notorio = models.DateField()
-    dottorandi = models.DateField()
+    dottorandi = models.DateField(null=True, blank=True)
 
     parte_1_file = models.FileField(upload_to='moduli/', storage=OverwriteStorage(), null=True, blank=True)
     parte_2_file = models.FileField(upload_to='moduli/', storage=OverwriteStorage(), null=True, blank=True)

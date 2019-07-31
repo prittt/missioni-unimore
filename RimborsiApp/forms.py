@@ -270,6 +270,40 @@ class ModuliMissioneForm(forms.ModelForm):
             'atto_notorio': 'Data Richiesta',
         }
 
+    def clean(self):
+        cleaned_data = super(ModuliMissioneForm, self).clean()
+        missione_inizio = self.instance.missione.inizio
+        missione_fine = self.instance.missione.fine
+        parte_1_data = cleaned_data.get("parte_1")
+        parte_2_data = cleaned_data.get("parte_2")
+        atto_notorio_data = cleaned_data.get("atto_notorio")
+        dottorandi_data = cleaned_data.get("dottorandi")
+        kasko_data = cleaned_data.get("kasko")
+
+        errors = {}
+        if atto_notorio_data < missione_fine:
+            errors['atto_notorio'] = \
+                f"Atto notorio deve avere una data successiva a quella di fine missione ({missione_fine.strftime('%d/%m/%Y')})"
+
+        if parte_2_data < missione_fine:
+            errors['parte_2'] = \
+                f"Missione parte II deve avere una data successiva a quella di fine missione ({missione_fine.strftime('%d/%m/%Y')})"
+
+        if parte_1_data > missione_inizio:
+            errors['parte_1'] = \
+                f"Missione parte I deve avere una data antecedente a quella di inizio missione ({missione_inizio.strftime('%d/%m/%Y')})"
+
+        if dottorandi_data > missione_inizio:
+            errors['dottorandi'] = \
+                f"Autorizzazione dottorandi deve avere una data antecedente a quella di inizio missione ({missione_inizio.strftime('%d/%m/%Y')})"
+        if kasko_data > missione_inizio:
+            errors['kasko'] = \
+                f"Kasko deve avere una data antecedente a quella di inizio missione ({missione_inizio.strftime('%d/%m/%Y')})"
+
+        if len(errors) > 0:
+            raise forms.ValidationError(errors)
+        return cleaned_data
+
     def __init__(self, *args, **kwargs):
         super(ModuliMissioneForm, self).__init__(*args, **kwargs)
 
@@ -284,7 +318,7 @@ class ModuliMissioneForm(forms.ModelForm):
 
 automobile_formset = inlineformset_factory(User, Automobile, AutomobileForm, extra=1, can_delete=True,
                                            exclude=('user',))
-trasporto_formset = inlineformset_factory(Missione, Trasporto, TrasportoForm, extra=0, can_delete=True,
+trasporto_formset = inlineformset_factory(Missione, Trasporto, TrasportoForm, extra=1, can_delete=True,
                                           fields='__all__')
 scontrino_formset = formset_factory(ScontrinoForm, extra=0)
 scontrino_extra_formset = formset_factory(ScontrinoExtraForm, can_delete=True)
