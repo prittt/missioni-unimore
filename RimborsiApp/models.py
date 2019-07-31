@@ -7,6 +7,9 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from RimborsiApp.storage import OverwriteStorage
 
+from django.core.files.storage import FileSystemStorage
+from Rimborsi import settings
+
 MEZZO_CHOICES = (
     ("AUTO", "Auto"),
     ("A_ALT", "Auto altrui"),
@@ -199,6 +202,9 @@ class ModuliMissione(models.Model):
     dottorandi_file = models.FileField(upload_to='moduli/', storage=OverwriteStorage(), null=True, blank=True)
 
     atto_notorio_dichiarazione = models.TextField(null=True, blank=True)
+
+    def is_user_allowed(self, user):
+        return self.missione.user == user
 
     class Meta:
         verbose_name = "Moduli missione"

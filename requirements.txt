@@ -9,5 +9,3 @@ beautifulsoup4
 requests
 django-autocomplete-light
 django-comuni-italiani
-
-# install libreoffice and tahoma font (https://www.wfonts.com/font/tahoma)

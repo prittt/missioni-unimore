@@ -77,7 +77,8 @@
                         <tr class="center">
                             <td class="table-primary">
                                 {% if missione.modulimissione.parte_1_file %}
-                                    <a class="download" href="{{ missione.modulimissione.parte_1_file.url }}"
+                                    <a class="download"
+                                       href="{% url 'RimborsiApp:download' missione.id 'parte_1_file' %}"
                                        target="_blank"> <i class="fa fa-file-pdf-o fa-2x"></i> Missione Parte I</a>
                                 {% else %}
                                     <p>Missione Parte I</p>
@@ -85,7 +86,8 @@
                             </td>
                             <td class="table-secondary">
                                 {% if missione.modulimissione.parte_2_file %}
-                                    <a class="download" href="{{ missione.modulimissione.parte_2_file.url }}"
+                                    <a class="download"
+                                       href="{% url 'RimborsiApp:download' missione.id 'parte_2_file' %}"
                                        target="_blank"><i class="fa fa-file-word-o fa-2x"></i> Missione Parte II</a>
                                 {% else %}
                                     <p>Missione Parte II</p>
@@ -93,7 +95,7 @@
                             </td>
                             <td class="table-success">
                                 {% if missione.modulimissione.kasko_file %}
-                                    <a class="download" href="{{ missione.modulimissione.kasko_file.url }}"
+                                    <a class="download" href="{% url 'RimborsiApp:download' missione.id 'kasko_file' %}"
                                        target="_blank"><i class="fa fa-file-pdf-o fa-2x"></i> Kasko</a>
                                 {% else %}
                                     <p>Kasko</p>
@@ -102,7 +104,8 @@
                             {% if user.profile.qualifica == 'DOTTORANDO' %}
                                 <td class="table-warning center">
                                     {% if missione.modulimissione.dottorandi_file %}
-                                        <a class="download" href="{{ missione.modulimissione.dottorandi_file.url }}"
+                                        <a class="download"
+                                           href="{% url 'RimborsiApp:download' missione.id 'dottorandi_file' %}"
                                            target="_blank"><i class="fa fa-file-pdf-o fa-2x"></i> Autorizzazione
                                             Dottorando</a>
                                     {% else %}
@@ -125,33 +128,14 @@
                         <tr>
                             <td class="table-info center">
                                 {% if missione.modulimissione.atto_notorio_file %}
-                                    <a class="download" href="{{ missione.modulimissione.atto_notorio_file.url }}"
+                                    <a class="download"
+                                       href="{% url 'RimborsiApp:download' missione.id 'atto_notorio_file' %}"
                                        target="_blank"><i class="fa fa-file-pdf-o fa-2x"></i> Atto Notorio</a>
                                 {% else %}
                                     <p>Atto di notorietà</p>
                                 {% endif %}
                             </td>
                         </tr>
-
-                        {#                        {% if user.profile.qualifica == 'PO' or user.profile.qualifica == 'PA' or user.profile.qualifica == 'RU' or user.profile.qualifica == 'RTDA' or user.profile.qualifica == 'RTDB' %}#}
-                        {#                            <tr>#}
-                        {#                                <td class="table-warning" colspan="3">#}
-                        {#                                    <div class="row">#}
-                        {#                                        <div class="col-4">#}
-                        {#                                            <ul class="list-group" id="list-email">#}
-                        {#                                            </ul>#}
-                        {#                                            <label for="text-email"></label><input class="form-control" type="text"#}
-                        {#                                                                                   id="text-email">#}
-                        {#                                            <button class="btn btn-primary" id="inserisci-email">Inserisci</button>#}
-                        {#                                        </div>#}
-                        {#                                        <div class="col-6">#}
-                        {#                                            {{ moduli_missione_form.mail_textarea|as_crispy_field }}#}
-                        {#                                            <button type="button" class="btn btn-secondary">Invia Richiesta</button>#}
-                        {#                                        </div>#}
-                        {#                                    </div>#}
-                        {#                                </td>#}
-                        {#                            </tr>#}
-                        {#                        {% endif %}#}
                     </table>
                     <input class="btn btn-primary" type="submit" value="Compila PDF">
                 </form>

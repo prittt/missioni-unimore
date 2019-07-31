@@ -1,5 +1,5 @@
 from django.urls import path
-from RimborsiApp import views, compila_pdf
+from RimborsiApp import views, compila_pdf, utils
 from django.conf.urls import include
 
 app_name = 'RimborsiApp'
@@ -23,5 +23,6 @@ urlpatterns = [
 
     path('invia_email_autorizzazione/<int:id>', views.invia_email_autorizzazione, name='invia_email_autorizzazione'),
 
+    path('download/<int:id>/<str:field>', utils.download, name='download'),
 
 ]
