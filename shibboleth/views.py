@@ -43,8 +43,7 @@ def shibboleth_login(request, flag):
             if user.profile.sesso is None and cf != '':
                 user.profile.sesso = cf['sex']
         if user.profile.qualifica is None:
-
-
+            pass
         user.save()
 
     user.backend = 'django.contrib.auth.backends.ModelBackend'
