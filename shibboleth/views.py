@@ -34,7 +34,6 @@ def shibboleth_login(request, flag):
         cf = ''
         if 'unimorecodicefiscale' in meta:
             cf = codicefiscale.decode(meta['unimorecodicefiscale'])
-
             if user.profile.data_nascita is None and cf != '':
                 user.profile.data_nascita = cf['birthdate']
             if user.profile.luogo_nascita is None and cf != '':

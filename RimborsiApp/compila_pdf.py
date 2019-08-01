@@ -238,6 +238,8 @@ def compila_parte_2(request, id):
         # row.height = Cm(0.61)
 
     for i, t in enumerate(trasporto, start=1):
+        if t.costo == 0:
+            continue
         table.cell(i, 0).text = t.data.strftime('%d/%m/%Y')
         table.cell(i, 1).text = f'da {t.da or ""}'
         table.cell(i, 2).text = f'a {t.a or ""}'
