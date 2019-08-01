@@ -28,7 +28,7 @@
             {#                    <p>Clicca il logo <b>Single SignOn</b> per il login sicuro con le credenziali della posta#}
             {#                        elettronica di ateneo.#}
             {#                    </p>#}
-            <a href="{% url 'shibboleth:login' %}?{{ request.GET.urlencode }}"><img
+            <a href="#" id="modal-autorizza-dati"><img
                     src="{% static 'RimborsiApp/imgs/unimore-sso.png' %}"
                     alt="Login with Shibboleth"></a>
             <p>L'accesso al portale è consentito solo agli studenti regolarmente iscritti, ai docenti e al
@@ -69,9 +69,39 @@
         </div>
     </div>
 
+    <div id="autorizza-dati" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Autorizzazione Dati</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Vuoi consentire all'applicazione di utilizzare i dati personali forniti da Shibboleth per la
+                        compilazione del profilo utente? I dati verranno utilizzati solo per compilare i moduli
+                        missione. Se si nega il consenso verrà comunque effettuato l'accesso e verranno estratti solo:
+                        nome, cognome ed e-mail.</p>
+                </div>
+                <div class="modal-footer">
+                    <a href="{% url 'shibboleth:login' 1 %}?{{ request.GET.urlencode }}" id="invia-richiesta-modal"
+                       type="button" class="btn btn-primary">Sì</a>
+                    <a href="{% url 'shibboleth:test' %}?{{ request.GET.urlencode }}" id="invia-richiesta-modal"
+                       type="button" class="btn btn-primary">test</a>
+                    <a href="{% url 'shibboleth:login' 0 %}?{{ request.GET.urlencode }}" id="invia-richiesta-modal"
+                       type="button" class="btn btn-secondary">No</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
-
-
-
-
+    <script>
+        $(document).ready(function () {
+            $('#modal-autorizza-dati').click(function (e) {
+                $('#autorizza-dati').modal('show');
+                e.preventDefault();
+            });
+        });
+    </script>
 {% endblock %}

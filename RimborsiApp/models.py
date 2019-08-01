@@ -159,7 +159,7 @@ class Profile(models.Model):
         if self.data_nascita is None:
             return ''
         date = str(self.data_nascita)
-        if self.luogo_nascita is None:
+        if self.luogo_nascita is None or self.sesso is None:
             return ''
         cf = codicefiscale.encode(surname=self.user.last_name, name=self.user.first_name, sex=self.sesso,
                                   birthdate=date,

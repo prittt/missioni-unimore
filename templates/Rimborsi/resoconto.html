@@ -200,10 +200,7 @@ Cordiali saluti,
             {% endif %}
         {% endif %}
 
-
-
-
-        <div id="confirm-delete" class="modal" tabindex="-1" role="dialog">
+        <div id="send-mail" class="modal" tabindex="-1" role="dialog">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -245,7 +242,7 @@ Cordiali saluti,
                 });
 
                 $('#invia-richiesta').click(function (e) {
-                    $('#confirm-delete').modal('show');
+                    $('#send-mail').modal('show');
                     e.preventDefault();
                 });
 
