@@ -177,13 +177,9 @@ def compila_parte_2(request, id):
     profile = Profile.objects.get(user=request.user)
     trasporto = Trasporto.objects.filter(missione=missione)
     km_totali = trasporto.filter(mezzo='AUTO').aggregate(Sum('km'))['km__sum']
-    trasporto_set = set()
-    for t in trasporto:
-        trasporto_set.add(t.mezzo)
 
-    targa = ""
-    if "AUTO" in trasporto_set:
-        targa = missione.automobile.targa
+    # Remove trasporti tha has 0 km
+    trasporto = trasporto.filter(costo__gt=0)
 
     class ParConfig:
         def __init__(self):
@@ -204,7 +200,7 @@ def compila_parte_2(request, id):
         missione.inizio.strftime('%d/%m/%Y'),
         missione.fine_ora.strftime('%H:%M'),
         missione.fine.strftime('%d/%m/%Y')])
-    config.append('DICHIARA di aver ricevuto', ['TODO'])
+    # config.append('DICHIARA di aver ricevuto', ['TODO'])
     config.append('nel caso di utilizzo di mezzo proprio', [f'{km_totali}'])
     # config.append('che il costo del biglietto', ['cosa ci va?'])
     # config.append('che l’originale del fattura/ricevuta cumulativa', ['aaa', 'aaa', 'aaa'])
@@ -235,11 +231,8 @@ def compila_parte_2(request, id):
 
     while len(table.rows) <= len(trasporto):
         row = table.add_row()
-        # row.height = Cm(0.61)
 
     for i, t in enumerate(trasporto, start=1):
-        if t.costo == 0:
-            continue
         table.cell(i, 0).text = t.data.strftime('%d/%m/%Y')
         table.cell(i, 1).text = f'da {t.da or ""}'
         table.cell(i, 2).text = f'a {t.a or ""}'

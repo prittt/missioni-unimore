@@ -7,7 +7,7 @@
 {% block content %}
     {% spaceless %}
         {% if user.is_authenticated %}
-            {% if user.first_name == '' or user.last_name == '' or user.profile.residenza is None or user.profile.domicilio is None %}
+            {% if user.first_name == '' or user.last_name == '' or user.profile.residenza is None or user.profile.domicilio is None or user.profile.qualifica is None %}
                 <div class="alert alert-danger" role="alert">
                     Compila i campi del <a href="{% url 'RimborsiApp:profile' %}" style="text-decoration: none;">
                     <strong> profilo</strong></a> prima di creare una missione!

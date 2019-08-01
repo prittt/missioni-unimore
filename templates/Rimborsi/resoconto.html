@@ -3,8 +3,10 @@
 {% load crispy_forms_tags %}
 
 {% block title %}Resoconto{% endblock %}
-{% block h1title %}Resoconto Missione <h4>a {{ missione.citta_destinazione }} dal {{ missione.inizio|date:"d/m/Y" }}
-    al {{ missione.fine|date:"d/m/Y" }}</h4>{% endblock %}
+{% block h1title %}Resoconto Missione
+    <a class="btn btn-primary" href="{% url 'RimborsiApp:missione' missione.id %}" role="button">Modifica</a>
+    <h4>a {{ missione.citta_destinazione }} dal {{ missione.inizio|date:"d/m/Y" }}
+        al {{ missione.fine|date:"d/m/Y" }}</h4>{% endblock %}
 
 
 {% block content %}
@@ -99,7 +101,8 @@
                                     <a class="download" href="{% url 'RimborsiApp:download' missione.id 'kasko_file' %}"
                                     ><i class="fa fa-file-pdf-o fa-2x"></i> Kasko</a>
                                 {% else %}
-                                    <a class="download" target="_blank" href="https://wtr.unimore.it/private/kasko/Richiesta.aspx"><i
+                                    <a class="download" target="_blank"
+                                       href="https://wtr.unimore.it/private/kasko/Richiesta.aspx"><i
                                             class="fa fa-external-link fa-1x" aria-hidden="true"></i>
                                         Kasko</a>
                                 {% endif %}

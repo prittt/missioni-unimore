@@ -3,7 +3,9 @@
 {% load crispy_forms_tags %}
 
 {% block title %}Missione{% endblock %}
-{% block h1title %}Modifica Missione{% endblock %}
+{% block h1title %}Modifica Missione
+    <a class="btn btn-primary" href="{% url 'RimborsiApp:resoconto' missione.id %}" role="button">Resoconto</a>
+{% endblock %}
 
 {% block content %}
     {#    {% spaceless %}#}

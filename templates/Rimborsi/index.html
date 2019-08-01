@@ -8,7 +8,7 @@
     {% if missioni_passate %}
         Le mie missioni
     {% else %}
-         Benvenuto! Effettua il login per iniziare.
+        Benvenuto! Effettua il <a href="{% url 'login' %}">login</a> per iniziare.
     {% endif %}
 {% endblock %}
 
