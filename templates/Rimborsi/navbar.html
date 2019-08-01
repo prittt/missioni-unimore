@@ -20,6 +20,9 @@
                     <li><a class="nav-link" href="{% url 'RimborsiApp:crea_missione' %}">Nuova Missione</a></li>
                 {% endif %}
                 <li><a class="nav-link" href="{% url 'RimborsiApp:regolamento' %}">Regolamento</a></li>
+                <li><a class="nav-link" target="_blank" href="https://github.com/prittt/missioni-unimore"><i class="fa fa-github"
+                                                                                      aria-hidden="true"></i> GitHub</a>
+                </li>
             </ul>
 
             <ul class="navbar-nav ml-auto">
@@ -37,9 +40,9 @@
                         <li class="nav-item">
                             <a href="{% url 'login' %}" class="nav-link">Login</a>
                         </li>
-{#                        <li class="nav-item">#}
-{#                            <a href="{% url 'register' %}" class="nav-link">Registrati</a>#}
-{#                        </li>#}
+                        {#                        <li class="nav-item">#}
+                        {#                            <a href="{% url 'register' %}" class="nav-link">Registrati</a>#}
+                        {#                        </li>#}
                     {% endif %}
                 </li>
             </ul>

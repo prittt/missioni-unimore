@@ -194,9 +194,10 @@ class ScontrinoForm(forms.Form):
 
 
 class ScontrinoExtraForm(forms.Form):
-    data = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
+    data = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'required': 'required', }))
     desc_label = 'Descrizione (numero fattura/ricevuta fiscale)'
-    s1 = forms.DecimalField(decimal_places=2, label='Spesa', required=False,
+    s1 = forms.DecimalField(decimal_places=2, label='Spesa', required=True,
                             widget=forms.NumberInput(attrs={'class': 'form-control', }))
     d1 = forms.CharField(required=False, label=desc_label, widget=forms.TextInput(attrs={'class': 'form-control', }), )
 
@@ -339,9 +340,9 @@ class ModuliMissioneForm(forms.ModelForm):
             self.fields['atto_notorio_dichiarazione'].disable = True
 
 
-automobile_formset = inlineformset_factory(User, Automobile, AutomobileForm, extra=1, can_delete=True,
-                                           exclude=('user',))
-trasporto_formset = inlineformset_factory(Missione, Trasporto, TrasportoForm, extra=1, can_delete=True,
-                                          fields='__all__')
+automobile_formset = inlineformset_factory(User, Automobile, AutomobileForm, extra=0, can_delete=True,
+                                           exclude=('user',), min_num=1)
+trasporto_formset = inlineformset_factory(Missione, Trasporto, TrasportoForm, extra=0, can_delete=True,
+                                          fields='__all__', min_num=1)
 scontrino_formset = formset_factory(ScontrinoForm, extra=0)
-scontrino_extra_formset = formset_factory(ScontrinoExtraForm, can_delete=True)
+scontrino_extra_formset = formset_factory(ScontrinoExtraForm, can_delete=True, extra=0, min_num=1)
