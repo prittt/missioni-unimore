@@ -99,7 +99,9 @@
                                     <a class="download" href="{% url 'RimborsiApp:download' missione.id 'kasko_file' %}"
                                     ><i class="fa fa-file-pdf-o fa-2x"></i> Kasko</a>
                                 {% else %}
-                                    <p>Kasko</p>
+                                    <a class="download" target="_blank" href="https://wtr.unimore.it/private/kasko/Richiesta.aspx"><i
+                                            class="fa fa-external-link fa-1x" aria-hidden="true"></i>
+                                        Kasko</a>
                                 {% endif %}
                             </td>
                             {% if user.profile.qualifica == 'DOTTORANDO' %}
