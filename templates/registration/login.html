@@ -87,8 +87,8 @@
                 <div class="modal-footer">
                     <a href="{% url 'shibboleth:login' 1 %}?{{ request.GET.urlencode }}" id="invia-richiesta-modal"
                        type="button" class="btn btn-primary">Sì</a>
-                    <a href="{% url 'shibboleth:test' %}?{{ request.GET.urlencode }}" id="invia-richiesta-modal"
-                       type="button" class="btn btn-primary">test</a>
+{#                    <a href="{% url 'shibboleth:test' %}?{{ request.GET.urlencode }}" id="invia-richiesta-modal"#}
+{#                       type="button" class="btn btn-primary">test</a>#}
                     <a href="{% url 'shibboleth:login' 0 %}?{{ request.GET.urlencode }}" id="invia-richiesta-modal"
                        type="button" class="btn btn-secondary">No</a>
                 </div>

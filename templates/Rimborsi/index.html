@@ -3,11 +3,12 @@
 {% load crispy_forms_tags %}
 
 {% block title %}Missioni{% endblock %}
+
 {% block h1title %}
     {% if missioni_passate %}
         Le mie missioni
     {% else %}
-        Nessuna missione presente
+         Benvenuto! Effettua il login per iniziare.
     {% endif %}
 {% endblock %}
 
@@ -77,8 +78,7 @@
                 </script>
             {% endif %}
         {% else %}
-            <h1>Benvenuto nel portale missioni!</h1>
-            <h1>Registrati per usare questo servizio.</h1>
+
         {% endif %}
 
     {% endspaceless %}

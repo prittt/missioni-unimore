@@ -79,9 +79,9 @@
 
         <hr>
         <h3><a tabindex="0" class="popover-dismiss" role="button" data-toggle="popover"
-               data-trigger="focus" title="Trasporti (Rimborso Chilometrico)"
+               data-trigger="focus" title="Trasporti"
                data-content="Se una tratta non ha spese, ma deve ricevere un'indennità chilometrica, inserirla popolando il campo spesa a
-            0."><i
+            0. Per le tratte che non devono ricevere un'indennità chilometrica lasciare il campo km vuoto."><i
             class="fa fa-info-circle fa-1x" aria-hidden="true"></i></a> Trasporti:
         </h3>
         <form action="{% url 'RimborsiApp:salva_trasporti'  id=missione.id %}" method="post">{% csrf_token %}
