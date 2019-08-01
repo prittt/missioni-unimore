@@ -78,7 +78,12 @@
         </form>
 
         <hr>
-        <h3>Trasporti:</h3>
+        <h3><a tabindex="0" class="popover-dismiss" role="button" data-toggle="popover"
+               data-trigger="focus" title="Trasporti (Rimborso Chilometrico)"
+               data-content="Se una tratta non ha spese, ma deve ricevere un'indennità chilometrica, inserirla popolando il campo spesa a
+            0."><i
+            class="fa fa-info-circle fa-1x" aria-hidden="true"></i></a> Trasporti:
+        </h3>
         <form action="{% url 'RimborsiApp:salva_trasporti'  id=missione.id %}" method="post">{% csrf_token %}
             <table id="trasporti-table" class="table table-striped">
                 {{ trasporti_formset.management_form }}
@@ -255,6 +260,10 @@
                 toggle_mezzi_altrui();
             });
 
+        });
+
+        $('.popover-dismiss').popover({
+            trigger: 'focus'
         });
     </script>
 
