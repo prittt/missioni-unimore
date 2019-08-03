@@ -38,10 +38,12 @@
         <div class="column col-4">
             <h4>Login per amministratore</h4>
 
-            <form method="post" action="{% url 'login' %}">{% csrf_token %}
-                {% crispy form %}
-                <input type="submit" value="login" class="btn btn-primary"/>
-                <input type="hidden" name="next" value="{{ next }}"/>
+            <form method="post" action="{% url 'login' %}">
+                <div>
+                    {% crispy form %}
+                    <input type="submit" value="login" class="btn btn-primary"/>
+                    <input type="hidden" name="next" value="{{ next }}"/>
+                </div>
             </form>
             <hr>
             <a href="{% url 'password_reset' %}">Password dimenticata?</a>
