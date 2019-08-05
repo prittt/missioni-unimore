@@ -287,18 +287,18 @@ class ModuliMissioneForm(forms.ModelForm):
             errors['atto_notorio'] = \
                 f"Atto notorio deve avere una data di compilazione che non sia sabato o domenica"
 
-        if parte_2_data < missione_fine:
+        if parte_2_data.weekday() >= 5:
             errors['parte_2'] = \
                 f"Missione parte II deve avere una data di compilazione che non sia sabato o domenica"
 
-        if parte_1_data > missione_inizio:
+        if parte_1_data.weekday() >= 5:
             errors['parte_1'] = f"Missione parte I deve avere una data di compilazione che non sia sabato o domenica"
 
-        if dottorandi_data > missione_inizio:
+        if dottorandi_data.weekday() >= 5:
             errors['dottorandi'] = \
                 f"Autorizzazione dottorandi deve avere una data di compilazione che non sia sabato o domenica"
 
-        if kasko_data > missione_inizio:
+        if kasko_data.weekday() >= 5:
             errors['kasko'] = f"Kasko deve avere una data di compilazione che non sia sabato o domenica"
 
         if atto_notorio_data < missione_fine:
