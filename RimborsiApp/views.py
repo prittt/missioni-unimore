@@ -94,7 +94,7 @@ def resoconto(request, id):
                 parte_2 += datetime.timedelta(days=(parte_2.weekday() // 4) * (parte_2.weekday() % 2 + 1))
 
             moduli_missione = ModuliMissione.objects.create(missione=missione, parte_1=parte_1, parte_2=parte_2,
-                                                            kasko=parte_1, dottorandi=parte_2, atto_notorio=parte_2)
+                                                            kasko=parte_1, dottorandi=parte_1, atto_notorio=parte_2)
 
         moduli_missione_form = ModuliMissioneForm(instance=moduli_missione)
 
