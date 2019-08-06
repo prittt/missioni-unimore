@@ -108,7 +108,7 @@ def compila_parte_1(request, id):
         "cf": profile.cf,
         "domicilio": f'{profile.domicilio.via} {profile.domicilio.n}, {profile.domicilio.comune.name}',
         "prov": profile.domicilio.provincia.codice_targa,
-        "qualifica": profile.qualifica,
+        "qualifica": profile.get_qualifica_display(),
         "datore": profile.datore_lavoro,
         "destinazione": missione.citta_destinazione + ", " + missione.stato_destinazione.nome,
         "motivazione": missione.motivazione,

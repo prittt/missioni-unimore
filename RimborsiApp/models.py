@@ -140,9 +140,9 @@ class Profile(models.Model):
         ('STUDENTE', 'Studente'),
         ('PO', 'Professore Ordinario'),
         ('PA', 'Professore Associato'),
-        ('RU', 'Ricercatore Universitario'),
-        ('RTDA', 'Ricercatore a tempo determinato A'),
-        ('RTDB', 'Ricercatore a tempo determinato B'),
+        ('RU', 'Ric. Universitario'),
+        ('RTDA', 'RTDA'),
+        ('RTDB', 'RTDB'),
     )
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     data_nascita = models.DateField(null=True)

@@ -294,7 +294,7 @@ class ModuliMissioneForm(forms.ModelForm):
         if parte_1_data.weekday() >= 5:
             errors['parte_1'] = f"Missione parte I deve avere una data di compilazione che non sia sabato o domenica"
 
-        if dottorandi_data.weekday() >= 5:
+        if self.instance.missione.user.profile.qualifica == 'DOTTORANDO' and dottorandi_data.weekday() >= 5:
             errors['dottorandi'] = \
                 f"Autorizzazione dottorandi deve avere una data di compilazione che non sia sabato o domenica"
 
@@ -313,9 +313,10 @@ class ModuliMissioneForm(forms.ModelForm):
             errors['parte_1'] = \
                 f"Missione parte I deve avere una data di compilazione antecedente a quella di inizio missione ({missione_inizio.strftime('%d/%m/%Y')})"
 
-        if dottorandi_data > missione_inizio:
+        if self.instance.missione.user.profile.qualifica == 'DOTTORANDO' and dottorandi_data > missione_inizio:
             errors['dottorandi'] = \
                 f"Autorizzazione dottorandi deve avere una data di compilazione antecedente a quella di inizio missione ({missione_inizio.strftime('%d/%m/%Y')})"
+
         if kasko_data > missione_inizio:
             errors['kasko'] = \
                 f"Kasko deve avere una data di compilazione antecedente a quella di inizio missione ({missione_inizio.strftime('%d/%m/%Y')})"

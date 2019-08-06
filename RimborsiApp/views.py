@@ -404,7 +404,6 @@ def invia_email_autorizzazione(request, id):
             'Autorizzazione missione',
             text,
             settings.EMAIL_HOST_USER,
-            #['mcancilla@unimore.it'],
             emails,
             fail_silently=False,
         )
