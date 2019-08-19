@@ -13,6 +13,19 @@
     {% spaceless %}
         {% if user.is_authenticated %}
             {% if missione %}
+                <div style="display: none">
+                    <p id="data_richiesta">{{ missione.modulimissione.kasko|date:"d/m/Y" }}</p>
+                    <p id="autorizzato_da">{{ missione.struttura_fondi }}</p>
+                    <p id="luogo_missione">{{ missione.citta_destinazione }}, {{ missione.stato_destinazione }}</p>
+                    <p id="km_percorsi">{{ km|floatformat:0 }}</p>
+                    <p id="data_inizio_missione">{{ missione.inizio|date:"d/m/Y" }}</p>
+                    <p id="data_fine_missione">{{ missione.fine|date:"d/m/Y" }}</p>
+                    <p id="durata">{{ missione.durata_gg.days }}</p>
+                    <p id="unita_di_misura">giorni</p>
+                    <p id="marca_mezzo">{{ missione.automobile.marca }}</p>
+                    <p id="tipo_mezzo">{{ missione.automobile.modello }}</p>
+                    <p id="targa">{{ missione.automobile.targa }}</p>
+                </div>
                 <table class="table table-sm table-borderless">
                     <tbody>
                     <tr>
