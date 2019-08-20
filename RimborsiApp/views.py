@@ -14,13 +14,20 @@ from .models import *
 from .utils import *
 from Rimborsi import settings
 
-
 def home(request):
-    if request.user.is_authenticated:
-        missioni_passate = Missione.objects.filter(user=request.user).order_by('-inizio')
-        return render(request, 'Rimborsi/index.html', {'missioni_passate': missioni_passate})
-    else:
-        return render(request, 'Rimborsi/index.html')
+    # if request.user.is_authenticated:
+    #     missioni_passate = Missione.objects.filter(user=request.user).order_by('-inizio')
+    #     return render(request, 'Rimborsi/index.html', {'missioni_passate': missioni_passate})
+    # else:
+    return render(request, 'Rimborsi/index.html')
+
+@login_required
+def lista_missioni(request):
+    # if request.user.is_authenticated:
+    missioni_passate = Missione.objects.filter(user=request.user).order_by('-inizio')
+    return render(request, 'Rimborsi/lista_missioni.html', {'missioni_passate': missioni_passate})
+    # else:
+    #     return render(request, 'Rimborsi/index.html')
 
 
 def load_json(missione, field_name):

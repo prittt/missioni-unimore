@@ -8,6 +8,7 @@ urlpatterns = [
     path('automobili/', views.automobili, name='automobili'),
     path('regolamento/', views.regolamento, name='regolamento'),
     path('crea_missione/', views.crea_missione, name='crea_missione'),
+    path('lista_missioni/', views.lista_missioni, name='lista_missioni'),
     path('missione/<int:id>', views.missione, name='missione'),
     path('cancella_missione/<int:id>', views.cancella_missione, name='cancella_missione'),
     path('salva_pasti/<int:id>', views.salva_pasti, name='salva_pasti'),
