@@ -254,9 +254,12 @@ def compila_parte_2(request, id):
 
     r_scontrino = []
     for row in db_dict['scontrino']:
-        r_scontrino.append({'data': row['data'], 's1': row['s1'], 'd1': row['d1']})
-        r_scontrino.append({'data': row['data'], 's1': row['s2'], 'd1': row['d2']})
-        r_scontrino.append({'data': row['data'], 's1': row['s3'], 'd1': row['d3']})
+        if row['s1'] is not None:
+            r_scontrino.append({'data': row['data'], 's1': row['s1'], 'd1': row['d1']})
+        if row['s2'] is not None:
+            r_scontrino.append({'data': row['data'], 's1': row['s2'], 'd1': row['d2']})
+        if row['s3'] is not None:
+            r_scontrino.append({'data': row['data'], 's1': row['s3'], 'd1': row['d3']})
     db_dict['scontrino'] = r_scontrino
 
     # Fill all the remaining tables
@@ -270,7 +273,7 @@ def compila_parte_2(request, id):
         for i, t in enumerate(value, start=1):
             table.cell(i, 0).text = t['data'].strftime('%d/%m/%Y')
             table.cell(i, 1).text = t['d1'] if t['d1'] is not None else ''
-            table.cell(i, 2).text = t['s1'] if t['s1'] is not None else ''
+            table.cell(i, 2).text = t['s1']
             table.rows[i].height = Cm(0.61)
 
     output_name_tmp = os.path.join(moduli_output_path, f'Missione_{missione.id}_parte_2_tmp.docx')
