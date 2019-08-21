@@ -68,9 +68,9 @@
                     row.append('<a class="' + options.deleteCssClass + '" href="javascript:void(0)">' + options.deleteText + '</a>');
                 }
                 // Check if we're under the minimum number of forms - not to display delete link at rendering
-                if (!showDeleteLinks()) {
-                    row.find('a.' + delCssSelector).hide();
-                }
+                // if (!showDeleteLinks()) {
+                //     row.find('a.' + delCssSelector).hide();
+                // }
 
                 row.find('a.' + delCssSelector).click(function () {
                     var row = $(this).parents('.' + options.formCssClass),
@@ -102,11 +102,11 @@
                         }
                     }
                     // Check if we've reached the minimum number of forms - hide all delete link(s)
-                    if (!showDeleteLinks()) {
-                        $('a.' + delCssSelector).each(function () {
-                            $(this).hide();
-                        });
-                    }
+                    // if (!showDeleteLinks()) {
+                    //     $('a.' + delCssSelector).each(function () {
+                    //         $(this).hide();
+                    //     });
+                    // }
                     // Check if we need to show the add button:
                     if (buttonRow.is(':hidden') && showAddButton()) buttonRow.show();
                     // If a post-delete callback was provided, call it with the deleted form:
@@ -203,11 +203,11 @@
                 });
                 totalForms.val(formCount + 1);
                 // Check if we're above the minimum allowed number of forms -> show all delete link(s)
-                if (showDeleteLinks()) {
-                    $('a.' + delCssSelector).each(function () {
-                        $(this).show();
-                    });
-                }
+                // if (showDeleteLinks()) {
+                //     $('a.' + delCssSelector).each(function () {
+                //         $(this).show();
+                //     });
+                // }
                 // Check if we've exceeded the maximum allowed number of forms:
                 if (!showAddButton()) buttonRow.hide();
                 // If a post-add callback was supplied, call it with the added form:
