@@ -200,7 +200,7 @@ def crea_missione(request):
             missione.automobile = missione_form.cleaned_data['automobile']
             # missione.mezzo = '+'.join(m for m in missione_form.cleaned_data['mezzo'])
             missione.save()
-            return redirect('home')
+            return redirect('RimborsiApp:lista_missioni')
         else:
             response = {'missione_form': missione_form}
             return render(request, 'Rimborsi/crea_missione.html', response)
@@ -374,7 +374,7 @@ def cancella_missione(request, id):
     except ObjectDoesNotExist:
         return HttpResponseNotFound()
     missione.delete()
-    return redirect('home')
+    return redirect('RimborsiApp:lista_missioni')
 
 
 def register(request):

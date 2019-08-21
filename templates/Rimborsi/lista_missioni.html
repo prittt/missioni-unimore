@@ -71,8 +71,9 @@ Le mie missioni
                         $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
                     });
                 </script>
+            {% else %}
+                <p>Non ci sono missioni</p>
             {% endif %}
-        {% else %}
 
         {% endif %}
 
