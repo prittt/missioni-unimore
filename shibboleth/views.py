@@ -37,7 +37,6 @@ def shibboleth_login(request, flag):
             if user.profile.data_nascita is None and cf != '':
                 user.profile.data_nascita = cf['birthdate']
             if user.profile.luogo_nascita is None and cf != '':
-                pass
                 #luogo_nascita = cf['birthplace']['name'].lower().capitalize()
                 #luogo_nascita = luogo_nascita.replace('(soppresso)', '').strip()
                 luogo_nascita_code = cf['birthplace']['code']
