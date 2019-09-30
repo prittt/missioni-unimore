@@ -19,6 +19,11 @@ MEZZO_CHOICES = (
     ("TAXI", "Taxi"),
 )
 
+TIPO_MISSIONE_CHOICES = (
+    ("RICERCA", "Missione di Ricerca/Didattica"),
+    ("PROGETTO", "Missione di Progetto"),
+)
+
 MOTIVAZIONE_AUTO_CHOICES = (
     ("Convenienza economica", "Convenienza economica (da dimostrare)"),
     ("Destinazione non servita da mezzi pubblici", "Destinazione non servita da mezzi pubblici"),
@@ -79,6 +84,7 @@ class Missione(models.Model):
     struttura_fondi = models.CharField(max_length=200)
     automobile = models.ForeignKey(Automobile, null=True, blank=True, on_delete=models.SET_NULL)
     automobile_altrui = models.CharField(max_length=100, null=True, blank=True)
+    tipo = models.CharField(max_length=8, choices=TIPO_MISSIONE_CHOICES, null=True)
 
     scontrino = models.TextField(null=True, blank=True)
     pernottamento = models.TextField(null=True, blank=True)

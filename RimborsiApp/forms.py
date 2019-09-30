@@ -132,11 +132,17 @@ class MissioneForm(forms.ModelForm):
             'inizio_ora': forms.TimeInput(attrs={'type': 'time'}, format='%H:%M'),
             'fine_ora': forms.TimeInput(attrs={'type': 'time'}, format='%H:%M'),
         }
+
         labels = {
             'stato_destinazione': 'Stato di destinazione',
             'citta_destinazione': 'Città di destinazione',
             'mezzi_previsti': 'Mezzi',
             'automobile_altrui': 'Proprietario auto',
+            'tipo': 'Tipologia di missione <a tabindex="0" class="popover-dismiss" role="button" data-toggle="popover" \
+               data-trigger="focus" title="Tipologia di missione" \
+               data-content="La tipologia missione serve per distinguere missioni di pura ricerca da missioni di \
+               progetto, ovvero missioni correlate ad un progetto di ricerca.<br>Il campo è obbligatorio!"> \
+               <i class="fa fa-info-circle fa-1x" aria-hidden="true"></i></a>',
         }
 
     def clean(self):
@@ -171,7 +177,8 @@ class MissioneForm(forms.ModelForm):
             Row(Div('citta_destinazione', css_class="col-6"), Div('stato_destinazione', css_class="col-6")),
             Row(Div('inizio', css_class="col-3"), Div('inizio_ora', css_class="col-3"),
                 Div('fine', css_class="col-3"), Div('fine_ora', css_class="col-3")),
-            Row(Div('fondo', css_class="col-6"), Div('struttura_fondi', css_class="col-6")),
+            Row(Div('fondo', css_class="col-4"), Div('struttura_fondi', css_class="col-4"),
+                Div('tipo', css_class="col-4")),
             Row(Div('motivazione', css_class="col-12")),
             Row(Div(InlineCheckboxes('mezzi_previsti'), css_class="col-6"), Div('automobile', css_class="col-6"),
                 Div('automobile_altrui', css_class="col-6")),
