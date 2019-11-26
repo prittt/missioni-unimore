@@ -4,10 +4,12 @@
 
 {% block title %}Resoconto{% endblock %}
 {% block h1title %}Resoconto Missione
-    <a class="btn btn-primary" href="{% url 'RimborsiApp:missione' missione.id %}" role="button">Modifica</a>
+    {% if not missione.missione_conclusa %}
+        <a class="btn btn-primary" href="{% url 'RimborsiApp:missione' missione.id %}" role="button">Modifica</a>
+    {% endif %}
     <h4>a {{ missione.citta_destinazione }} dal {{ missione.inizio|date:"d/m/Y" }}
-        al {{ missione.fine|date:"d/m/Y" }}</h4>{% endblock %}
-
+        al {{ missione.fine|date:"d/m/Y" }}</h4>
+{% endblock %}
 
 {% block content %}
     {% spaceless %}
@@ -82,7 +84,13 @@
                     </tr>
                     <tr class="bordered">
                         <td>Indennità Chilometrica ({{ km|floatformat:2 }} km)</td>
-                        <td>{{ indennita|floatformat:2 }} </td>
+                        {% for _ in totali.keys %}
+                            <td>
+                                {% if forloop.first %}
+                                    {{ indennita|floatformat:2 }}
+                                {% endif %}
+                            </td>
+                        {% endfor %}
                     </tr>
                     <tfoot>
                     <tr>

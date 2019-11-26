@@ -259,6 +259,7 @@ class Missione(models.Model):
     mezzi_previsti = models.CharField(max_length=100, null=True, blank=True)
     motivazione_automobile = models.CharField(max_length=200, null=True, blank=True)
 
+    missione_conclusa = models.BooleanField(default=False, blank=True)
     @property
     def durata_gg(self):
         return self.fine - self.inizio + datetime.timedelta(days=1)

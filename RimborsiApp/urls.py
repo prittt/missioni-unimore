@@ -11,6 +11,7 @@ urlpatterns = [
     path('lista_missioni/', views.lista_missioni, name='lista_missioni'),
     path('missione/<int:id>', views.missione, name='missione'),
     path('clona_missione/<int:id>', views.clona_missione, name='clona_missione'),
+    path('concludi_missione/<int:id>', views.concludi_missione, name='concludi_missione'),
     path('cancella_missione/<int:id>', views.cancella_missione, name='cancella_missione'),
     path('salva_pasti/<int:id>', views.salva_pasti, name='salva_pasti'),
     path('salva_pernottamenti/<int:id>', views.salva_pernottamenti, name='salva_pernottamenti'),

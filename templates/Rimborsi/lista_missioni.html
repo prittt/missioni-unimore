@@ -11,10 +11,11 @@
 {% block content %}
     {% spaceless %}
         {% if user.is_authenticated %}
-            {% if missioni_passate %}
+            <h3>Attive:</h3>
+            {% if missioni_attive %}
                 <table class="table table-striped">
                     <tbody>
-                    {% for m in missioni_passate %}
+                    {% for m in missioni_attive %}
                         <tr>
                             <td class="col-9">
                                 <blockquote class="blockquote mb-0">
@@ -33,6 +34,112 @@
                                    href="{% url 'RimborsiApp:missione' id=m.id %}"
                                    role="button">Modifica</a>
                             </td>
+                            <td>
+                                <a class="btn btn-primary"
+                                   href="{% url 'RimborsiApp:clona_missione' id=m.id %}"
+                                   role="button">Clona
+                                    {#<i class="fa fa-clone" aria-hidden="true"></i>#}
+                                </a>
+                            </td>
+                            <td>
+                                <a class="btn btn-success"
+                                   href="#"
+                                   data-href="{% url 'RimborsiApp:concludi_missione' id=m.id %}"
+                                   data-target="#confirm-concludi"
+                                   data-toggle="modal"
+                                   role="button">Concludi
+                                    {#<i class="fa fa-clone" aria-hidden="true"></i>#}
+                                </a>
+                            </td>
+                            <td>
+                                <a class="btn btn-danger"
+                                   href="#"
+                                   data-href="{% url 'RimborsiApp:cancella_missione' id=m.id %}"
+                                   data-target="#confirm-delete"
+                                   data-toggle="modal"
+                                   role="button">Cancella</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+                <div id="confirm-delete" class="modal" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Danger!!!</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Vuoi davvero cancellare la missione?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <a class="btn btn-danger btn-ok">Sì</a>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="confirm-concludi" class="modal" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Attenzione!</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Vuoi davvero concludere la missione? Una volta conclusa non potrai più
+                                    modificarla.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <a class="btn btn-success btn-ok">Sì</a>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    $('#confirm-delete').on('show.bs.modal', function (e) {
+                        $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+                    });
+                    $('#confirm-concludi').on('show.bs.modal', function (e) {
+                        $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+                    });
+                </script>
+            {% else %}
+                <p>Non ci sono missioni attive</p>
+            {% endif %}
+
+            <h3>Concluse:</h3>
+            {% if missioni_concluse %}
+                <table class="table table-striped">
+                    <tbody>
+                    {% for m in missioni_concluse %}
+                        <tr>
+                            <td class="col-9">
+                                <blockquote class="blockquote mb-0">
+                                    {{ m.inizio|date:"d/m/Y" }} - {{ m.stato_destinazione }}
+                                    - {{ m.citta_destinazione }}
+                                </blockquote>
+                                {#                                <btn>Cancella</btn>#}
+                            </td>
+                            <td>
+                                <a class="btn btn-primary"
+                                   href="{% url 'RimborsiApp:resoconto' id=m.id %}"
+                                   role="button">Resoconto</a>
+                            </td>
+                            {#                            <td>#}
+                            {#                                <a class="btn btn-primary"#}
+                            {#                                   href="{% url 'RimborsiApp:missione' id=m.id %}"#}
+                            {#                                   role="button">Modifica</a>#}
+                            {#                            </td>#}
                             <td>
                                 <a class="btn btn-primary"
                                    href="{% url 'RimborsiApp:clona_missione' id=m.id %}"
@@ -79,9 +186,8 @@
                     });
                 </script>
             {% else %}
-                <p>Non ci sono missioni</p>
+                <p>Non ci sono missioni concluse.</p>
             {% endif %}
-
         {% endif %}
 
     {% endspaceless %}

@@ -25,8 +25,11 @@ def home(request):
 
 @login_required
 def lista_missioni(request):
-    missioni_passate = Missione.objects.filter(user=request.user).order_by('-inizio', '-id')
-    return render(request, 'Rimborsi/lista_missioni.html', {'missioni_passate': missioni_passate})
+    missioni = Missione.objects.filter(user=request.user).order_by('-inizio', '-id')
+    missioni_attive = missioni.filter(missione_conclusa=False)
+    missioni_concluse = missioni.filter(missione_conclusa=True)
+    return render(request, 'Rimborsi/lista_missioni.html', {'missioni_attive': missioni_attive,
+                                                            'missioni_concluse': missioni_concluse})
 
 
 def load_json(missione, field_name):
@@ -93,14 +96,16 @@ def resoconto_data(missione):
     totali_convert = {}
 
     totali[eur] = totali_base.copy()
-    # money_exchange(datetime.datetime.today(), 'USD', 22)
 
     # Sommo le spese per questa missione
     for k, sub_dict in db_dict.items():
         tmp = load_json(missione, k)
         for entry in tmp:
             for s, v in sub_dict:
-                if entry.get(entry[v]) is None:
+                if entry.get(v) is None:
+                    entry[v] = eur  # Questo serve per gestire le entry del db inserite prima di aggiugnere la valuta
+
+                if totali.get(entry[v]) is None:
                     totali[entry[v]] = totali_base.copy()
                     if entry[v] != eur:
                         totali_convert[entry[v]] = totali_base.copy()
@@ -271,6 +276,22 @@ def clona_missione(request, id):
 
     if request.method == 'GET':
         missione.id = None
+        missione.missione_conclusa = False
+        missione.save()
+        return redirect('RimborsiApp:lista_missioni')
+    else:
+        raise Http404
+
+
+@login_required
+def concludi_missione(request, id):
+    try:
+        missione = Missione.objects.get(user=request.user, id=id)
+    except ObjectDoesNotExist:
+        return HttpResponseNotFound()
+
+    if request.method == 'GET':
+        missione.missione_conclusa = True
         missione.save()
         return redirect('RimborsiApp:lista_missioni')
     else:
