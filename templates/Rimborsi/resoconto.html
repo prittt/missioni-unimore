@@ -27,40 +27,76 @@
                     <p id="targa">{{ missione.automobile.targa }}</p>
                 </div>
                 <table class="table table-sm table-borderless">
+                    <thead>
+                    <tr>
+                        <th></th>
+                        {% for currency, _ in totali.items %}
+                            {% if forloop.last %}
+                                <th>Parziale (EUR)</th>
+                            {% else %}
+                                <th>{{ currency }}</th>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                    </thead>
                     <tbody>
                     <tr>
                         <td>Trasporto</td>
-                        <td>{{ totali.trasporto |floatformat:2 }} €</td>
+                        {% for _, value in totali.items %}
+                            <td>{{ value.trasporto |floatformat:2 }}</td>
+                        {% endfor %}
                     </tr>
                     <tr>
                         <td>Pasti</td>
-                        <td>{{ totali.scontrino |floatformat:2 }} €</td>
+                        {% for _, value in totali.items %}
+                            <td>{{ value.scontrino |floatformat:2 }}</td>
+                        {% endfor %}
                     </tr>
                     <tr>
                         <td>Pernottamenti</td>
-                        <td>{{ totali.pernottamento |floatformat:2 }} €</td>
+                        {% for _, value in totali.items %}
+                            <td>{{ value.pernottamento |floatformat:2 }}</td>
+                        {% endfor %}
+
                     </tr>
                     <tr>
                         <td>Convegni</td>
-                        <td>{{ totali.convegno |floatformat:2 }} €</td>
+                        {% for _, value in totali.items %}
+                            <td>{{ value.convegno |floatformat:2 }}</td>
+                        {% endfor %}
+
                     </tr>
                     <tr class="bordered">
                         <td>Altro</td>
-                        <td>{{ totali.altrespese |floatformat:2 }} €</td>
+                        {% for _, value in totali.items %}
+                            <td>{{ value.altrespese |floatformat:2 }}</td>
+                        {% endfor %}
+
                     </tr>
                     </tbody>
                     <tr>
                         <td class="right"><b>Totale</b></td>
-                        <td>{{ totali.totale |floatformat:2 }} €</td>
+                        {% for _, value in totali.items %}
+                            <td>{{ value.totale |floatformat:2 }}</td>
+                        {% endfor %}
                     </tr>
                     <tr class="bordered">
                         <td>Indennità Chilometrica ({{ km|floatformat:2 }} km)</td>
-                        <td>{{ indennita|floatformat:2 }} €</td>
+                        <td>{{ indennita|floatformat:2 }} </td>
                     </tr>
                     <tfoot>
                     <tr>
                         <td class="right"><b>Totale</b></td>
-                        <td>{{ totali.totale_indennita|floatformat:2 }} €</td>
+
+                        {% for _ in totali.keys %}
+                            <td>
+                                {% if forloop.first %}
+                                    {{ totali.EUR.totale_indennita|floatformat:2 }}
+                                {% elif forloop.last %}
+                                    <b>{{ totali.parziale.totale_indennita|floatformat:2 }}</b>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
                     </tr>
                     </tfoot>
                 </table>

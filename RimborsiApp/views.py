@@ -14,6 +14,7 @@ from .models import *
 from .utils import *
 from Rimborsi import settings
 
+
 def home(request):
     # if request.user.is_authenticated:
     #     missioni_passate = Missione.objects.filter(user=request.user).order_by('-inizio')
@@ -21,13 +22,11 @@ def home(request):
     # else:
     return render(request, 'Rimborsi/index.html')
 
+
 @login_required
 def lista_missioni(request):
-    # if request.user.is_authenticated:
-    missioni_passate = Missione.objects.filter(user=request.user).order_by('-inizio')
+    missioni_passate = Missione.objects.filter(user=request.user).order_by('-inizio', '-id')
     return render(request, 'Rimborsi/lista_missioni.html', {'missioni_passate': missioni_passate})
-    # else:
-    #     return render(request, 'Rimborsi/index.html')
 
 
 def load_json(missione, field_name):
@@ -41,15 +40,45 @@ def load_json(missione, field_name):
     return db_field
 
 
+def money_exchange(data, valuta, cifra):
+    """
+    :param data: Data a partire da cui si richiedono le quotazioni.
+        Viene interpretata relativamente al fuso orario dell’Europa
+        Centrale nel seguente formato: "yyyy-MM-dd".
+        Se il parametro non viene specificato, o è specificato in un
+        formato errato, il servizio restituirà un messaggio con il formato
+        richiesto.
+    :param valuta: Codice ISO (case insensitive) della valuta per cui si richiede la quotazione
+    :param cifra: Quantità da convertire
+    :return: Quantità convertita nella valuta desiderata
+    """
+    url = 'https://tassidicambio.bancaditalia.it/terzevalute-wf-web/rest/v1.0/dailyTimeSeries'
+    params = {
+        'startDate': data,
+        'endDate': data,
+        'baseCurrencyIsoCode': valuta,
+        'currencyIsoCode': 'EUR'
+    }
+    headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+    response = requests.get(url, params=params, headers=headers)
+    content = json.loads(response.content)
+
+    tasso_cambio = float(content['rates'][0]['avgRate'] or 0.)
+    cifra_convertita = cifra / tasso_cambio
+    return cifra_convertita
+
+
 def resoconto_data(missione):
+    eur = 'EUR'
+
     db_dict = {
-        'scontrino': ['s1', 's2', 's3', ],
-        'pernottamento': ['s1'],
-        'convegno': ['s1'],
-        'altrespese': ['s1'],
+        'scontrino': [('s1', 'v1'), ('s2', 'v2'), ('s3', 'v3')],
+        'pernottamento': [('s1', 'v1')],
+        'convegno': [('s1', 'v1')],
+        'altrespese': [('s1', 'v1')],
     }
 
-    totali = {
+    totali_base = {
         'scontrino': 0.,
         'pernottamento': 0.,
         'convegno': 0.,
@@ -60,24 +89,49 @@ def resoconto_data(missione):
         'totale_indennita': 0.,
     }
 
+    totali = {}
+    totali_convert = {}
+
+    totali[eur] = totali_base.copy()
+    # money_exchange(datetime.datetime.today(), 'USD', 22)
+
     # Sommo le spese per questa missione
     for k, sub_dict in db_dict.items():
         tmp = load_json(missione, k)
         for entry in tmp:
-            for sub_k in sub_dict:
-                totali[k] += float(entry[sub_k] or 0.)
+            for s, v in sub_dict:
+                if entry.get(entry[v]) is None:
+                    totali[entry[v]] = totali_base.copy()
+                    if entry[v] != eur:
+                        totali_convert[entry[v]] = totali_base.copy()
+
+                totali[entry[v]][k] += float(entry[s] or 0.)
+                if entry[v] != eur:
+                    totali_convert[entry[v]][k] += money_exchange(entry['data'], entry[v], totali[entry[v]][k])
 
     # Aggiungo il trasporto
-    totali['trasporto'] = float(missione.trasporto_set.all().aggregate(Sum('costo'))['costo__sum'] or 0.)
-    totali['totale'] = sum(totali.values())
+    for v in totali.keys():
+        totali[v]['trasporto'] = float(
+            missione.trasporto_set.filter(valuta=v).aggregate(Sum('costo'))['costo__sum'] or 0.)
+        totali[v]['totale'] = sum(totali[v].values())
+
+    for v in totali_convert.keys():
+        totali_convert[v]['totale'] = sum(totali_convert[v].values())
 
     # Recupero il totale dei km in auto
     km = float(missione.trasporto_set.filter(mezzo='AUTO').aggregate(Sum('km'))['km__sum'] or 0.)
     prezzo = get_prezzo_carburante()
     indennita = float(prezzo / 5 * km)
 
-    totali['totale_indennita'] = totali['totale'] + indennita
+    totali[eur]['totale_indennita'] = totali[eur]['totale'] + indennita
 
+    totali_convert[eur] = totali[eur].copy()
+    grandtotal = totali_base.copy()
+    for currency, cur_total in totali_convert.items():
+        for k, v in cur_total.items():
+            grandtotal[k] += v
+    grandtotal['totale_indennita'] = grandtotal['totale'] + indennita
+    totali['parziale'] = grandtotal
     return km, indennita, totali
 
 
@@ -209,6 +263,21 @@ def crea_missione(request):
 
 
 @login_required
+def clona_missione(request, id):
+    try:
+        missione = Missione.objects.get(user=request.user, id=id)
+    except ObjectDoesNotExist:
+        return HttpResponseNotFound()
+
+    if request.method == 'GET':
+        missione.id = None
+        missione.save()
+        return redirect('RimborsiApp:lista_missioni')
+    else:
+        raise Http404
+
+
+@login_required
 def missione(request, id):
     def missione_response(missione):
 
@@ -232,9 +301,9 @@ def missione(request, id):
         for current_date in (missione.inizio + datetime.timedelta(n) for n in range(giorni + 1)):
             if not list(filter(lambda d: d['data'] == current_date, db_dict['scontrino'])):
                 db_dict['scontrino'].append({'data': current_date,
-                                             's1': None, 'd1': None,
-                                             's2': None, 'd2': None,
-                                             's3': None, 'd3': None,
+                                             's1': None, 'v1': None, 'd1': None,
+                                             's2': None, 'v2': None, 'd2': None,
+                                             's3': None, 'v3': None, 'd3': None,
                                              })
         # Order by date and create the formset
         pasti_sorted = sorted(db_dict['scontrino'], key=lambda k: k['data'])

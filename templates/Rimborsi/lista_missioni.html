@@ -5,7 +5,7 @@
 {% block title %}Missioni{% endblock %}
 
 {% block h1title %}
-Le mie missioni
+    Le mie missioni
 {% endblock %}
 
 {% block content %}
@@ -32,6 +32,13 @@ Le mie missioni
                                 <a class="btn btn-primary"
                                    href="{% url 'RimborsiApp:missione' id=m.id %}"
                                    role="button">Modifica</a>
+                            </td>
+                            <td>
+                                <a class="btn btn-primary"
+                                   href="{% url 'RimborsiApp:clona_missione' id=m.id %}"
+                                   role="button">Clona
+                                    {#<i class="fa fa-clone" aria-hidden="true"></i>#}
+                                </a>
                             </td>
                             <td>
                                 <a class="btn btn-danger"

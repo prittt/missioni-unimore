@@ -45,7 +45,7 @@ class ProfileForm(forms.ModelForm):
 
         exclude = ['user', 'residenza', 'domicilio']
         widgets = {
-            'data_nascita': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'data_nascita': forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date'}),
             'tutor': forms.TextInput(attrs={'placeholder': 'Prof/Prof.ssa'}),
             'anno_dottorato': forms.NumberInput(attrs={'placeholder': '1, 2, 3'}),
             'luogo_nascita': autocomplete.ModelSelect2(url='comune-autocomplete',
@@ -186,27 +186,48 @@ class MissioneForm(forms.ModelForm):
         )
 
 
+# Pasti
 class ScontrinoForm(forms.Form):
-    data = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
+    data = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control form-control-sm'}))
     desc_label = 'Descrizione (numero fattura/ricevuta fiscale)'
     s1 = forms.DecimalField(decimal_places=2, label='Spesa', required=False,
-                            widget=forms.NumberInput(attrs={'class': 'form-control', }))
-    d1 = forms.CharField(required=False, label=desc_label, widget=forms.TextInput(attrs={'class': 'form-control', }))
+                            widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', }))
+    v1 = forms.ChoiceField(initial="EUR", choices=VALUTA_CHOICES, required=False, label='Valuta',
+                           widget=forms.Select(
+                               attrs={'class': 'form-control form-control-sm', 'style': 'min-width: 55px;'}))
+    d1 = forms.CharField(required=False, label=desc_label,
+                         widget=forms.TextInput(attrs={'class': 'form-control form-control-sm', }))
+
     s2 = forms.DecimalField(decimal_places=2, label='Spesa', required=False,
-                            widget=forms.NumberInput(attrs={'class': 'form-control', }))
-    d2 = forms.CharField(required=False, label=desc_label, widget=forms.TextInput(attrs={'class': 'form-control', }))
+                            widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', }))
+    v2 = forms.ChoiceField(initial="EUR", choices=VALUTA_CHOICES, required=False, label='Valuta',
+                           widget=forms.Select(
+                               attrs={'class': 'form-control form-control-sm', 'style': 'min-width: 55px;'}))
+    d2 = forms.CharField(required=False, label=desc_label,
+                         widget=forms.TextInput(attrs={'class': 'form-control form-control-sm', }))
+
     s3 = forms.DecimalField(decimal_places=2, label='Spesa', required=False,
-                            widget=forms.NumberInput(attrs={'class': 'form-control', }))
-    d3 = forms.CharField(required=False, label=desc_label, widget=forms.TextInput(attrs={'class': 'form-control', }))
+                            widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', }))
+    v3 = forms.ChoiceField(initial="EUR", choices=VALUTA_CHOICES, required=False, label='Valuta',
+                           widget=forms.Select(
+                               attrs={'class': 'form-control form-control-sm', 'style': 'min-width: 55px;'}))
+    d3 = forms.CharField(required=False, label=desc_label,
+                         widget=forms.TextInput(attrs={'class': 'form-control form-control-sm', }))
 
 
+# Pernottamenti, iscrizione convegni, altre spese
 class ScontrinoExtraForm(forms.Form):
     data = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'required': 'required', }))
+        widget=forms.DateInput(
+            attrs={'type': 'date', 'class': 'form-control form-control-sm', 'required': 'required', }))
     desc_label = 'Descrizione (numero fattura/ricevuta fiscale)'
     s1 = forms.DecimalField(decimal_places=2, label='Spesa', required=True,
-                            widget=forms.NumberInput(attrs={'class': 'form-control', }))
-    d1 = forms.CharField(required=False, label=desc_label, widget=forms.TextInput(attrs={'class': 'form-control', }), )
+                            widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', }))
+    v1 = forms.ChoiceField(initial="EUR", choices=VALUTA_CHOICES, required=False, label='Valuta',
+                           widget=forms.Select(
+                               attrs={'class': 'form-control form-control-sm', 'style': 'min-width: 55px;'}))
+    d1 = forms.CharField(required=False, label=desc_label,
+                         widget=forms.TextInput(attrs={'class': 'form-control form-control-sm', }), )
 
 
 class TrasportoForm(forms.ModelForm):
@@ -215,14 +236,17 @@ class TrasportoForm(forms.ModelForm):
         fields = '__all__'
         widgets = {
             'data': forms.DateInput(
-                attrs={'type': 'date', 'class': 'form-control trasporti-date', 'required': 'required', }),
-            'da': forms.TextInput(attrs={'class': 'form-control', }),
-            'a': forms.TextInput(attrs={'class': 'form-control', }),
-            'mezzo': forms.Select(attrs={'class': 'form-control trasporti-mezzo', 'required': 'required', }),
-            'tipo_costo': forms.TextInput(attrs={'class': 'form-control', }),
+                attrs={'type': 'date', 'class': 'form-control form-control-sm', 'required': 'required', }),
+            'da': forms.TextInput(attrs={'class': 'form-control form-control-sm', }),
+            'a': forms.TextInput(attrs={'class': 'form-control form-control-sm', }),
+            'mezzo': forms.Select(attrs={'class': 'form-control form-control-sm', 'required': 'required', }),
+            'tipo_costo': forms.TextInput(attrs={'class': 'form-control form-control-sm', }),
             'costo': forms.NumberInput(
-                attrs={'class': 'form-control trasporti-costo', 'step': 0.01, 'required': 'required', }),
-            'km': forms.NumberInput(attrs={'class': 'form-control trasporti-km', 'step': 0.01}),
+                attrs={'class': 'form-control form-control-sm', 'step': 0.01, 'required': 'required', }),
+            # 'valuta': forms.Select(
+            #     attrs={'class': 'form-control trasporti-costo', 'required': 'required', }),
+            'valuta': forms.Select(attrs={'class': 'form-control form-control-sm', 'style': 'min-width: 55px;'}),
+            'km': forms.NumberInput(attrs={'class': 'form-control form-control-sm', 'step': 0.01}),
         }
         labels = {
             'costo': 'Spesa',
@@ -248,9 +272,9 @@ class AutomobileForm(forms.ModelForm):
         model = Automobile
         fields = ('marca', 'modello', 'targa',)
         widgets = {
-            'marca': forms.TextInput(attrs={'class': 'form-control', }),
-            'modello': forms.TextInput(attrs={'class': 'form-control', }),
-            'targa': forms.TextInput(attrs={'class': 'form-control', }),
+            'marca': forms.TextInput(attrs={'class': 'form-control form-control-sm', }),
+            'modello': forms.TextInput(attrs={'class': 'form-control form-control-sm', }),
+            'targa': forms.TextInput(attrs={'class': 'form-control form-control-sm', }),
         }
 
 
@@ -264,11 +288,11 @@ class ModuliMissioneForm(forms.ModelForm):
         fields = '__all__'
         exclude = ['missione', 'parte_1_file', 'parte_2_file', 'kasko_file', 'dottorandi_file']
         widgets = {
-            'parte_1': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', }, ),
-            'parte_2': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', }),
-            'kasko': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', }),
-            'dottorandi': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', }),
-            'atto_notorio': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', }),
+            'parte_1': forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date', }, ),
+            'parte_2': forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date', }),
+            'kasko': forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date', }),
+            'dottorandi': forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date', }),
+            'atto_notorio': forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date', }),
             'atto_notorio_dichiarazione': forms.Textarea(attrs={'rows': 4, }, )
         }
         labels = {

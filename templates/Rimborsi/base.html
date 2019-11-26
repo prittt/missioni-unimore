@@ -28,7 +28,7 @@
 <body style="padding-top: 70px;padding-bottom: 40px;">
 <div class="container">
     {% include "Rimborsi/navbar.html" %}
-    <div class="row justify-content-center">
+    <div class="extend row justify-content-center">
         <div class="col-12">
             <h1 class="mt-2">{% block h1title %}{% endblock %}</h1>
             <hr class="mt-0 mb-4">
@@ -47,13 +47,13 @@
 <!-- Footer -->
 <nav id="footer" class="navbar navbar-expand-lg navbar-light fixed-bottom">
     <div class="container">
-        <div class="font-italic">Powered by <a target="_blank" href="http://imagelab.ing.unimore.it">
+        <div class="font-italic" style="horiz-align: left;">Powered by <a target="_blank"
+                                                                          href="http://imagelab.ing.unimore.it">
             <img src="https://dali.ing.unimore.it/sharelatex/aimagelab.png" height="25" alt="AImageLab"></a>
         </div>
-        <div class="font-italic">Designed and Managed by M. Cancilla and F. Bolelli
+        <div class="font-italic" style="float: right !important;">Designed and Managed by M. Cancilla and F. Bolelli
             <a target="_blank" href="https://github.com/prittt/missioni-unimore"><i class="fa fa-github"
                                                                                     aria-hidden="true"></i></a>
-
         </div>
     </div>
 </nav>
@@ -63,6 +63,10 @@
         font-size: large;
         background-color: #ECECEC;
     {#color: #F94018;#}
+    }
+
+    .container {
+        max-width: 1400px;
     }
 </style>
 </html>
