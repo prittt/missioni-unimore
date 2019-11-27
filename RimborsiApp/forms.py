@@ -192,7 +192,7 @@ class ScontrinoForm(forms.Form):
     desc_label = 'Descrizione (numero fattura/ricevuta fiscale)'
     s1 = forms.DecimalField(decimal_places=2, label='Spesa', required=False,
                             widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', }))
-    v1 = forms.ChoiceField(initial="EUR", choices=VALUTA_CHOICES, required=False, label='Valuta',
+    v1 = forms.ChoiceField(choices=VALUTA_CHOICES, required=False, label='Valuta',
                            widget=forms.Select(
                                attrs={'class': 'form-control form-control-sm', 'style': 'min-width: 55px;'}))
     d1 = forms.CharField(required=False, label=desc_label,
@@ -200,7 +200,7 @@ class ScontrinoForm(forms.Form):
 
     s2 = forms.DecimalField(decimal_places=2, label='Spesa', required=False,
                             widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', }))
-    v2 = forms.ChoiceField(initial="EUR", choices=VALUTA_CHOICES, required=False, label='Valuta',
+    v2 = forms.ChoiceField(choices=VALUTA_CHOICES, required=False, label='Valuta',
                            widget=forms.Select(
                                attrs={'class': 'form-control form-control-sm', 'style': 'min-width: 55px;'}))
     d2 = forms.CharField(required=False, label=desc_label,
@@ -208,11 +208,17 @@ class ScontrinoForm(forms.Form):
 
     s3 = forms.DecimalField(decimal_places=2, label='Spesa', required=False,
                             widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', }))
-    v3 = forms.ChoiceField(initial="EUR", choices=VALUTA_CHOICES, required=False, label='Valuta',
+    v3 = forms.ChoiceField(choices=VALUTA_CHOICES, required=False, label='Valuta',
                            widget=forms.Select(
                                attrs={'class': 'form-control form-control-sm', 'style': 'min-width: 55px;'}))
     d3 = forms.CharField(required=False, label=desc_label,
                          widget=forms.TextInput(attrs={'class': 'form-control form-control-sm', }))
+
+    def __init__(self, *args, **kwargs):
+        super(ScontrinoForm, self).__init__(*args, **kwargs)
+        self.initial['v1'] = 'EUR'
+        self.initial['v2'] = 'EUR'
+        self.initial['v3'] = 'EUR'
 
 
 # Pernottamenti, iscrizione convegni, altre spese
