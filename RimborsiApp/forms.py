@@ -45,7 +45,7 @@ class ProfileForm(forms.ModelForm):
 
         exclude = ['user', 'residenza', 'domicilio']
         widgets = {
-            'data_nascita': forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date'}),
+            'data_nascita': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'tutor': forms.TextInput(attrs={'placeholder': 'Prof/Prof.ssa'}),
             'anno_dottorato': forms.NumberInput(attrs={'placeholder': '1, 2, 3'}),
             'luogo_nascita': autocomplete.ModelSelect2(url='comune-autocomplete',
@@ -141,7 +141,7 @@ class MissioneForm(forms.ModelForm):
             'tipo': 'Tipologia di missione <a tabindex="0" class="popover-dismiss" role="button" data-toggle="popover" \
                data-trigger="focus" title="Tipologia di missione" \
                data-content="La tipologia missione serve per distinguere missioni di pura ricerca da missioni di \
-               progetto, ovvero missioni correlate ad un progetto di ricerca.<br>Il campo è obbligatorio!"> \
+               progetto, ovvero missioni correlate ad un progetto di ricerca. Il campo è obbligatorio!"> \
                <i class="fa fa-info-circle fa-1x" aria-hidden="true"></i></a>',
         }
 
