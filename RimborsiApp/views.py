@@ -505,3 +505,28 @@ def invia_email_autorizzazione(request, id):
             fail_silently=False,
         )
         return redirect('RimborsiApp:resoconto', id)
+
+
+@login_required
+def statistiche(request):
+    if not request.user.groups.filter(name='AIRI').exists():
+        return HttpResponseForbidden('Accesso non consentito.')
+
+    from django.db.models import Q
+
+    strutture = ['softech', 'airi']
+    condizioni = Q()
+    for s in strutture:
+        condizioni |= Q(struttura_fondi__icontains=s)
+
+    missioni = Missione.objects.filter(condizioni)
+    missioni_ricerca = missioni.filter(tipo=TIPO_MISSIONE_CHOICES[0][0]).order_by('-inizio')
+    missioni_progetto = missioni.filter(tipo=TIPO_MISSIONE_CHOICES[1][0]).order_by('-inizio')
+
+    fields = ['user__first_name', 'user__last_name', 'citta_destinazione', 'inizio', 'fine', 'motivazione', 'fondo']
+    missioni_ricerca = missioni_ricerca.values(*fields)
+    missioni_progetto = missioni_progetto.values(*fields)
+
+    return render(request, 'Rimborsi/statistiche.html', {
+        'missioni_ricerca': missioni_ricerca,
+        'missioni_progetto': missioni_progetto})

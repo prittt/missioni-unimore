@@ -28,4 +28,5 @@ urlpatterns = [
 
     path('download/<int:id>/<str:field>', utils.download, name='download'),
 
+    path('statistiche', views.statistiche, name='statistiche'),
 ]

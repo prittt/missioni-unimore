@@ -1,0 +1,50 @@
+{% extends "Rimborsi/base.html" %}
+{% load static %}
+{% block title %}Statistiche{% endblock %}
+
+{% block content %}
+    {% spaceless %}
+
+        <p>Elenco delle missioni che hanno AIRI o Softech-ICT come struttura fondi.</p>
+
+        {% if missioni_progetto %}
+            <h2>Missioni di progetto:</h2>
+            <table class="table table-sm">
+                <thead>
+                <tr>
+                    {% for field, value in missioni_progetto.0.items %}
+                        <th>{{ field }}</th>
+                    {% endfor %}
+                </tr>
+                </thead>
+                {% for m in missioni_progetto %}
+                    <tr>
+                        {% for field, value in m.items %}
+                            <td>{{ value }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+        
+        {% if missioni_ricerca %}
+            <h2>Missioni di ricerca:</h2>
+            <table class="table table-sm">
+                <thead>
+                <tr>
+                    {% for field, value in missioni_ricerca.0.items %}
+                        <th>{{ field }}</th>
+                    {% endfor %}
+                </tr>
+                </thead>
+                {% for m in missioni_ricerca %}
+                    <tr>
+                        {% for field, value in m.items %}
+                            <td>{{ value }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+    {% endspaceless %}
+{% endblock %}
