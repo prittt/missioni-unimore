@@ -274,10 +274,19 @@ def clona_missione(request, id):
     except ObjectDoesNotExist:
         return HttpResponseNotFound()
 
+    trasporti = Trasporto.objects.filter(missione=missione)
+
     if request.method == 'GET':
         missione.id = None
         missione.missione_conclusa = False
         missione.save()
+
+
+        for t in trasporti:
+            t.id = None
+            t.missione = missione
+            t.save()
+
         return redirect('RimborsiApp:lista_missioni')
     else:
         raise Http404
