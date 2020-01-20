@@ -46,6 +46,7 @@ class ProfileForm(forms.ModelForm):
         exclude = ['user', 'residenza', 'domicilio']
         widgets = {
             'data_nascita': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'data_fine_rapporto': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'tutor': forms.TextInput(attrs={'placeholder': 'Prof/Prof.ssa'}),
             'anno_dottorato': forms.NumberInput(attrs={'placeholder': '1, 2, 3'}),
             'luogo_nascita': autocomplete.ModelSelect2(url='comune-autocomplete',
@@ -57,6 +58,8 @@ class ProfileForm(forms.ModelForm):
             'tutor': 'Nome e cognome del tutor',
             'anno_dottorato': 'Anno di dottorato',
             'scuola_dottorato': 'Nome della scuola di dottorato',
+            'telefono': 'Telefono (intero)',
+            'data_fine_rapporto': 'Data di fine rapporto (se contratto a tempo determinato)',
         }
 
     def __init__(self, *args, **kwargs):
@@ -98,10 +101,16 @@ class ProfileForm(forms.ModelForm):
                 Column('domicilio_comune', css_class='col-3'),
                 Column('domicilio_provincia', css_class='col-3'), css_id='domicilio-row'), css_id='domicilio-fieldset'),
 
-            Row(Column('qualifica', css_class="col-6"), Column('datore_lavoro', css_class="col-6")),
-            Row(Column('tutor', css_class="col-4"), Column('anno_dottorato', css_class="col-2"),
-                Column('scuola_dottorato', css_class="col-6"), css_id="dottorando-details"),
-
+            Fieldset("Posizione lavorativa",
+                     Row(
+                         Column('qualifica', css_class="col-6"),
+                         Column('datore_lavoro', css_class="col-6")),
+                     Row(Column('telefono', css_class="col-6"),
+                         Column('data_fine_rapporto', css_class="col-6")),
+                     Row(Column('tutor', css_class="col-4"),
+                         Column('anno_dottorato', css_class="col-2"),
+                         Column('scuola_dottorato', css_class="col-6"), css_id="dottorando-details"),
+                     )
         )
 
     def save(self, commit=True):

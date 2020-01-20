@@ -326,6 +326,8 @@ class Profile(models.Model):
 
     residenza = models.OneToOneField(Indirizzo, on_delete=models.SET_NULL, related_name='residenza', null=True)
     domicilio = models.OneToOneField(Indirizzo, on_delete=models.SET_NULL, related_name='domicilio', null=True)
+    telefono = models.CharField(max_length=20, blank=False, null=True)
+    data_fine_rapporto = models.DateField(null=True, blank=True)
 
     @property
     def cf(self):
