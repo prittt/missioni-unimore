@@ -328,18 +328,23 @@ class Profile(models.Model):
     domicilio = models.OneToOneField(Indirizzo, on_delete=models.SET_NULL, related_name='domicilio', null=True)
     telefono = models.CharField(max_length=20, blank=False, null=True)
     data_fine_rapporto = models.DateField(null=True, blank=True)
+    cf = models.CharField(max_length=16, default='')
 
-    @property
-    def cf(self):
-        if self.data_nascita is None:
-            return ''
-        date = str(self.data_nascita)
-        if self.luogo_nascita is None or self.sesso is None:
-            return ''
-        cf = codicefiscale.encode(surname=self.user.last_name, name=self.user.first_name, sex=self.sesso,
-                                  birthdate=date,
-                                  birthplace=self.luogo_nascita.name)
-        return cf
+    # @property
+    # def cf(self):
+    #     if self.data_nascita is None:
+    #         return ''
+    #     date = str(self.data_nascita)
+    #     if self.luogo_nascita is None or self.sesso is None:
+    #         return ''
+    #     try:
+    #         cf = codicefiscale.encode(surname=self.user.last_name, name=self.user.first_name, sex=self.sesso,
+    #                               birthdate=date,
+    #                               birthplace=self.luogo_nascita.name)
+    #     except:
+    #         cf = ''
+    #
+    #     return cf
 
     # Campi per dottorando
     tutor = models.CharField(max_length=100, null=True, blank=True)

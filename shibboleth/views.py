@@ -31,18 +31,24 @@ def shibboleth_login(request, flag):
     user.save()
 
     if flag:
-        cf = ''
         if 'unimorecodicefiscale' in meta:
-            cf = codicefiscale.decode(meta['unimorecodicefiscale'])
-            if user.profile.data_nascita is None and cf != '':
-                user.profile.data_nascita = cf['birthdate']
-            if user.profile.luogo_nascita is None and cf != '':
-                #luogo_nascita = cf['birthplace']['name'].lower().capitalize()
-                #luogo_nascita = luogo_nascita.replace('(soppresso)', '').strip()
-                luogo_nascita_code = cf['birthplace']['code']
-                user.profile.luogo_nascita = Comune.objects.filter(codice_catastale=luogo_nascita_code)[0]
-            if user.profile.sesso is None and cf != '':
-                user.profile.sesso = cf['sex']
+            if user.profile.cf == '':
+                user.profile.cf = meta['unimorecodicefiscale']
+
+            cf = ''
+            try:
+                cf = codicefiscale.decode(meta['unimorecodicefiscale'])
+                if user.profile.data_nascita is None and cf != '':
+                    user.profile.data_nascita = cf['birthdate']
+                if user.profile.luogo_nascita is None and cf != '':
+                    #luogo_nascita = cf['birthplace']['name'].lower().capitalize()
+                    #luogo_nascita = luogo_nascita.replace('(soppresso)', '').strip()
+                    luogo_nascita_code = cf['birthplace']['code']
+                    user.profile.luogo_nascita = Comune.objects.filter(codice_catastale=luogo_nascita_code)[0]
+                if user.profile.sesso is None and cf != '':
+                    user.profile.sesso = cf['sex']
+            except:
+                pass
         if user.profile.qualifica is None:
             pass
         user.save()

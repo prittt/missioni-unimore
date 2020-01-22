@@ -12,7 +12,7 @@ import datetime
 
 
 class ProfileForm(forms.ModelForm):
-    cf = forms.CharField(max_length=16, disabled=True, label='CF', required=False)
+    # cf = forms.CharField(max_length=16, disabled=True, label='CF', required=False)
     nome = forms.CharField(max_length=30)
     cognome = forms.CharField(max_length=30)
 
@@ -58,8 +58,9 @@ class ProfileForm(forms.ModelForm):
             'tutor': 'Nome e cognome del tutor',
             'anno_dottorato': 'Anno di dottorato',
             'scuola_dottorato': 'Nome della scuola di dottorato',
-            'telefono': 'Telefono (intero)',
+            'telefono': 'Telefono (interno)',
             'data_fine_rapporto': 'Data di fine rapporto (se contratto a tempo determinato)',
+            'cf': 'CF',
         }
 
     def __init__(self, *args, **kwargs):
