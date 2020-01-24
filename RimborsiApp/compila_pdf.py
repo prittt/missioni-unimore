@@ -64,7 +64,7 @@ def compila_parte_1(request, id):
         "cf": [133, 654],
         "domicilio": [150, 630],
         "prov": [481, 630],
-        "qualifica": [145, 604],
+        "qualifica": [140, 604],
         "datore": [347, 604],
         "destinazione": [165, 578],
         "motivazione": [165, 552],
@@ -99,16 +99,27 @@ def compila_parte_1(request, id):
                 new_list[n] = f'AUTO ALTRUI (di proprietà di {missione.automobile_altrui or ""})'
     mezzo = ' + '.join(t for t in new_list)
 
+
+    data_fine_rapporto_str = ''
+    if profile.data_fine_rapporto is not None:
+        data_fine_rapporto_str = ' (' + profile.data_fine_rapporto.strftime('%d/%m/%Y') + ')'
+    qualifica_fine = profile.get_qualifica_display() + data_fine_rapporto_str
+
+    interno_str = ''
+    if profile.telefono is not None:
+        interno_str = '   (interno: ' + str(profile.telefono) + ')'
+    nome_interno = profile.user.first_name + interno_str
+
     value_dict = {
         "struttura_appartenenza": missione.struttura_fondi,
         "cognome": profile.user.last_name,
-        "nome": profile.user.first_name,
+        "nome": nome_interno,
         "luogo_nascita": profile.luogo_nascita.name,
         "data_nascita": profile.data_nascita.strftime('%d/%m/%Y'),
         "cf": profile.cf,
         "domicilio": f'{profile.domicilio.via} {profile.domicilio.n}, {profile.domicilio.comune.name}',
         "prov": profile.domicilio.provincia.codice_targa,
-        "qualifica": profile.get_qualifica_display(),
+        "qualifica": qualifica_fine,
         "datore": profile.datore_lavoro,
         "destinazione": missione.citta_destinazione + ", " + missione.stato_destinazione.nome,
         "motivazione": missione.motivazione,

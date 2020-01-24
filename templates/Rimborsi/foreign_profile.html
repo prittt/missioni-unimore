@@ -6,13 +6,8 @@
 {% block content %}
     {% spaceless %}
 
-        <h2>Dati anagrafici:
-            <a tabindex="0" class="popover-dismiss" role="button" data-toggle="popover"
-               data-trigger="focus" title="Profilo Straniero"
-               data-content="Gli utenti nati in un paese estero possono creare un profilo speciale cliccando
-                pulsante 'Profilo Straniero'."><i
-            class="fa fa-info-circle fa-1x" aria-hidden="true"></i></a>
-            <a style="float: right;" value='Profilo Straniero' class='btn btn-sm btn-info' href="{% url 'RimborsiApp:foreign_profile'%}">Profilo Straniero</a>
+        <h2>Personal data:
+            <a style="float: right;" value='Profilo Italiano' class='btn btn-sm btn-info' href="{% url 'RimborsiApp:profile'%}">Modifica Italiano</a>
         </h2>
         <div class="rounded">
             {% crispy profile_form %}

@@ -175,17 +175,14 @@ def resoconto(request, id):
         # else:
         #     return render(request, 'Rimborsi/resoconto.html')
 
-
-@login_required
-def profile(request):
-    profile = Profile.objects.get(id=request.user.profile.id)
+def general_profile(request, profile, profile_form, page):
     if request.method == 'GET':
-        profile_form = ProfileForm(instance=profile)
         automobili = Automobile.objects.filter(user=request.user)
 
         afs = automobile_formset(instance=request.user, queryset=automobili)
-        return render(request, 'Rimborsi/profile.html', {'profile_form': profile_form,
-                                                         'automobili_formset': afs})
+        return render(request, page, {'profile_form': profile_form,
+                                      'automobili_formset': afs})
+
     elif request.method == 'POST':
         profile_form = ProfileForm(request.POST, instance=profile)
 
@@ -222,6 +219,19 @@ def profile(request):
     else:
         return HttpResponseBadRequest()
 
+@login_required
+def foreign_profile(request):
+    profile = Profile.objects.get(id=request.user.profile.id)
+    profile_form = ForeignProfileForm(instance=profile)
+    page = 'Rimborsi/foreign_profile.html'
+    return general_profile(request, profile, profile_form, page)
+
+@login_required
+def profile(request):
+    profile = Profile.objects.get(id=request.user.profile.id)
+    profile_form = ProfileForm(instance=profile)
+    page = 'Rimborsi/profile.html'
+    return general_profile(request, profile, profile_form, page)
 
 @login_required
 def automobili(request):
@@ -233,7 +243,6 @@ def automobili(request):
         return redirect('RimborsiApp:profile')
     else:
         return HttpResponseBadRequest()
-
 
 @login_required
 def crea_missione(request):

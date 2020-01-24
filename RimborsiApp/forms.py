@@ -10,6 +10,115 @@ from django.forms.models import formset_factory, inlineformset_factory
 from .models import *
 import datetime
 
+class ForeignProfileForm(forms.ModelForm):
+    nome = forms.CharField(max_length=30)
+    cognome = forms.CharField(max_length=30)
+
+    residenza_via = forms.CharField(max_length=100, label='Via')
+    residenza_n = forms.CharField(max_length=20, label='Civico')
+    residenza_comune = forms.ModelChoiceField(queryset=comuni_italiani_models.Comune.objects.all(), label='Comune',
+                                              widget=autocomplete.ModelSelect2(url='comune-autocomplete',
+                                                                               attrs={'data-html': True,
+                                                                                      'data-theme': 'bootstrap4', }))
+    residenza_provincia = forms.ModelChoiceField(queryset=comuni_italiani_models.Provincia.objects.all(),
+                                                 label='Provincia',
+                                                 widget=autocomplete.ModelSelect2(url='provincia-autocomplete',
+                                                                                  attrs={'data-html': True,
+                                                                                         'data-theme': 'bootstrap4', }))
+
+    domicilio_via = forms.CharField(max_length=100, label='Via')
+    domicilio_n = forms.CharField(max_length=20, label='Civico')
+    domicilio_comune = forms.ModelChoiceField(queryset=comuni_italiani_models.Comune.objects.all(), label='Comune',
+                                              widget=autocomplete.ModelSelect2(url='comune-autocomplete',
+                                                                               attrs={'data-html': True,
+                                                                                      'data-theme': 'bootstrap4', }))
+    domicilio_provincia = forms.ModelChoiceField(queryset=comuni_italiani_models.Provincia.objects.all(),
+                                                 label='Provincia',
+                                                 widget=autocomplete.ModelSelect2(url='provincia-autocomplete',
+                                                                                  attrs={'data-html': True,
+                                                                                         'data-theme': 'bootstrap4', }))
+
+    class Meta:
+        model = Profile
+
+        exclude = ['user', 'residenza', 'domicilio']
+        widgets = {
+            'data_nascita': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'data_fine_rapporto': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'tutor': forms.TextInput(attrs={'placeholder': 'Prof/Prof.ssa'}),
+            'anno_dottorato': forms.NumberInput(attrs={'placeholder': '1, 2, 3'}),
+            'luogo_nascita': autocomplete.ModelSelect2(url='comune-autocomplete',
+                                                       attrs={'data-html': True, 'data-theme': 'bootstrap4', }),
+        }
+        labels = {
+            'data_nascita': 'Birth Date',
+            'datore_lavoro': 'Employer',
+            'tutor': 'Tutor name and surname',
+            'anno_dottorato': 'Doctorate year',
+            'scuola_dottorato': 'Name of the doctoral school',
+            'telefono': 'Phone (internal number)',
+            'data_fine_rapporto': 'Employment end date',
+            'cf': 'CF',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(ForeignProfileForm, self).__init__(*args, **kwargs)
+        self.fields['nome'].initial = self.instance.user.first_name
+        self.fields['cognome'].initial = self.instance.user.last_name
+        self.fields['cf'].initial = self.instance.cf
+
+        if self.instance.residenza is not None:
+            self.fields['residenza_via'].initial = self.instance.residenza.via
+            self.fields['residenza_n'].initial = self.instance.residenza.n
+            self.fields['residenza_comune'].initial = self.instance.residenza.comune
+            self.fields['residenza_provincia'].initial = self.instance.residenza.provincia
+
+        if self.instance.domicilio is not None:
+            self.fields['domicilio_via'].initial = self.instance.domicilio.via
+            self.fields['domicilio_n'].initial = self.instance.domicilio.n
+            self.fields['domicilio_comune'].initial = self.instance.domicilio.comune
+            self.fields['domicilio_provincia'].initial = self.instance.domicilio.provincia
+
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.form_action = 'RimborsiApp:profile'
+        self.helper.add_input(Submit('submit', 'Aggiorna'))
+
+        self.helper.layout = Layout(
+            Row(Column('nome', css_class="col-6"), Column('cognome', css_class="col-6")),
+            Row(Column('data_nascita', css_class="col-3"), Column('luogo_nascita', css_class="col-3"),
+                Column('cf', css_class="col-3"), Column('sesso', css_class="col-3")),
+            Fieldset("Residence", Row(
+                Column('residenza_via', css_class='col-4'),
+                Column('residenza_n', css_class='col-2'),
+                Column('residenza_comune', css_class='col-3'),
+                Column('residenza_provincia', css_class='col-3'), css_id='residenza-row')),
+
+            Fieldset("Domicile", Row(
+                Column('domicilio_via', css_class='col-4'),
+                Column('domicilio_n', css_class='col-2'),
+                Column('domicilio_comune', css_class='col-3'),
+                Column('domicilio_provincia', css_class='col-3'), css_id='domicilio-row'), css_id='domicilio-fieldset'),
+
+            Fieldset("Working position",
+                     Row(
+                         Column('qualifica', css_class="col-6"),
+                         Column('datore_lavoro', css_class="col-6")),
+                     Row(Column('telefono', css_class="col-6"),
+                         Column('data_fine_rapporto', css_class="col-6")),
+                     Row(Column('tutor', css_class="col-4"),
+                         Column('anno_dottorato', css_class="col-2"),
+                         Column('scuola_dottorato', css_class="col-6"), css_id="dottorando-details"),
+                     )
+        )
+
+    def save(self, commit=True):
+        super(ProfileForm, self).save(commit)
+        self.instance.user.first_name = self.cleaned_data.get('nome')
+        self.instance.user.last_name = self.cleaned_data.get('cognome')
+        if commit:
+            self.instance.user.save()
+        return self.instance
 
 class ProfileForm(forms.ModelForm):
     # cf = forms.CharField(max_length=16, disabled=True, label='CF', required=False)

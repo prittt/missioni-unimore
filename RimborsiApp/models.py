@@ -298,6 +298,8 @@ class Indirizzo(models.Model):
     n = models.CharField(max_length=20)
     comune = models.ForeignKey('comuni_italiani.Comune', on_delete=models.PROTECT, null=True)
     provincia = models.ForeignKey('comuni_italiani.Provincia', on_delete=models.PROTECT, null=True)
+    comune_straniero = models.CharField(max_length=100, null=True)
+    provincia_straniero = models.CharField(max_length=100, null=True)
 
     def __str__(self):
         return f'{self.via} {self.n}, {self.comune.name}, {self.provincia.name} ({self.provincia.codice_targa})'
@@ -320,6 +322,11 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     data_nascita = models.DateField(null=True)
     luogo_nascita = models.ForeignKey('comuni_italiani.Comune', on_delete=models.PROTECT, null=True)
+
+    luogo_nascita_straniero = models.CharField(max_length=100, null=True, default=None, blank=True)
+
+    straniero = models.BooleanField(null=False, default=False)
+
     sesso = models.CharField(max_length=1, choices=(('M', 'Maschio'), ('F', 'Femmina')), null=True)
     qualifica = models.CharField(max_length=10, choices=QUALIFICA_CHOICES, null=True)
     datore_lavoro = models.CharField(max_length=100, blank=True, null=True)
