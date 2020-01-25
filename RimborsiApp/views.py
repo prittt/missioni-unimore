@@ -34,13 +34,28 @@ def lista_missioni(request):
 
 def load_json(missione, field_name):
     field_value = getattr(missione, field_name)
+    validated_db_field = []
     if isinstance(field_value, str) and field_value != '':
         db_field = json.loads(field_value, parse_float=decimal.Decimal)
+        cleaned = False
         for d in db_field:
-            d['data'] = datetime.datetime.strptime(d['data'], '%Y-%m-%d').date()
-    else:
-        db_field = []
-    return db_field
+            try:
+                d['data'] = datetime.datetime.strptime(d['data'], '%Y-%m-%d').date()
+                validated_db_field.append(d)
+            except:
+                # Normalmente non si possono avere più di tre scontrini per giorno, ma missioni
+                # lascia comunque la possibilità di aggiungerne dei nuovi. Può succedere che
+                # venga inserito uno scontrino per sbaglio e che questo non abbia la data, causando
+                # quindi un errore durante il parsing del json.
+                cleaned = True
+
+        if cleaned:
+            # Dovrerro ripulire anche il db in questo caso? E se uno avesse semplicemente dimenticato
+            # la data ma inserito spese valide?
+            # setattr(missione, field_name, validated_db_field)
+            pass
+
+    return validated_db_field
 
 
 def money_exchange(data, valuta, cifra):
