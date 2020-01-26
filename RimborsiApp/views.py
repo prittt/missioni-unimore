@@ -43,8 +43,7 @@ def load_json(missione, field_name):
                 d['data'] = datetime.datetime.strptime(d['data'], '%Y-%m-%d').date()
                 validated_db_field.append(d)
             except:
-                # Normalmente non si possono avere più di tre scontrini per giorno, ma missioni
-                # lascia comunque la possibilità di aggiungerne dei nuovi. Può succedere che
+                # Normalmente non si possono avere scontrini senza data, ma può succedere che
                 # venga inserito uno scontrino per sbaglio e che questo non abbia la data, causando
                 # quindi un errore durante il parsing del json.
                 cleaned = True
