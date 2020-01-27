@@ -110,15 +110,25 @@ def compila_parte_1(request, id):
         interno_str = '   (interno: ' + str(profile.telefono) + ')'
     nome_interno = profile.user.first_name + interno_str
 
+    if profile.straniero:
+        luogo_nascita = profile.luogo_nascita_straniero
+        domicilio = f'{profile.domicilio.via} {profile.domicilio.n}, {profile.domicilio.comune_straniero}'
+        provincia = profile.domicilio.provincia_straniero
+    else:
+        luogo_nascita = profile.luogo_nascita.name
+        domicilio = f'{profile.domicilio.via} {profile.domicilio.n}, {profile.domicilio.comune.name}'
+        provincia = profile.domicilio.provincia.codice_targa
+
+
     value_dict = {
         "struttura_appartenenza": missione.struttura_fondi,
         "cognome": profile.user.last_name,
         "nome": nome_interno,
-        "luogo_nascita": profile.luogo_nascita.name,
+        "luogo_nascita": luogo_nascita,
         "data_nascita": profile.data_nascita.strftime('%d/%m/%Y'),
         "cf": profile.cf,
-        "domicilio": f'{profile.domicilio.via} {profile.domicilio.n}, {profile.domicilio.comune.name}',
-        "prov": profile.domicilio.provincia.codice_targa,
+        "domicilio": domicilio,
+        "prov": provincia,
         "qualifica": qualifica_fine,
         "datore": profile.datore_lavoro,
         "destinazione": missione.citta_destinazione + ", " + missione.stato_destinazione.nome,
@@ -430,18 +440,39 @@ def compila_atto_notorio(request, id, dichiarazione_check_std=False, dichiarazio
     dichiarazione_lines = textwrap.wrap(dichiarazione, 94)
     assert (len(dichiarazione_lines) < 4)
 
+    if missione.user.profile.straniero:
+        luogo_nascita = missione.user.profile.luogo_nascita_straniero
+        provincia_nascita = ''
+        residenza_comune = missione.user.profile.residenza.comune_straniero
+        residenza_provincia = missione.user.profile.residenza.provincia_straniero
+        domicilio_comune = missione.user.profile.domicilio.comune_straniero
+        domicilio_provincia = missione.user.profile.domicilio.provincia_straniero
+    else:
+        luogo_nascita = missione.user.profile.luogo_nascita.name
+        provincia_nascita = missione.user.profile.luogo_nascita.provincia.codice_targa
+        residenza_comune = missione.user.profile.residenza.comune.name
+        residenza_provincia = missione.user.profile.residenza.provincia.codice_targa
+        domicilio_comune = missione.user.profile.domicilio.comune.name
+        domicilio_provincia = missione.user.profile.domicilio.provincia.codice_targa
+
     data_dict = {
         '1': missione.user.last_name,
         '2': missione.user.first_name,
-        '3': missione.user.profile.luogo_nascita.name,
-        '4': missione.user.profile.luogo_nascita.provincia.codice_targa,
+        #'3': missione.user.profile.luogo_nascita.name,
+        '3': luogo_nascita,
+        # '4': missione.user.profile.luogo_nascita.provincia.codice_targa,
+        '4': provincia_nascita,
         '5': missione.user.profile.data_nascita.strftime('%d/%m/%Y'),
-        '6': missione.user.profile.residenza.comune.name,
-        '7': missione.user.profile.residenza.provincia.codice_targa,
+        # '6': missione.user.profile.residenza.comune.name,
+        '6': residenza_comune,
+        # '7': missione.user.profile.residenza.provincia.codice_targa,
+        '7': residenza_provincia,
         '8': missione.user.profile.residenza.via,
         '9': missione.user.profile.residenza.n,
-        '10': missione.user.profile.domicilio.comune.name,
-        '11': missione.user.profile.domicilio.provincia.codice_targa,
+        # '10': missione.user.profile.domicilio.comune.name,
+        '10': domicilio_comune,
+        # '11': missione.user.profile.domicilio.provincia.codice_targa,
+        '11': domicilio_provincia,
         '12': missione.user.profile.domicilio.via,
         '13': missione.user.profile.domicilio.n,
         # '14': 'non ci scrive dentro, perche?',

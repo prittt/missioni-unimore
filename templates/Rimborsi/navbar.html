@@ -41,7 +41,7 @@
                     {% if user.is_authenticated %}
                         <a class="dropdown-toggle nav-link" href="{% url 'RimborsiApp:profile' %}"
                            role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true"
-                           aria-expanded="false"><i class="fa fa-user" aria-hidden="true"></i> {{ user.username }}</a>
+                           aria-expanded="false"><i class="fa fa-user" aria-hidden="true"></i> {{ user.username }} </a>
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                             {#                            <a class="dropdown-item" href="{% url 'sacher:profile' %}">Pagina Utente</a>#}
                             <a class="dropdown-item" href="{% url 'RimborsiApp:profile' %}">Profilo</a>
