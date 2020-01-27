@@ -11,32 +11,20 @@ from .models import *
 import datetime
 
 class ForeignProfileForm(forms.ModelForm):
-    nome = forms.CharField(max_length=30)
-    cognome = forms.CharField(max_length=30)
+    nome = forms.CharField(max_length=30, label='Name')
+    cognome = forms.CharField(max_length=30, label='Surname')
 
-    residenza_via = forms.CharField(max_length=100, label='Via')
-    residenza_n = forms.CharField(max_length=20, label='Civico')
-    residenza_comune = forms.ModelChoiceField(queryset=comuni_italiani_models.Comune.objects.all(), label='Comune',
-                                              widget=autocomplete.ModelSelect2(url='comune-autocomplete',
-                                                                               attrs={'data-html': True,
-                                                                                      'data-theme': 'bootstrap4', }))
-    residenza_provincia = forms.ModelChoiceField(queryset=comuni_italiani_models.Provincia.objects.all(),
-                                                 label='Provincia',
-                                                 widget=autocomplete.ModelSelect2(url='provincia-autocomplete',
-                                                                                  attrs={'data-html': True,
-                                                                                         'data-theme': 'bootstrap4', }))
+    luogo_nascita_straniero = forms.CharField(max_length=100, label='Birth place')
 
-    domicilio_via = forms.CharField(max_length=100, label='Via')
-    domicilio_n = forms.CharField(max_length=20, label='Civico')
-    domicilio_comune = forms.ModelChoiceField(queryset=comuni_italiani_models.Comune.objects.all(), label='Comune',
-                                              widget=autocomplete.ModelSelect2(url='comune-autocomplete',
-                                                                               attrs={'data-html': True,
-                                                                                      'data-theme': 'bootstrap4', }))
-    domicilio_provincia = forms.ModelChoiceField(queryset=comuni_italiani_models.Provincia.objects.all(),
-                                                 label='Provincia',
-                                                 widget=autocomplete.ModelSelect2(url='provincia-autocomplete',
-                                                                                  attrs={'data-html': True,
-                                                                                         'data-theme': 'bootstrap4', }))
+    residenza_via = forms.CharField(max_length=100, label='Street')
+    residenza_n = forms.CharField(max_length=20, label='Street number')
+    residenza_comune = forms.CharField(max_length=100, label='Municipality')
+    residenza_provincia = forms.CharField(max_length=100, label='Province')
+
+    domicilio_via = forms.CharField(max_length=100, label='Street')
+    domicilio_n = forms.CharField(max_length=20, label='Street number')
+    domicilio_comune = forms.CharField(max_length=100, label='Municipality')
+    domicilio_provincia = forms.CharField(max_length=100, label='Province')
 
     class Meta:
         model = Profile
@@ -47,10 +35,12 @@ class ForeignProfileForm(forms.ModelForm):
             'data_fine_rapporto': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'tutor': forms.TextInput(attrs={'placeholder': 'Prof/Prof.ssa'}),
             'anno_dottorato': forms.NumberInput(attrs={'placeholder': '1, 2, 3'}),
-            'luogo_nascita': autocomplete.ModelSelect2(url='comune-autocomplete',
-                                                       attrs={'data-html': True, 'data-theme': 'bootstrap4', }),
+            #'luogo_nascita': autocomplete.ModelSelect2(url='comune-autocomplete',
+            #                                           attrs={'data-html': True, 'data-theme': 'bootstrap4', }),
         }
         labels = {
+            'nome': 'Name',
+            'cognome': 'Surname',
             'data_nascita': 'Birth Date',
             'datore_lavoro': 'Employer',
             'tutor': 'Tutor name and surname',
@@ -59,6 +49,9 @@ class ForeignProfileForm(forms.ModelForm):
             'telefono': 'Phone (internal number)',
             'data_fine_rapporto': 'Employment end date',
             'cf': 'CF',
+            'luogo_nasciata': 'Birth Place',
+            'sesso': 'Sex',
+            'qualifica': 'Position',
         }
 
     def __init__(self, *args, **kwargs):
@@ -70,23 +63,23 @@ class ForeignProfileForm(forms.ModelForm):
         if self.instance.residenza is not None:
             self.fields['residenza_via'].initial = self.instance.residenza.via
             self.fields['residenza_n'].initial = self.instance.residenza.n
-            self.fields['residenza_comune'].initial = self.instance.residenza.comune
-            self.fields['residenza_provincia'].initial = self.instance.residenza.provincia
+            self.fields['residenza_comune'].initial = self.instance.residenza.comune_straniero
+            self.fields['residenza_provincia'].initial = self.instance.residenza.provincia_straniero
 
         if self.instance.domicilio is not None:
             self.fields['domicilio_via'].initial = self.instance.domicilio.via
             self.fields['domicilio_n'].initial = self.instance.domicilio.n
-            self.fields['domicilio_comune'].initial = self.instance.domicilio.comune
-            self.fields['domicilio_provincia'].initial = self.instance.domicilio.provincia
+            self.fields['domicilio_comune'].initial = self.instance.domicilio.comune_straniero
+            self.fields['domicilio_provincia'].initial = self.instance.domicilio.provincia_straniero
 
         self.helper = FormHelper()
         self.helper.form_method = 'post'
-        self.helper.form_action = 'RimborsiApp:profile'
-        self.helper.add_input(Submit('submit', 'Aggiorna'))
+        self.helper.form_action = 'RimborsiApp:foreign_profile'
+        self.helper.add_input(Submit('submit', 'Update'))
 
         self.helper.layout = Layout(
             Row(Column('nome', css_class="col-6"), Column('cognome', css_class="col-6")),
-            Row(Column('data_nascita', css_class="col-3"), Column('luogo_nascita', css_class="col-3"),
+            Row(Column('data_nascita', css_class="col-3"), Column('luogo_nascita_straniero', css_class="col-3"),
                 Column('cf', css_class="col-3"), Column('sesso', css_class="col-3")),
             Fieldset("Residence", Row(
                 Column('residenza_via', css_class='col-4'),
@@ -113,7 +106,8 @@ class ForeignProfileForm(forms.ModelForm):
         )
 
     def save(self, commit=True):
-        super(ProfileForm, self).save(commit)
+        self.straniero = True
+        super(ForeignProfileForm, self).save(commit)
         self.instance.user.first_name = self.cleaned_data.get('nome')
         self.instance.user.last_name = self.cleaned_data.get('cognome')
         if commit:
@@ -192,7 +186,7 @@ class ProfileForm(forms.ModelForm):
 
         self.helper = FormHelper()
         self.helper.form_method = 'post'
-        self.helper.form_action = 'RimborsiApp:profile'
+        self.helper.form_action = 'RimborsiApp:italian_profile'
         self.helper.add_input(Submit('submit', 'Aggiorna'))
 
         self.helper.layout = Layout(
@@ -224,6 +218,7 @@ class ProfileForm(forms.ModelForm):
         )
 
     def save(self, commit=True):
+        self.straniero = False
         super(ProfileForm, self).save(commit)
         self.instance.user.first_name = self.cleaned_data.get('nome')
         self.instance.user.last_name = self.cleaned_data.get('cognome')

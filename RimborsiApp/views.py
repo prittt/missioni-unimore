@@ -31,7 +31,6 @@ def lista_missioni(request):
     return render(request, 'Rimborsi/lista_missioni.html', {'missioni_attive': missioni_attive,
                                                             'missioni_concluse': missioni_concluse})
 
-
 def load_json(missione, field_name):
     field_value = getattr(missione, field_name)
     validated_db_field = []
@@ -189,7 +188,7 @@ def resoconto(request, id):
         # else:
         #     return render(request, 'Rimborsi/resoconto.html')
 
-def general_profile(request, profile, profile_form, page):
+def general_profile(request, profile_form, page, is_straniero):
     if request.method == 'GET':
         automobili = Automobile.objects.filter(user=request.user)
 
@@ -198,7 +197,7 @@ def general_profile(request, profile, profile_form, page):
                                       'automobili_formset': afs})
 
     elif request.method == 'POST':
-        profile_form = ProfileForm(request.POST, instance=profile)
+        #profile_form = ProfileForm(request.POST, instance=profile)
 
         if profile_form.is_valid():
             profile = profile_form.save(commit=False)
@@ -213,18 +212,31 @@ def general_profile(request, profile, profile_form, page):
                 domicilio = Indirizzo()
             else:
                 domicilio = profile.domicilio
+
             residenza.via = profile_form.cleaned_data['residenza_via']
             residenza.n = profile_form.cleaned_data['residenza_n']
-            residenza.comune = profile_form.cleaned_data['residenza_comune']
-            residenza.provincia = profile_form.cleaned_data['residenza_provincia']
+            if not is_straniero:
+                residenza.comune = profile_form.cleaned_data['residenza_comune']
+                residenza.provincia = profile_form.cleaned_data['residenza_provincia']
+            else:
+                residenza.comune_straniero = profile_form.cleaned_data['residenza_comune']
+                residenza.provincia_straniero = profile_form.cleaned_data['residenza_provincia']
             residenza.save()
+
             domicilio.via = profile_form.cleaned_data['domicilio_via']
             domicilio.n = profile_form.cleaned_data['domicilio_n']
-            domicilio.comune = profile_form.cleaned_data['domicilio_comune']
-            domicilio.provincia = profile_form.cleaned_data['domicilio_provincia']
+            if not is_straniero:
+                domicilio.comune = profile_form.cleaned_data['domicilio_comune']
+                domicilio.provincia = profile_form.cleaned_data['domicilio_provincia']
+            else:
+                domicilio.comune_straniero = profile_form.cleaned_data['domicilio_comune']
+                domicilio.provincia_straniero = profile_form.cleaned_data['domicilio_provincia']
             domicilio.save()
+
             profile.residenza = residenza
             profile.domicilio = domicilio
+
+            profile.straniero = is_straniero
 
             profile.save()
             return redirect('RimborsiApp:profile')
@@ -233,19 +245,37 @@ def general_profile(request, profile, profile_form, page):
     else:
         return HttpResponseBadRequest()
 
+
 @login_required
 def foreign_profile(request):
     profile = Profile.objects.get(id=request.user.profile.id)
-    profile_form = ForeignProfileForm(instance=profile)
+    profile_form = None
+    if request.method == 'GET':
+        profile_form = ForeignProfileForm(instance=profile)
+    elif request.method == 'POST':
+        profile_form = ForeignProfileForm(request.POST, instance=profile)
     page = 'Rimborsi/foreign_profile.html'
-    return general_profile(request, profile, profile_form, page)
+    return general_profile(request, profile_form, page, is_straniero = True)
+
+@login_required
+def italian_profile(request):
+    profile = Profile.objects.get(id=request.user.profile.id)
+    profile_form = None
+    if request.method == 'GET':
+        profile_form = ProfileForm(instance=profile)
+    elif request.method == 'POST':
+        profile_form = ProfileForm(request.POST, instance=profile)
+    page = 'Rimborsi/profile.html'
+    return general_profile(request, profile_form, page, is_straniero = False)
 
 @login_required
 def profile(request):
     profile = Profile.objects.get(id=request.user.profile.id)
-    profile_form = ProfileForm(instance=profile)
-    page = 'Rimborsi/profile.html'
-    return general_profile(request, profile, profile_form, page)
+    if profile.straniero:
+        return foreign_profile(request)
+    else:
+        return italian_profile(request)
+
 
 @login_required
 def automobili(request):

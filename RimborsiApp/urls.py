@@ -6,6 +6,7 @@ app_name = 'RimborsiApp'
 urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('foreign_profile/', views.foreign_profile, name='foreign_profile'),
+    path('italian_profile/', views.italian_profile, name='italian_profile'),
     path('automobili/', views.automobili, name='automobili'),
     path('regolamento/', views.regolamento, name='regolamento'),
     path('crea_missione/', views.crea_missione, name='crea_missione'),

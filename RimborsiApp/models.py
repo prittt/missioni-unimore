@@ -321,7 +321,7 @@ class Profile(models.Model):
     )
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     data_nascita = models.DateField(null=True)
-    luogo_nascita = models.ForeignKey('comuni_italiani.Comune', on_delete=models.PROTECT, null=True)
+    luogo_nascita = models.ForeignKey('comuni_italiani.Comune', on_delete=models.PROTECT, null=True, blank=True)
 
     luogo_nascita_straniero = models.CharField(max_length=100, null=True, default=None, blank=True)
 
@@ -331,8 +331,8 @@ class Profile(models.Model):
     qualifica = models.CharField(max_length=10, choices=QUALIFICA_CHOICES, null=True)
     datore_lavoro = models.CharField(max_length=100, blank=True, null=True)
 
-    residenza = models.OneToOneField(Indirizzo, on_delete=models.SET_NULL, related_name='residenza', null=True)
-    domicilio = models.OneToOneField(Indirizzo, on_delete=models.SET_NULL, related_name='domicilio', null=True)
+    residenza = models.OneToOneField(Indirizzo, on_delete=models.SET_NULL, related_name='residenza', null=True, blank=True)
+    domicilio = models.OneToOneField(Indirizzo, on_delete=models.SET_NULL, related_name='domicilio', null=True, blank=True)
     telefono = models.CharField(max_length=20, blank=False, null=True)
     data_fine_rapporto = models.DateField(null=True, blank=True)
     cf = models.CharField(max_length=16, default='')
