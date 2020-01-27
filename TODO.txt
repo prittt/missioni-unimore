@@ -1,0 +1,2 @@
+1) Aggiornare il profile utente (sia Italiano che Straniero) per avere sia il comune che la provincia di nascita e aggiornare il compialtore documenti di conseguenza. Attualmente non 
+è possibile compilare l'Atto Notorio integralmente per i profili stranieri. Per i profili italiani riusciamo a farlo con uno sgamo, sfruttando i dati dell'app dei comuni. E' sempre giusto?
