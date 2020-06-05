@@ -21,13 +21,13 @@ def get_prezzo_carburante():
     response = requests.get(url)
     # Parse HTML and save to BeautifulSoup object
     soup = BeautifulSoup(response.text, "html.parser")
-    prezzo = soup.find('table', class_="table table-sm table-borderless mx-auto").findAll(
+    prezzo = soup.find('table', class_="table table-sm table-borderless").findAll(
         'tr', class_="bg-light")[0].find('strong').text
     prezzo = re.sub('\.+', '', prezzo)
     prezzo = re.sub(',+', '.', prezzo)
     prezzo = float(prezzo) / 1000
-    return prezzo
 
+    return prezzo
 
 @login_required
 def download(request, id, field):

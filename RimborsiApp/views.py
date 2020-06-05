@@ -138,8 +138,12 @@ def resoconto_data(missione):
 
     # Recupero il totale dei km in auto
     km = float(missione.trasporto_set.filter(mezzo='AUTO').aggregate(Sum('km'))['km__sum'] or 0.)
-    prezzo = get_prezzo_carburante()
-    indennita = float(prezzo / 5 * km)
+    try:
+        prezzo = get_prezzo_carburante()
+        indennita = float(prezzo / 5 * km)
+    except:
+        prezzo = None
+        indennita = 0
 
     totali[eur]['totale_indennita'] = totali[eur]['totale'] + indennita
 
@@ -150,7 +154,11 @@ def resoconto_data(missione):
             grandtotal[k] += v
     grandtotal['totale_indennita'] = grandtotal['totale'] + indennita
     totali['parziale'] = grandtotal
-    return km, indennita, totali
+
+    if prezzo:
+        return km, indennita, totali
+    else:
+        return km, None, totali
 
 
 @login_required
@@ -177,7 +185,7 @@ def resoconto(request, id):
 
         moduli_missione_form = ModuliMissioneForm(instance=moduli_missione)
 
-        km, indennita, totali = resoconto_data(missione)
+        km, indennita, totali, = resoconto_data(missione)
 
         return render(request, 'Rimborsi/resoconto.html', {'missione': missione,
                                                            'moduli_missione_form': moduli_missione_form,
