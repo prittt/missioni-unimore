@@ -1,14 +1,14 @@
 from comuni_italiani import models as comuni_italiani_models
 from crispy_forms.bootstrap import Div, InlineCheckboxes
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Column, Fieldset, Layout, Row, Submit, Button
+from crispy_forms.layout import Column, Fieldset, Layout, Row, Submit
 from dal import autocomplete
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.forms.models import formset_factory, inlineformset_factory
 
 from .models import *
-import datetime
+
 
 class ForeignProfileForm(forms.ModelForm):
     nome = forms.CharField(max_length=30, label='Name')
@@ -35,7 +35,7 @@ class ForeignProfileForm(forms.ModelForm):
             'data_fine_rapporto': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'tutor': forms.TextInput(attrs={'placeholder': 'Prof/Prof.ssa'}),
             'anno_dottorato': forms.NumberInput(attrs={'placeholder': '1, 2, 3'}),
-            #'luogo_nascita': autocomplete.ModelSelect2(url='comune-autocomplete',
+            # 'luogo_nascita': autocomplete.ModelSelect2(url='comune-autocomplete',
             #                                           attrs={'data-html': True, 'data-theme': 'bootstrap4', }),
         }
         labels = {
@@ -113,6 +113,7 @@ class ForeignProfileForm(forms.ModelForm):
         if commit:
             self.instance.user.save()
         return self.instance
+
 
 class ProfileForm(forms.ModelForm):
     # cf = forms.CharField(max_length=16, disabled=True, label='CF', required=False)
@@ -413,7 +414,7 @@ class ModuliMissioneForm(forms.ModelForm):
             'kasko': forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date', }),
             'dottorandi': forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date', }),
             'atto_notorio': forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date', }),
-            'atto_notorio_dichiarazione': forms.Textarea(attrs={'rows': 4, }, )
+            'atto_notorio_dichiarazione': forms.Textarea(attrs={'rows': 4, 'readonly': 'readonly'})
         }
         labels = {
             'parte_1': 'Data Richiesta',
@@ -421,6 +422,7 @@ class ModuliMissioneForm(forms.ModelForm):
             'kasko': 'Data Richiesta',
             'dottorandi': 'Data Richiesta',
             'atto_notorio': 'Data Richiesta',
+            'atto_notorio_dichiarazione': '',
         }
 
     def clean(self):
@@ -481,15 +483,11 @@ class ModuliMissioneForm(forms.ModelForm):
 
         self.helper = FormHelper()
         self.helper.form_method = 'post'
-
-        # self.helper.field_template = 'bootstrap4/layout/inline_field.html'
-        # self.helper.form_class = 'form-inline'
         self.helper.form_tag = False
-        self.fields['atto_notorio_dichiarazione'].label = ''
+
         if self.instance.atto_notorio_dichiarazione != '':
             self.fields['dichiarazione_check_pers'].initial = True
-        else:
-            self.fields['atto_notorio_dichiarazione'].disable = True
+            del self.fields['atto_notorio_dichiarazione'].widget.attrs['readonly']  # Enable the textarea
 
 
 automobile_formset = inlineformset_factory(User, Automobile, AutomobileForm, extra=0, can_delete=True,

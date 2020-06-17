@@ -6,6 +6,7 @@
 **/secrets.*
 /static
 **/db_utils
+db_utils*
 
 ### Django ###
 *.log

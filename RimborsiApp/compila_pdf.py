@@ -1,4 +1,3 @@
-import textwrap
 from itertools import zip_longest
 
 import io
@@ -9,14 +8,13 @@ from PyPDF2.generic import BooleanObject, IndirectObject, NameObject
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 from django.http import HttpResponseBadRequest
+from django.shortcuts import get_object_or_404, redirect, render
 from docx import Document
 from docx.shared import Cm
 from reportlab.pdfgen import canvas
-from django.shortcuts import redirect, render, get_object_or_404
 
-from Rimborsi import settings
 from .forms import *
-from .views import load_json, resoconto_data, money_exchange
+from .views import load_json, money_exchange, resoconto_data
 
 
 @login_required
@@ -99,7 +97,6 @@ def compila_parte_1(request, id):
                 new_list[n] = f'AUTO ALTRUI (di proprietà di {missione.automobile_altrui or ""})'
     mezzo = ' + '.join(t for t in new_list)
 
-
     data_fine_rapporto_str = ''
     if profile.data_fine_rapporto is not None:
         data_fine_rapporto_str = ' (' + profile.data_fine_rapporto.strftime('%d/%m/%Y') + ')'
@@ -118,7 +115,6 @@ def compila_parte_1(request, id):
         luogo_nascita = profile.luogo_nascita.name
         domicilio = f'{profile.domicilio.via} {profile.domicilio.n}, {profile.domicilio.comune.name}'
         provincia = profile.domicilio.provincia.codice_targa
-
 
     value_dict = {
         "struttura_appartenenza": missione.struttura_fondi,
@@ -433,12 +429,11 @@ def compila_atto_notorio(request, id, dichiarazione_check_std=False, dichiarazio
 
     dichiarazione = ''
     if dichiarazione_check_std:
-        dichiarazione += f'per {missione.motivazione}.'
+        dichiarazione += f'Di essersi recato a {missione.citta_destinazione} - {missione.stato_destinazione.nome} dal' \
+                         f' {missione.inizio.strftime("%d/%m/%Y")} al {missione.fine.strftime("%d/%m/%Y")}' \
+                         f' per {missione.motivazione}.'
     if dichiarazione_check_pers:
         dichiarazione += f' {modulo_missione.atto_notorio_dichiarazione}'
-
-    dichiarazione_lines = textwrap.wrap(dichiarazione, 94)
-    assert (len(dichiarazione_lines) < 4)
 
     if missione.user.profile.straniero:
         luogo_nascita = missione.user.profile.luogo_nascita_straniero
@@ -458,7 +453,7 @@ def compila_atto_notorio(request, id, dichiarazione_check_std=False, dichiarazio
     data_dict = {
         '1': missione.user.last_name,
         '2': missione.user.first_name,
-        #'3': missione.user.profile.luogo_nascita.name,
+        # '3': missione.user.profile.luogo_nascita.name,
         '3': luogo_nascita,
         # '4': missione.user.profile.luogo_nascita.provincia.codice_targa,
         '4': provincia_nascita,
@@ -475,16 +470,9 @@ def compila_atto_notorio(request, id, dichiarazione_check_std=False, dichiarazio
         '11': domicilio_provincia,
         '12': missione.user.profile.domicilio.via,
         '13': missione.user.profile.domicilio.n,
-        # '14': 'non ci scrive dentro, perche?',
-        '15': f'Di essersi recato a {missione.citta_destinazione} - {missione.stato_destinazione.nome} dal {missione.inizio.strftime("%d/%m/%Y")} al {missione.fine.strftime("%d/%m/%Y")}',
-        # '16': f'per {missione.motivazione}',
-        # '17': f'',
-        # '18': f'',
+        '14': dichiarazione,
         '20': f'Modena, {modulo_missione.atto_notorio.strftime("%d/%m/%Y")}',
     }
-
-    for n, line in enumerate(dichiarazione_lines, start=16):
-        data_dict[str(n)] = line
 
     pdf_writer.addPage(pdf_reader.getPage(0))
     page = pdf_writer.getPage(0)

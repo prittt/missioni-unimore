@@ -87,9 +87,9 @@
                         {% for _ in totali.keys %}
                             <td>
                                 {% if forloop.first %}
-                                    {% if indennita %}
+                                    {% if indennita is not None %}
                                         {{ indennita|floatformat:2 }}
-                                    {%  else %}
+                                    {% else %}
                                         <b>ERR</b>
                                     {% endif %}
                                 {% endif %}
@@ -300,7 +300,7 @@ Cordiali saluti,
                     });
                 });
                 $('#id_dichiarazione_check_pers').change(function () {
-                    $('#id_atto_notorio_dichiarazione').prop('disabled', function (i, v) {
+                    $('#id_atto_notorio_dichiarazione').prop('readonly', function (i, v) {
                         return !v;
                     });
                 });
