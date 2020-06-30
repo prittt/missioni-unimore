@@ -295,7 +295,7 @@ def compila_parte_2(request, id):
         for i, t in enumerate(value, start=1):
             s1 = float(t['s1'])
             valuta = t['v1']
-            data = t['data'].strftime('%Y-%m-%d')
+            data = t['data']  #.strftime('%Y-%m-%d')
             costo_str = f'{s1:.2f} {valuta}'
             if valuta != 'EUR':
                 costo_in_euro = money_exchange(data, valuta, s1)
