@@ -68,18 +68,26 @@ def money_exchange(data, valuta, cifra):
     :param cifra: Quantità da convertire
     :return: Quantità convertita nella valuta desiderata
     """
-    url = 'https://tassidicambio.bancaditalia.it/terzevalute-wf-web/rest/v1.0/dailyTimeSeries'
-    params = {
-        'startDate': data,
-        'endDate': data,
-        'baseCurrencyIsoCode': valuta,
-        'currencyIsoCode': 'EUR'
-    }
-    headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-    response = requests.get(url, params=params, headers=headers)
-    content = json.loads(response.content)
 
-    tasso_cambio = float(content['rates'][0]['avgRate'] or 0.)
+    def get_tasso_di_cambio(data, valuta):
+        url = 'https://tassidicambio.bancaditalia.it/terzevalute-wf-web/rest/v1.0/dailyTimeSeries'
+        valid_data = data
+        if data.weekday() >= 5:
+            valid_data = data - datetime.timedelta(days=data.weekday() - 4)
+        params = {
+            'startDate': valid_data,
+            'endDate': valid_data,
+            'baseCurrencyIsoCode': valuta,
+            'currencyIsoCode': 'EUR'
+        }
+        headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+        response = requests.get(url, params=params, headers=headers)
+        content = json.loads(response.content)
+
+        if content['resultsInfo']['totalRecords'] != 0:
+            return float(content['rates'][0]['avgRate'])
+
+    tasso_cambio = get_tasso_di_cambio(data, valuta)
     cifra_convertita = cifra / tasso_cambio
     return cifra_convertita
 
@@ -129,9 +137,21 @@ def resoconto_data(missione):
 
     # Aggiungo il trasporto
     for v in totali.keys():
-        totali[v]['trasporto'] = float(
-            missione.trasporto_set.filter(valuta=v).aggregate(Sum('costo'))['costo__sum'] or 0.)
+        if v == eur:
+            totali[v]['trasporto'] = float(missione.trasporto_set.filter(valuta=v).aggregate(Sum('costo'))['costo__sum'] or 0.)
+        else:
+            # Per le spese non in euro devo fare anche la conversione
+            trasporti_v = missione.trasporto_set.filter(valuta=v)  # Trasporti pagati con valuta v
+            totali[v]['trasporto'] = 0
+            totali_convert[v]['trasporto'] = 0
+            for t in trasporti_v:
+                totali[v]['trasporto'] += float(t.costo)
+                totali_convert[v]['trasporto'] += money_exchange(t.data, v, float(t.costo))
+        # Vecchia versione che non convertiva i trasporti non in euro.
+        # totali[v]['trasporto'] = float(
+        #     missione.trasporto_set.filter(valuta=v).aggregate(Sum('costo'))['costo__sum'] or 0.)
         totali[v]['totale'] = sum(totali[v].values())
+
 
     for v in totali_convert.keys():
         totali_convert[v]['totale'] = sum(totali_convert[v].values())
