@@ -7,8 +7,8 @@
     {% if not missione.missione_conclusa %}
         <a class="btn btn-primary" href="{% url 'RimborsiApp:missione' missione.id %}" role="button">Modifica</a>
     {% endif %}
-    <h4>a {{ missione.citta_destinazione }} dal {{ missione.inizio|date:"d/m/Y" }}
-        al {{ missione.fine|date:"d/m/Y" }}</h4>
+    <h4>a {{ missione.citta_destinazione }} dal {{ missione.inizio|date:"d/m/Y" }} (ore {{ missione.inizio_ora|date:"H:i" }})
+        al {{ missione.fine|date:"d/m/Y" }} (ore {{ missione.fine_ora|date:"H:i" }})</h4>
 {% endblock %}
 
 {% block content %}
