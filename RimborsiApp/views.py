@@ -133,7 +133,7 @@ def resoconto_data(missione):
 
                 totali[entry[v]][k] += float(entry[s] or 0.)
                 if entry[v] != eur:
-                    totali_convert[entry[v]][k] += money_exchange(entry['data'], entry[v], totali[entry[v]][k])
+                    totali_convert[entry[v]][k] += money_exchange(entry['data'], entry[v], float(entry[s] or 0.))
 
     # Aggiungo il trasporto
     for v in totali.keys():
