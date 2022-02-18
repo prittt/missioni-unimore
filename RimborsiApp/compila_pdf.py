@@ -210,7 +210,8 @@ def compila_parte_2(request, id):
             return self.config[index]
 
     config = ParConfig()
-    config.append('Il sottoscritto', [f'{profile.user.first_name} {profile.user.last_name}'])
+    sottoscritto_gender_friendly = 'Il sottoscritto' if profile.sesso == 'M' else 'La sottoscritta'
+    config.append(sottoscritto_gender_friendly, [f'{profile.user.first_name} {profile.user.last_name}'])
     config.append('DICHIARA di aver compiuto la missione a', [
         f'{missione.citta_destinazione} - {missione.stato_destinazione.nome}',
         missione.inizio_ora.strftime('%H:%M'),

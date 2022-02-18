@@ -250,7 +250,12 @@
                                 <textarea class="form-control" id="textarea-email" name="textarea-email" rows="8">
 Spett.le Dipartimento,
 
-il sottoscritto {{ user.first_name }} {{ user.last_name }} chiede l'autorizzazione per compiere una missione all'estero dal {{ missione.inizio|date:"d/m/Y" }} al {{ missione.fine|date:"d/m/Y" }} a {{ missione.citta_destinazione }} ({{ missione.stato_destinazione.nome }}).
+{% if user.sesso == 'M' %}
+il sottoscritto
+{% else %}
+la sottoscritta
+{% endif %}
+{{ user.first_name }} {{ user.last_name }} chiede l'autorizzazione per compiere una missione all'estero dal {{ missione.inizio|date:"d/m/Y" }} al {{ missione.fine|date:"d/m/Y" }} a {{ missione.citta_destinazione }} ({{ missione.stato_destinazione.nome }}).
 Motivo della missione: {{ missione.motivazione }}.
 
 Cordiali saluti,
