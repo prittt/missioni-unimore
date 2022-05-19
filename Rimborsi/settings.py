@@ -14,6 +14,8 @@ import os
 import json
 from django.core.exceptions import ImproperlyConfigured
 
+import sys
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -36,7 +38,13 @@ def get_secret(setting, secrets=secrets):
 SECRET_KEY = get_secret('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+runserver = 'runserver' in sys.argv
+if runserver:
+    DEBUG = True
+else:
+    # Settings per Proxy neuralstory-host
+    DEBUG = False
+
 CRISPY_FAIL_SILENTLY = not DEBUG
 
 ALLOWED_HOSTS = [

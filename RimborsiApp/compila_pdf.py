@@ -196,7 +196,7 @@ def compila_parte_2(request, id):
     km_totali = trasporto.filter(mezzo='AUTO').aggregate(Sum('km'))['km__sum'] or 0
 
     # Remove trasporti that has 0 km
-    trasporto = trasporto.filter(costo__gt=0)
+    trasporto = trasporto.filter(costo__gt=0).order_by("data")
 
     class ParConfig:
         def __init__(self):
@@ -275,6 +275,7 @@ def compila_parte_2(request, id):
     for k, _ in db_dict.items():
         db_dict[k] = load_json(missione, k)
 
+    # TODO Scontrino dovrebbe essere ordinato per data. Potrebbe essere un pacco.
     r_scontrino = []
     for row in db_dict['scontrino']:
         if row['s1'] is not None:
