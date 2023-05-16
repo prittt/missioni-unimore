@@ -88,6 +88,8 @@ def compila_anticipo(request, id):
     config.append("l’inizio della missione è prevista alle ore", [f'{missione.inizio_ora.strftime("%H:%M")} del {missione.inizio.strftime("%d/%m/%Y")}'])
     config.append("la durata della missione è prevista in giorni", [f'{missione.durata_gg.days}'])
     config.append("la spesa graverà sul progetto", [f'{missione.fondo}'])
+    config.append("la spesa graverà sul progetto", [f'{missione.fondo}'])
+    config.append("Data richiesta", [date_richiesta.anticipo.strftime('%d/%m/%Y')])
 
     # config.append('DICHIARA di aver compiuto la missione a', [
     #     f'{missione.citta_destinazione} - {missione.stato_destinazione.nome}',
