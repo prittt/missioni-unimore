@@ -123,6 +123,10 @@
                     <table id="table-moduli" class="table table-borderless table-sm rounded">
                         {{ moduli_missione_form.management_form }}
                         <tr class="center">
+                           <td class="table-danger">
+                                {{ moduli_missione_form.anticipo|as_crispy_field }}
+                            </td>
+
                             <td class="table-primary">
                                 {{ moduli_missione_form.parte_1|as_crispy_field }}
                             </td>
@@ -139,6 +143,15 @@
                             {% endif %}
                         </tr>
                         <tr class="center">
+                            <td class="table-danger">
+                                {% if missione.modulimissione.anticipo_file %}
+                                    <a class="download"
+                                       href="{% url 'RimborsiApp:download' missione.id 'anticipo_file' %}"> <i
+                                            class="fa fa-file-word-o fa-2x"></i> Richiesta Anticipo</a>
+                                {% else %}
+                                    <p>Richiesta Anticipo</p>
+                                {% endif %}
+                            </td>
                             <td class="table-primary">
                                 {% if missione.modulimissione.parte_1_file %}
                                     <a class="download"
@@ -186,7 +199,7 @@
                                 {{ moduli_missione_form.atto_notorio|as_crispy_field }}
                             </td>
                             <td class="table-info" rowspan="2"
-                                colspan=" {% if user.profile.qualifica == 'DOTTORANDO' %}3{% else %}2{% endif %}">
+                                colspan=" {% if user.profile.qualifica == 'DOTTORANDO' %}4{% else %}3{% endif %}">
                                 {{ moduli_missione_form.dichiarazione_check_std|as_crispy_field }}
                                 {{ moduli_missione_form.dichiarazione_check_pers|as_crispy_field }}
                                 {{ moduli_missione_form.atto_notorio_dichiarazione|as_crispy_field }}

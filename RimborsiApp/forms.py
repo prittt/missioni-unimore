@@ -407,8 +407,9 @@ class ModuliMissioneForm(forms.ModelForm):
     class Meta:
         model = ModuliMissione
         fields = '__all__'
-        exclude = ['missione', 'parte_1_file', 'parte_2_file', 'kasko_file', 'dottorandi_file']
+        exclude = ['missione', 'parte_1_file', 'parte_2_file', 'kasko_file', 'dottorandi_file', 'anticipo_file']
         widgets = {
+            'anticipo': forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date', }, ),
             'parte_1': forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date', }, ),
             'parte_2': forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date', }),
             'kasko': forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date', }),
@@ -417,6 +418,7 @@ class ModuliMissioneForm(forms.ModelForm):
             'atto_notorio_dichiarazione': forms.Textarea(attrs={'rows': 4, 'readonly': 'readonly'})
         }
         labels = {
+            'anticipo': 'Data Richiesta',
             'parte_1': 'Data Richiesta',
             'parte_2': 'Data Richiesta',
             'kasko': 'Data Richiesta',
@@ -429,6 +431,7 @@ class ModuliMissioneForm(forms.ModelForm):
         cleaned_data = super(ModuliMissioneForm, self).clean()
         missione_inizio = self.instance.missione.inizio
         missione_fine = self.instance.missione.fine
+        anticipo_data = cleaned_data.get("anticipo")
         parte_1_data = cleaned_data.get("parte_1")
         parte_2_data = cleaned_data.get("parte_2")
         atto_notorio_data = cleaned_data.get("atto_notorio")
@@ -436,6 +439,15 @@ class ModuliMissioneForm(forms.ModelForm):
         kasko_data = cleaned_data.get("kasko")
 
         errors = {}
+
+        if anticipo_data.weekday() >= 5:
+            errors['anticipo'] = \
+                f"Anticipo deve avere una data di compilazione che non sia sabato o domenica"
+
+        if anticipo_data - missione_inizio > datetime.timedelta(days=12):
+            errors['anticipo'] = \
+                f"Anticipo deve avere una data di compilazione di almeno dieci giorni lavorativi antecedenti l'inizio della missione ({missione_inizio.strftime('%d/%m/%Y')})"
+
         if atto_notorio_data.weekday() >= 5:
             errors['atto_notorio'] = \
                 f"Atto notorio deve avere una data di compilazione che non sia sabato o domenica"

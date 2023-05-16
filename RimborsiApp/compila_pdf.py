@@ -38,6 +38,7 @@ def genera_pdf(request, id):
                                                                'totali': totali,
                                                                })
 
+        compila_anticipo(request, id)
         compila_parte_1(request, id)
         compila_parte_2(request, id)
         if request.user.profile.qualifica == 'DOTTORANDO':
@@ -46,6 +47,90 @@ def genera_pdf(request, id):
         return redirect('RimborsiApp:resoconto', id)
     else:
         return HttpResponseBadRequest()
+
+
+def compila_anticipo(request, id):
+    moduli_input_path = os.path.join(settings.STATIC_ROOT, 'RimborsiApp', 'moduli')
+    moduli_output_path = os.path.join(settings.MEDIA_ROOT, 'moduli')
+
+    input_file = os.path.join(moduli_input_path, 'ModuloAnticipo.docx')
+    document = Document(input_file)
+    missione = Missione.objects.get(user=request.user, id=id)
+    date_richiesta = ModuliMissione.objects.get(missione=missione)
+    profile = Profile.objects.get(user=request.user)
+    # trasporto = Trasporto.objects.filter(missione=missione)
+    # km_totali = trasporto.filter(mezzo='AUTO').aggregate(Sum('km'))['km__sum'] or 0
+    #
+    # # Remove trasporti that has 0 km
+    # trasporto = trasporto.filter(costo__gt=0).order_by("data")
+
+    class ParConfig:
+        def __init__(self):
+            self.config = []
+            self.counter = 0
+
+        def append(self, index, values, excludes=[]):
+            self.config.append([index, values, excludes])
+
+        def __getitem__(self, index):
+            return self.config[index]
+
+    config = ParConfig()
+    config.append("Richiedente (Cognome Nome):", [f'{profile.user.last_name} {profile.user.first_name}'])
+    config.append("Nato/a a", [f'{profile.luogo_nascita.name} il {profile.data_nascita.strftime("%d/%m/%Y")}'])
+    config.append("Codice fiscale", [f'{profile.cf}'])
+    config.append("Domicilio fiscale", [f'Via {profile.domicilio.via} {profile.domicilio.n}, {profile.domicilio.comune.name} ({profile.domicilio.provincia.codice_targa})'])
+    config.append("Qualifica/Ruolo", [f'{profile.qualifica}'])
+    config.append("Datore di lavoro", [f'{profile.datore_lavoro}'])
+    config.append("Destinazione missione", [f'{missione.citta_destinazione} - {missione.stato_destinazione.nome}'])
+    config.append("Motivazione missione", [f'{missione.motivazione}'])
+
+    config.append("l’inizio della missione è prevista alle ore", [f'{missione.inizio_ora.strftime("%H:%M")} del {missione.inizio.strftime("%d/%m/%Y")}'])
+    config.append("la durata della missione è prevista in giorni", [f'{missione.durata_gg.days}'])
+    config.append("la spesa graverà sul progetto", [f'{missione.fondo}'])
+
+    # config.append('DICHIARA di aver compiuto la missione a', [
+    #     f'{missione.citta_destinazione} - {missione.stato_destinazione.nome}',
+    #     missione.inizio_ora.strftime('%H:%M'),
+    #     missione.inizio.strftime('%d/%m/%Y'),
+    #     missione.fine_ora.strftime('%H:%M'),
+    #     missione.fine.strftime('%d/%m/%Y')])
+    # config.append('DICHIARA di aver ricevuto', ['TODO'])
+    # config.append('nel caso di utilizzo di mezzo proprio', [f'{km_totali}'])
+    # config.append('che il costo del biglietto', ['cosa ci va?'])
+    # config.append('che l’originale del fattura/ricevuta cumulativa', ['aaa', 'aaa', 'aaa'])
+    # config.append('che il costo della fattura/ricevuta _', ['aa'])
+    # config.append('che l’originale del fattura/ricevuta cumulativa, relativo a ___', ['aaa', 'aaa', 'aaa'])
+    # config.append('che l’originale del fattura/ricevuta cumulativa, relativo a __________________________ ',
+    #               ['aaa', 'aaa', 'aaa'])
+    # config.append('che il costo della fattura/ricevuta __________________________ ', ['aa'])
+    # config.append('Data richiesta', [date_richiesta.parte_2.strftime('%d/%m/%Y')])
+
+    for k, values, excludes in config:
+        str = ''
+        for par in document.paragraphs:
+            if k in par.text:
+                for s1, s2 in zip_longest(re.sub('_+', '_', par.text).split('_'), values, fillvalue=''):
+                    if s2 != '':
+                        str += f'{s1}__{s2}__'
+                    else:
+                        str += f'{s1}'
+                for r in par.runs:
+                    if len(r.text) > 0:
+                        r.text = ''
+                par.add_run(text=str)
+                break
+
+    output_name_tmp = os.path.join(moduli_output_path, f'Missione_{missione.id}_anticipo_tmp.docx')
+    output_name = f'Missione_{missione.id}_anticipo.docx'
+    document.save(os.path.join(moduli_output_path, output_name_tmp))
+    # Salvo il docx appena creato dentro a un FileField
+    moduli_missione = ModuliMissione.objects.get(missione=missione)
+    outputStream = open(output_name_tmp, "rb")
+    moduli_missione.anticipo_file.save(output_name, outputStream)
+
+    # Elimino il file temporaneo
+    os.remove(output_name_tmp)
 
 
 def compila_parte_1(request, id):

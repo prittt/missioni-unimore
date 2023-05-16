@@ -190,6 +190,8 @@ def resoconto(request, id):
             moduli_missione = ModuliMissione.objects.get(missione=missione)
         except ObjectDoesNotExist:
             today = datetime.date.today()
+            anticipo = min(today, missione.inizio - datetime.timedelta(days=12))
+
             parte_1 = today - datetime.timedelta(days=(today.weekday() // 4) * (today.weekday() % 4))
             if missione.inizio - parte_1 <= datetime.timedelta(days=0):
                 parte_1 = missione.inizio - datetime.timedelta(days=1)
@@ -200,7 +202,8 @@ def resoconto(request, id):
                 parte_2 = missione.fine + datetime.timedelta(days=1)
                 parte_2 += datetime.timedelta(days=(parte_2.weekday() // 4) * (parte_2.weekday() % 2 + 1))
 
-            moduli_missione = ModuliMissione.objects.create(missione=missione, parte_1=parte_1, parte_2=parte_2,
+
+            moduli_missione = ModuliMissione.objects.create(missione=missione, anticipo=anticipo, parte_1=parte_1, parte_2=parte_2,
                                                             kasko=parte_1, dottorandi=parte_1, atto_notorio=parte_2)
 
         moduli_missione_form = ModuliMissioneForm(instance=moduli_missione)
