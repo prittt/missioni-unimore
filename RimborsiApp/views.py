@@ -593,7 +593,7 @@ def invia_email_autorizzazione(request, id):
         send_mail(
             'Autorizzazione missione',
             text,
-            settings.EMAIL_HOST_USER,
+            f'Sistema Gestione Missioni <{settings.EMAIL_HOST_USER}>',
             emails,
             fail_silently=False,
         )
