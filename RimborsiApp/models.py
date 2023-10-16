@@ -250,6 +250,7 @@ class Missione(models.Model):
     automobile = models.ForeignKey(Automobile, null=True, blank=True, on_delete=models.SET_NULL)
     automobile_altrui = models.CharField(max_length=100, null=True, blank=True)
     tipo = models.CharField(max_length=8, choices=TIPO_MISSIONE_CHOICES, null=True)
+    anticipo = models.FloatField(null=True, blank=True, default=0)
 
     scontrino = models.TextField(null=True, blank=True)
     pernottamento = models.TextField(null=True, blank=True)

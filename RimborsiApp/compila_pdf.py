@@ -305,7 +305,7 @@ def compila_parte_2(request, id):
         missione.inizio.strftime('%d/%m/%Y'),
         missione.fine_ora.strftime('%H:%M'),
         missione.fine.strftime('%d/%m/%Y')])
-    # config.append('DICHIARA di aver ricevuto', ['TODO'])
+    config.append('DICHIARA di aver ricevuto', [f'{missione.anticipo}'])
     config.append('nel caso di utilizzo di mezzo proprio', [f'{km_totali}'])
     # config.append('che il costo del biglietto', ['cosa ci va?'])
     # config.append('che l’originale del fattura/ricevuta cumulativa', ['aaa', 'aaa', 'aaa'])
