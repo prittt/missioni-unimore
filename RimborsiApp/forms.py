@@ -307,7 +307,7 @@ class ScontrinoForm(forms.Form):
     desc_label = 'Descrizione (numero fattura/ricevuta fiscale)'
     s1 = forms.DecimalField(decimal_places=2, label='Spesa', required=False,
                             widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', }))
-    v1 = forms.ChoiceField(choices=VALUTA_CHOICES, required=False, label='Valuta',
+    v1 = forms.ChoiceField(initial="EUR", choices=VALUTA_CHOICES, required=False, label='Valuta',
                            widget=forms.Select(
                                attrs={'class': 'form-control form-control-sm', 'style': 'min-width: 55px;'}))
     d1 = forms.CharField(required=False, label=desc_label,
@@ -315,7 +315,7 @@ class ScontrinoForm(forms.Form):
 
     s2 = forms.DecimalField(decimal_places=2, label='Spesa', required=False,
                             widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', }))
-    v2 = forms.ChoiceField(choices=VALUTA_CHOICES, required=False, label='Valuta',
+    v2 = forms.ChoiceField(initial="EUR", choices=VALUTA_CHOICES, required=False, label='Valuta',
                            widget=forms.Select(
                                attrs={'class': 'form-control form-control-sm', 'style': 'min-width: 55px;'}))
     d2 = forms.CharField(required=False, label=desc_label,
@@ -323,17 +323,17 @@ class ScontrinoForm(forms.Form):
 
     s3 = forms.DecimalField(decimal_places=2, label='Spesa', required=False,
                             widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', }))
-    v3 = forms.ChoiceField(choices=VALUTA_CHOICES, required=False, label='Valuta',
+    v3 = forms.ChoiceField(initial="EUR", choices=VALUTA_CHOICES, required=False, label='Valuta',
                            widget=forms.Select(
                                attrs={'class': 'form-control form-control-sm', 'style': 'min-width: 55px;'}))
     d3 = forms.CharField(required=False, label=desc_label,
                          widget=forms.TextInput(attrs={'class': 'form-control form-control-sm', }))
 
-    def __init__(self, *args, **kwargs):
-        super(ScontrinoForm, self).__init__(*args, **kwargs)
-        self.initial['v1'] = 'EUR'
-        self.initial['v2'] = 'EUR'
-        self.initial['v3'] = 'EUR'
+    # def __init__(self, *args, **kwargs):
+    #     super(ScontrinoForm, self).__init__(*args, **kwargs)
+    #     self.initial['v1'] = 'EUR'
+    #     self.initial['v2'] = 'EUR'
+    #     self.initial['v3'] = 'EUR'
 
 
 # Pernottamenti, iscrizione convegni, altre spese
@@ -440,6 +440,9 @@ class ModuliMissioneForm(forms.ModelForm):
 
         errors = {}
 
+        if anticipo_data is None:
+            errors['anticipo'] = f"Inserisci una data"
+
         if anticipo_data.weekday() >= 5:
             errors['anticipo'] = \
                 f"Anticipo deve avere una data di compilazione che non sia sabato o domenica"
@@ -448,20 +451,35 @@ class ModuliMissioneForm(forms.ModelForm):
             errors['anticipo'] = \
                 f"Anticipo deve avere una data di compilazione di almeno dieci giorni lavorativi antecedenti l'inizio della missione ({missione_inizio.strftime('%d/%m/%Y')})"
 
+        if atto_notorio_data is None:
+            errors['atto_notorio'] = f"Inserisci una data"
+
         if atto_notorio_data.weekday() >= 5:
             errors['atto_notorio'] = \
                 f"Atto notorio deve avere una data di compilazione che non sia sabato o domenica"
+
+        if parte_2_data is None:
+            errors['parte_2'] = f"Inserisci una data"
 
         if parte_2_data.weekday() >= 5:
             errors['parte_2'] = \
                 f"Missione parte II deve avere una data di compilazione che non sia sabato o domenica"
 
+        if parte_1_data is None:
+            errors['parte_1'] = f"Inserisci una data"
+
         if parte_1_data.weekday() >= 5:
             errors['parte_1'] = f"Missione parte I deve avere una data di compilazione che non sia sabato o domenica"
 
-        if self.instance.missione.user.profile.qualifica == 'DOTTORANDO' and dottorandi_data.weekday() >= 5:
-            errors['dottorandi'] = \
-                f"Autorizzazione dottorandi deve avere una data di compilazione che non sia sabato o domenica"
+        if self.instance.missione.user.profile.qualifica == 'DOTTORANDO':
+            if dottorandi_data is None:
+                errors['dottorandi'] = f"Inserisci una data"
+            elif dottorandi_data.weekday() >= 5:
+                errors['dottorandi'] = \
+                    f"Autorizzazione dottorandi deve avere una data di compilazione che non sia sabato o domenica"
+
+        if kasko_data is None:
+            errors['kasko'] = f"Inserisci una data"
 
         if kasko_data.weekday() >= 5:
             errors['kasko'] = f"Kasko deve avere una data di compilazione che non sia sabato o domenica"
@@ -478,9 +496,12 @@ class ModuliMissioneForm(forms.ModelForm):
             errors['parte_1'] = \
                 f"Missione parte I deve avere una data di compilazione antecedente a quella di inizio missione ({missione_inizio.strftime('%d/%m/%Y')})"
 
-        if self.instance.missione.user.profile.qualifica == 'DOTTORANDO' and dottorandi_data > missione_inizio:
-            errors['dottorandi'] = \
-                f"Autorizzazione dottorandi deve avere una data di compilazione antecedente a quella di inizio missione ({missione_inizio.strftime('%d/%m/%Y')})"
+        if self.instance.missione.user.profile.qualifica == 'DOTTORANDO':
+            if dottorandi_data is None:
+                errors['dottorandi'] = f"Inserisci una data"
+            elif dottorandi_data > missione_inizio:
+                errors['dottorandi'] = \
+                    f"Autorizzazione dottorandi deve avere una data di compilazione antecedente a quella di inizio missione ({missione_inizio.strftime('%d/%m/%Y')})"
 
         if kasko_data > missione_inizio:
             errors['kasko'] = \
