@@ -111,6 +111,7 @@ def resoconto_data(missione):
 
         'totale': 0.,
         'totale_indennita': 0.,
+        'totale_indennita_anticipo': 0.,
     }
 
     totali = {}
@@ -166,6 +167,7 @@ def resoconto_data(missione):
         indennita = 0
 
     totali[eur]['totale_indennita'] = totali[eur]['totale'] + indennita
+    totali[eur]['totale_indennita_anticipo'] = totali[eur]['totale_indennita'] - missione.anticipo
 
     totali_convert[eur] = totali[eur].copy()
     grandtotal = totali_base.copy()
@@ -173,6 +175,7 @@ def resoconto_data(missione):
         for k, v in cur_total.items():
             grandtotal[k] += v
     grandtotal['totale_indennita'] = grandtotal['totale'] + indennita
+    grandtotal['totale_indennita_anticipo'] = grandtotal['totale_indennita'] - missione.anticipo
     totali['parziale'] = grandtotal
 
     if prezzo:
@@ -215,6 +218,7 @@ def resoconto(request, id):
                                                            'km': km,
                                                            'indennita': indennita,
                                                            'totali': totali,
+                                                           'anticipo': -missione.anticipo,
                                                            })
         # else:
         #     return render(request, 'Rimborsi/resoconto.html')
