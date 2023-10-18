@@ -100,7 +100,7 @@
                         <td>Anticipo</td>
                         {% for _ in totali.keys %}
                             <td>
-                                {% if forloop.first %}
+                                {% if forloop.last %}
                                     {% if anticipo is not None %}
                                         {{ anticipo|floatformat:2 }}
                                     {% else %}
@@ -117,7 +117,7 @@
                         {% for _ in totali.keys %}
                             <td>
                                 {% if forloop.first %}
-                                    {{ totali.EUR.totale_indennita_anticipo|floatformat:2}}
+                                    {{ totali.EUR.totale_indennita|floatformat:2}}
                                 {% elif forloop.last %}
                                     <b>{{ totali.parziale.totale_indennita_anticipo|floatformat:2 }}</b>
                                 {% endif %}
