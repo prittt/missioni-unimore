@@ -1,3 +1,15 @@
+Bug/To Fix
 1) Aggiornare il profile utente (sia Italiano che Straniero) per avere sia il comune che la provincia di nascita e aggiornare il compialtore documenti di conseguenza. Attualmente non 
 è possibile compilare l'Atto Notorio integralmente per i profili stranieri. Per i profili italiani riusciamo a farlo con uno sgamo, sfruttando i dati dell'app dei comuni. E' sempre giusto?
 2) Risolvere bug che si verifica in un caso raro: quando viene creata una nuova missione TRENO + AUTO con auto e motivazione non specificate e viene avviata la generazione dei PDF il server si schianta.
+3) A volte, non è chiaro quando, al momento del salvataggio di uno dei campi della missione scompare il campo iscrizione alla conferenza;
+
+Enanchments
+1) Implementare modalità app o renderle il tutto utilizzabile da browser
+2) Acquisizione scontrino con foto con OCR (su sagoma/maskera come primo tentativo poi provare anche in the wild)
+3) Firma digitale con Aruba
+4) Firma olografa con "database" privato
+5) "Stampa" resoconto scontrini scansionati per giorno
+
+
+
