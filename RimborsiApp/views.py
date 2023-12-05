@@ -70,6 +70,10 @@ def money_exchange(data, valuta, cifra):
     """
 
     def get_tasso_di_cambio(data, valuta):
+
+        if data >= data.today():
+            data = data.today() - datetime.timedelta(days=data.weekday() - 1)
+
         url = 'https://tassidicambio.bancaditalia.it/terzevalute-wf-web/rest/v1.0/dailyTimeSeries'
         valid_data = data
         if data.weekday() >= 5:
@@ -125,7 +129,7 @@ def resoconto_data(missione):
         for entry in tmp:
             for s, v in sub_dict:
                 if entry.get(v) is None:
-                    entry[v] = eur  # Questo serve per gestire le entry del db inserite prima di aggiugnere la valuta
+                    entry[v] = eur  # Questo serve per gestire le entry del db inserite prima di aggiungere la valuta
 
                 if totali.get(entry[v]) is None:
                     totali[entry[v]] = totali_base.copy()
@@ -419,9 +423,9 @@ def missione(request, id):
         for current_date in (missione.inizio + datetime.timedelta(n) for n in range(giorni + 1)):
             if not list(filter(lambda d: d['data'] == current_date, db_dict['scontrino'])):
                 db_dict['scontrino'].append({'data': current_date,
-                                             's1': None, 'v1': None, 'd1': None,
-                                             's2': None, 'v2': None, 'd2': None,
-                                             's3': None, 'v3': None, 'd3': None,
+                                             's1': None, 'v1': "EUR", 'd1': None,
+                                             's2': None, 'v2': "EUR", 'd2': None,
+                                             's3': None, 'v3': "EUR", 'd3': None,
                                              })
         # Order by date and create the formset
         pasti_sorted = sorted(db_dict['scontrino'], key=lambda k: k['data'])
