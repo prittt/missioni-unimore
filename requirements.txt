@@ -16,7 +16,7 @@ python-dateutil==2.8.0
 python-docx==0.8.10
 python-slugify==3.0.2
 pytz==2019.1
-reportlab==3.5.23
+reportlab==3.6.13
 requests==2.22.0
 six==1.12.0
 soupsieve==1.9.2
