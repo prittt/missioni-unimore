@@ -4,6 +4,7 @@ Bug/To Fix
 2) Risolvere bug che si verifica in un caso raro: quando viene creata una nuova missione TRENO + AUTO con auto e motivazione non specificate e viene avviata la generazione dei PDF il server si schianta.
 3) A volte, non è chiaro quando, al momento del salvataggio di uno dei campi della missione scompare il campo iscrizione alla conferenza;
 
+
 Enanchments
 1) Implementare modalità app o renderle il tutto utilizzabile da browser
 2) Acquisizione scontrino con foto con OCR (su sagoma/maskera come primo tentativo poi provare anche in the wild)
