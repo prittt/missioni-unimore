@@ -48,7 +48,7 @@ else:
 CRISPY_FAIL_SILENTLY = not DEBUG
 
 ALLOWED_HOSTS = [
-    'localhost', '127.0.0.1', 'turner', 'missioni', 'missioni.ing.unimore.it'
+    'localhost', '127.0.0.1', 'turner', 'missioni', 'missioni.ing.unimore.it', 'missioni-dev.ing.unimore.it', 'missioni-dev.ing.unimore.it:8080'
 ]
 
 # Application definition
