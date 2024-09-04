@@ -320,6 +320,7 @@ class Profile(models.Model):
         ('RTDA', 'RTDA'),
         ('RTDB', 'RTDB'),
         ('RTT', 'RTT'),
+        ('PTA', 'PTA'),
     )
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     data_nascita = models.DateField(null=True)
