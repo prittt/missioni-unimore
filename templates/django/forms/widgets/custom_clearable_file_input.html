@@ -1,0 +1,121 @@
+<head>
+    <!-- Altri tag head -->
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+</head>
+
+<div class="custom-file-input-container">
+    <input type="file" class="fileInput" name="{{ widget.name }}" style="display: none;" data-file-input>
+    <label class="file-label">
+       <i class="fa fa-upload"></i>
+    </label>
+    <span class="file-name" data-file-name>No Selected Img</span>
+    {% if widget.is_initial %}
+        {% if widget.value.instance.missione %}
+            <a href="{% url 'RimborsiApp:trasporti_image_preview' id=widget.value.instance.id  %}" target="_blank" class="centered-icon">
+                <i class="fa fa-picture-o" style="font-size:29px;"></i>
+            </a>
+        {% else %}
+            <a href="{% url 'RimborsiApp:spese_image_preview' id=widget.value.instance.id  %}" target="_blank" class="centered-icon">
+                <i class="fa fa-picture-o" style="font-size:29px;"></i>
+            </a>
+        {% endif %}
+        <button type="submit" name="{{ widget.checkbox_name }}" value="on" class="delete-button">
+           <td style="text-align: center;"> <i class="fa fa-trash"></i></td>
+        </button>
+    {% endif %}
+</div>
+
+<style>
+
+.centered-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
+.file-label {
+    background-color: #007bff;
+    color: white;
+    padding: 5px 10px;
+    padding-top: 7px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 31px;
+   }
+
+.file-name {
+    font-size: 14px;
+    color: #555;
+    white-space: nowrap;
+    margin-top: 7px;
+    width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+ }
+
+.file-label:hover {
+    background-color: #0056b3;
+}
+
+.file-name:hover::after {
+    content: attr(data-file-name);
+    position: absolute;
+    left: 0;
+    bottom: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding: 5px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 12px;
+    z-index: 1;
+}
+
+.custom-file-input-container {
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+    grid-gap: 10px;
+    margin-top: 32px;
+}
+
+.delete-button {
+    background-color: transparent;
+    color: #000;
+    border: 1px solid #000;
+    cursor: pointer;
+    border-radius: 3px;
+    height: 30px;
+    width: 30px;
+}
+
+.delete-button:hover {
+    background-color: #808080;
+    color: white;
+}
+</style>
+
+<script>
+ document.querySelectorAll('.fileInput').forEach((input, index) => {
+        const label = input.nextElementSibling;
+        const fileNameDisplay = label.nextElementSibling;
+
+        label.setAttribute('for', `fileInput${index}`);
+        input.id = `fileInput${index}`;
+
+        fileNameDisplay.title = 'No Selected Img';
+
+        input.addEventListener('change', function() {
+            var fileName = this.files[0].name;
+            fileNameDisplay.textContent = fileName;
+            fileNameDisplay.title = fileName;
+        });
+    });
+
+</script>

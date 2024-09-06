@@ -39,6 +39,18 @@ class DateRichiestaAdmin(admin.ModelAdmin):
     list_display = [f.name for f in ModuliMissione._meta.fields]
 
 
+class SpesaAdmin(admin.ModelAdmin):
+    list_display = [f.name for f in Spesa._meta.fields]
+
+
+class SpesaMissioneAdmin(admin.ModelAdmin):
+    list_display = [f.name for f in SpesaMissione._meta.fields]
+
+
+class PastiAdmin(admin.ModelAdmin):
+    list_display = [f.name for f in Pasti._meta.fields]
+
+
 admin_site = admin.site
 
 admin_site.register(Profile, ProfileAdmin)
@@ -49,3 +61,6 @@ admin_site.register(Categoria, CategoriaAdmin)
 admin_site.register(Stato, StatoAdmin)
 admin_site.register(Trasporto, TrasportoAdmin)
 admin_site.register(ModuliMissione, DateRichiestaAdmin)
+admin.site.register(Spesa, SpesaAdmin)
+admin.site.register(SpesaMissione, SpesaMissioneAdmin)
+admin_site.register(Pasti, PastiAdmin)

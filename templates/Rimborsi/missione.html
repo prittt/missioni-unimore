@@ -12,71 +12,70 @@
     {% if user.is_authenticated %}
         {% crispy missione_form %}
 
-        <h3>Pasti</h3>
-        <form action="{% url 'RimborsiApp:salva_pasti' id=missione.id %}" method="post">{% csrf_token %}
-            <table class="table table-striped">
-                {{ pasti_formset.management_form }}
+        <h3>Pasti:</h3>
+        <form action="{% url 'RimborsiApp:salva_pasti' id=missione.id %}" method="post" enctype="multipart/form-data"> {% csrf_token %}
+            {{ pasti_formset.management_form }}
+            <div id="pasti-formset-container">
                 {% for form in pasti_formset.forms %}
-                    {% if forloop.first %}
-                        <thead>
-                        <tr>
-                            {% for field in form.visible_fields %}
-                                <th>{{ field.label|capfirst }}</th>
-                            {% endfor %}
-                        </tr>
-                        </thead>
-                    {% endif %}
-                    <tr class="{% cycle 'row1' 'row2' %} pasti_formset_row">
+                    <div class="card-lg-inline mb-5 mb-md-3 pasti_formset_row dynamic-formset1 text-black d-lg-flex align-items-end"
+                         style="background-color: whitesmoke; padding: 15px; border: 1px solid #ccc;">
                         {% for field in form.visible_fields %}
-                            <td>
-                                {# Include the hidden fields in the form #}
+                            <div class="form-group mx-1 ">
                                 {% if forloop.first %}
                                     {% for hidden in form.hidden_fields %}
-                                        {{ hidden }}
+                                            {{ hidden }}
                                     {% endfor %}
                                 {% endif %}
-                                {{ field.errors.as_ul }}
-                                {{ field }}
-                            </td>
+                                {% if field.name == 'img_scontrino1' or field.name == 'img_scontrino2' or field.name == 'img_scontrino3' %}
+                                    {{ field }}
+                                {% else %}
+                                    <label for="{{ field.id_for_label }}">{{ field.label|capfirst }}</label>
+                                    {{ field.errors.as_ul }}
+                                    {{ field }}
+                                {% endif %}
+                            </div>
                         {% endfor %}
-                    </tr>
+                    </div>
                 {% endfor %}
-            </table>
-            <input class="btn btn-primary" type="submit" value="Salva">
+            </div>
+            <div class="text-left-custom" style="text-align: right">
+                <input class="btn btn-primary" type="submit" value="Salva">
+            </div>
         </form>
 
-        <hr>
+         <hr>
+
         <h3>Pernottamenti:</h3>
-        <form action="{% url 'RimborsiApp:salva_pernottamenti' id=missione.id %}" method="post">{% csrf_token %}
-            <table class="table table-striped">
-                {{ pernottamenti_formset.management_form }}
+        <form action="{% url 'RimborsiApp:salva_pernottamenti' id=missione.id %}" method="post" enctype="multipart/form-data">{% csrf_token %}
+            {{ pernottamenti_formset.management_form }}
+            <div id="pernottamenti-formset-container">
                 {% for form in pernottamenti_formset.forms %}
-                    {% if forloop.first %}
-                        <thead>
-                        <tr>
+                    <div class="card-lg-inline mb-5 mb-md-3 pernottamenti_formset_row text-black"
+                         style="background-color: whitesmoke; padding: 15px; border: 1px solid #ccc;">
+                        <div class="card-body d-lg-flex">
                             {% for field in form.visible_fields %}
-                                <th>{{ field.label|capfirst }}</th>
+                                <div class="form-group mx-1 flex-grow-1">
+                                    {% if forloop.first %}
+                                        {% for hidden in form.hidden_fields %}
+                                            {{ hidden }}
+                                        {% endfor %}
+                                    {% endif %}
+                                    {% if field.name == 'img_scontrino' %}
+                                        {{ field }}
+                                    {% else %}
+                                    <label for="{{ field.id_for_label }}">{{ field.label|capfirst }}</label>
+                                    {{ field.errors.as_ul }}
+                                    {{ field }}
+                                    {% endif %}
+                                </div>
                             {% endfor %}
-                        </tr>
-                        </thead>
-                    {% endif %}
-                    <tr class="{% cycle 'row1' 'row2' %} pernottamenti_formset_row">
-                        {% for field in form.visible_fields %}
-                            <td>
-                                {# Include the hidden fields in the form #}
-                                {% if forloop.first %}
-                                    {% for hidden in form.hidden_fields %}
-                                        {{ hidden }}
-                                    {% endfor %}
-                                {% endif %}
-                                {{ field.errors.as_ul }}
-                                {{ field }}
-                            </td>
-                        {% endfor %}
-                    </tr>
+                        </div>
+                    </div>
                 {% endfor %}
-            </table>
-            <input class="btn btn-primary" type="submit" value="Salva">
+            </div>
+            <div class="text-left-custom" style="text-align: right">
+                <input class="btn btn-primary" type="submit" value="Salva">
+            </div>
         </form>
 
         <hr>
@@ -86,104 +85,104 @@
             0. Per le tratte che non devono ricevere un'indennità chilometrica lasciare il campo km vuoto."><i
             class="fa fa-info-circle fa-1x" aria-hidden="true"></i></a> Trasporti:
         </h3>
-        <form action="{% url 'RimborsiApp:salva_trasporti'  id=missione.id %}" method="post">{% csrf_token %}
-            <table id="trasporti-table" class="table table-striped">
-                {{ trasporti_formset.management_form }}
+        <form action="{% url 'RimborsiApp:salva_trasporti'  id=missione.id %}" method="post" enctype="multipart/form-data">{% csrf_token %}
+            {{ trasporti_formset.management_form }}
+            <div id="trasporti-formset-container">
                 {% for form in trasporti_formset.forms %}
-                    {% if forloop.first %}
-                        <thead>
-                        <tr>
+                    <div class="card-lg-inline mb-5 mb-md-3 trasporti_formset_row text-black"
+                         style="background-color: whitesmoke; padding: 15px; border: 1px solid #ccc;">
+                        <div class="card-body d-lg-flex">
                             {% for field in form.visible_fields %}
-                                <th>{{ field.label|capfirst }}</th>
+                                <div class="form-group mx-1 flex-grow-1">
+                                    {% if forloop.first %}
+                                        {% for hidden in form.hidden_fields %}
+                                            {{ hidden }}
+                                        {% endfor %}
+                                    {% endif %}
+                                    {% if field.name == 'img_scontrino' %}
+                                        {{ field }}
+                                    {% else %}
+                                        <label for="{{ field.id_for_label }}">{{ field.label|capfirst }}</label>
+                                        {{ field.errors.as_ul }}
+                                        {{ field }}
+                                    {% endif %}
+                                </div>
                             {% endfor %}
-                        </tr>
-                        </thead>
-                    {% endif %}
-                    <tr class="{% cycle 'row1' 'row2' %} trasporti_formset_row">
-                        {% for field in form.visible_fields %}
-                            <td>
-                                {# Include the hidden fields in the form #}
-                                {% if forloop.first %}
-                                    {% for hidden in form.hidden_fields %}
-                                        {{ hidden }}
-                                    {% endfor %}
-                                {% endif %}
-                                {{ field.errors.as_ul }}
-                                {{ field }}
-                            </td>
-                        {% endfor %}
-                    </tr>
+                        </div>
+                    </div>
                 {% endfor %}
-            </table>
-            <input class="btn btn-primary" type="submit" value="Salva">
+            </div>
+            <div class="text-left-custom" style="text-align: right">
+                <input class="btn btn-primary" type="submit" value="Salva">
+            </div>
         </form>
 
         <hr>
         <h3>Iscrizione Convegni:</h3>
-        <form action="{% url 'RimborsiApp:salva_convegni' id=missione.id %}" method="post">{% csrf_token %}
-            <table class="table table-striped">
-                {{ convegni_formset.management_form }}
+        <form action="{% url 'RimborsiApp:salva_convegni' id=missione.id %}" method="post" enctype="multipart/form-data">{% csrf_token %}
+            {{ convegni_formset.management_form }}
+            <div id="convegni-formset-container">
                 {% for form in convegni_formset.forms %}
-                    {% if forloop.first %}
-                        <thead>
-                        <tr>
+                    <div class="card-lg-inline mb-5 mb-md-3 convegni_formset_row text-black"
+                         style="background-color: whitesmoke; padding: 15px; border: 1px solid #ccc;">
+                        <div class="card-body d-lg-flex">
                             {% for field in form.visible_fields %}
-                                <th>{{ field.label|capfirst }}</th>
+                                <div class="form-group mx-1 flex-grow-1">
+                                    {% if forloop.first %}
+                                        {% for hidden in form.hidden_fields %}
+                                            {{ hidden }}
+                                        {% endfor %}
+                                    {% endif %}
+                                    {% if field.name == 'img_scontrino' %}
+                                        {{ field }}
+                                    {% else %}
+                                    <label for="{{ field.id_for_label }}">{{ field.label|capfirst }}</label>
+                                    {{ field.errors.as_ul }}
+                                    {{ field }}
+                                    {% endif %}
+                                </div>
                             {% endfor %}
-                        </tr>
-                        </thead>
-                    {% endif %}
-                    <tr class="{% cycle 'row1' 'row2' %} convegni_formset_row">
-                        {% for field in form.visible_fields %}
-                            <td>
-                                {# Include the hidden fields in the form #}
-                                {% if forloop.first %}
-                                    {% for hidden in form.hidden_fields %}
-                                        {{ hidden }}
-                                    {% endfor %}
-                                {% endif %}
-                                {{ field.errors.as_ul }}
-                                {{ field }}
-                            </td>
-                        {% endfor %}
-                    </tr>
+                        </div>
+                    </div>
                 {% endfor %}
-            </table>
-            <input class="btn btn-primary" type="submit" value="Salva">
+            </div>
+            <div class="text-left-custom" style="text-align: right">
+                <input class="btn btn-primary" type="submit" value="Salva">
+            </div>
         </form>
 
         <hr>
         <h3>Altre Spese:</h3>
-        <form action="{% url 'RimborsiApp:salva_altrespese' id=missione.id %}" method="post">{% csrf_token %}
-            <table class="table table-striped">
-                {{ altrespese_formset.management_form }}
+        <form action="{% url 'RimborsiApp:salva_altrespese' id=missione.id %}" method="post" enctype="multipart/form-data">{% csrf_token %}
+            {{ altrespese_formset.management_form }}
+            <div id="altrespese-formset-container">
                 {% for form in altrespese_formset.forms %}
-                    {% if forloop.first %}
-                        <thead>
-                        <tr>
+                    <div class="card-lg-inline mb-5 mb-md-3 altrespese_formset_row text-black"
+                         style="background-color: whitesmoke; padding: 15px; border: 1px solid #ccc;">
+                        <div class="card-body d-lg-flex">
                             {% for field in form.visible_fields %}
-                                <th>{{ field.label|capfirst }}</th>
+                                <div class="form-group mx-1 flex-grow-1">
+                                    {% if forloop.first %}
+                                        {% for hidden in form.hidden_fields %}
+                                            {{ hidden }}
+                                        {% endfor %}
+                                    {% endif %}
+                                    {% if field.name == 'img_scontrino' %}
+                                        {{ field }}
+                                    {% else %}
+                                    <label for="{{ field.id_for_label }}">{{ field.label|capfirst }}</label>
+                                    {{ field.errors.as_ul }}
+                                    {{ field }}
+                                    {% endif %}
+                                </div>
                             {% endfor %}
-                        </tr>
-                        </thead>
-                    {% endif %}
-                    <tr class="{% cycle 'row1' 'row2' %} altrespese_formset_row">
-                        {% for field in form.visible_fields %}
-                            <td>
-                                {# Include the hidden fields in the form #}
-                                {% if forloop.first %}
-                                    {% for hidden in form.hidden_fields %}
-                                        {{ hidden }}
-                                    {% endfor %}
-                                {% endif %}
-                                {{ field.errors.as_ul }}
-                                {{ field }}
-                            </td>
-                        {% endfor %}
-                    </tr>
+                        </div>
+                    </div>
                 {% endfor %}
-            </table>
-            <input class="btn btn-primary" type="submit" value="Salva">
+            </div>
+            <div class="text-left-custom" style="text-align: right">
+                <input class="btn btn-primary" type="submit" value="Salva">
+            </div>
         </form>
 
     {% endif %}
@@ -193,7 +192,7 @@
         $('.pasti_formset_row').formset({
             addText: 'Aggiungi',
             deleteText: 'Elimina',
-            prefix: 'pasti',
+            prefix: 'pasti_set',
             ifdelete: false,
             formCssClass: 'dynamic-formset1',
         });
@@ -268,6 +267,7 @@
             trigger: 'focus'
         });
     </script>
+
     {#    {% endspaceless %}#}
 {% endblock %}
 

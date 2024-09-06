@@ -132,105 +132,110 @@
                         {{ moduli_missione_form.non_field_errors }}
                     </div>
                 {% endif %}
-
                 <h3>Moduli precompilati</h3>
-                <form action="{% url 'RimborsiApp:genera_pdf' id=missione.id %}" method="post"> {% csrf_token %}
-                    <div class="card m-0 p-0">
-                        <div class="card-body p-0">
-                            {{ moduli_missione_form.management_form }}
-                            <div class="row no-gutters">
-                                <div class="col-md-6 col-lg-3 d-flex">
-                                    <div class="table-danger p-4 w-100 d-flex flex-column">
-                                        {{ moduli_missione_form.anticipo|as_crispy_field }}
-                                        {% if missione.modulimissione.anticipo_file %}
-                                            <a class="download" href="{% url 'RimborsiApp:download' missione.id 'anticipo_file' %}">
-                                                <i class="fa fa-file-word-o fa-2x"></i> Richiesta Anticipo
-                                            </a>
-                                        {% else %}
-                                            <p>Richiesta Anticipo</p>
-                                        {% endif %}
-                                    </div>
-                                </div>
+                <form action="{% url 'RimborsiApp:genera_pdf' id=missione.id %}" method="post">{% csrf_token %}
+                    <table id="table-moduli" class="table table-borderless table-sm rounded">
+                        {{ moduli_missione_form.management_form }}
+                        <tr class="center">
+                           <td class="table-danger">
+                                {{ moduli_missione_form.anticipo|as_crispy_field }}
+                            </td>
 
-                                <div class="col-md-6 col-lg-3 d-flex">
-                                    <div class="table-primary p-4 w-100 d-flex flex-column">
-                                        {{ moduli_missione_form.parte_1|as_crispy_field }}
-                                        {% if missione.modulimissione.parte_1_file %}
-                                            <a class="download" href="{% url 'RimborsiApp:download' missione.id 'parte_1_file' %}">
-                                                <i class="fa fa-file-pdf-o fa-2x"></i> Missione Parte I
-                                            </a>
-                                        {% else %}
-                                            <p>Missione Parte I</p>
-                                        {% endif %}
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6 col-lg-3 d-flex">
-                                    <div class="table-secondary p-4 w-100 d-flex flex-column">
-                                        {{ moduli_missione_form.parte_2|as_crispy_field }}
-                                        {% if missione.modulimissione.parte_2_file %}
-                                            <a class="download" href="{% url 'RimborsiApp:download' missione.id 'parte_2_file' %}">
-                                                <i class="fa fa-file-word-o fa-2x"></i> Missione Parte II
-                                            </a>
-                                        {% else %}
-                                            <p>Missione Parte II</p>
-                                        {% endif %}
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6 col-lg-3 d-flex">
-                                    <div class="table-success p-4 w-100 d-flex flex-column">
-                                        {{ moduli_missione_form.kasko|as_crispy_field }}
-                                        {% if missione.modulimissione.kasko_file %}
-                                            <a class="download" href="{% url 'RimborsiApp:download' missione.id 'kasko_file' %}">
-                                                <i class="fa fa-file-pdf-o fa-2x"></i> Kasko
-                                            </a>
-                                        {% else %}
-                                            <a class="download" target="_blank" href="https://wtr.unimore.it/private/kasko/Richiesta.aspx">
-                                                <i class="fa fa-external-link fa-1x" aria-hidden="true"></i> Kasko
-                                            </a>
-                                        {% endif %}
-                                    </div>
-                                </div>
-
-                                {% if user.profile.qualifica == 'DOTTORANDO' %}
-
-                                <div class="col-md-6 col-lg-3 d-flex">
-                                    <div class="table-warning p-4 w-100 d-flex flex-column">
-                                        {{ moduli_missione_form.dottorandi|as_crispy_field }}
-                                        {% if missione.modulimissione.dottorandi_file %}
-                                            <a class="download" href="{% url 'RimborsiApp:download' missione.id 'dottorandi_file' %}">
-                                                <i class="fa fa-file-pdf-o fa-2x"></i> Autorizzazione Dottorando
-                                            </a>
-                                        {% else %}
-                                            <p>Autorizzazione Dottorando</p>
-                                        {% endif %}
-                                    </div>
-                                </div>
+                            <td class="table-primary">
+                                {{ moduli_missione_form.parte_1|as_crispy_field }}
+                            </td>
+                            <td class="table-secondary">
+                                {{ moduli_missione_form.parte_2|as_crispy_field }}
+                            </td>
+                            <td class="table-success">
+                                {{ moduli_missione_form.kasko|as_crispy_field }}
+                            </td>
+                            {% if user.profile.qualifica == 'DOTTORANDO' %}
+                                <td class="table-warning">
+                                    {{ moduli_missione_form.dottorandi|as_crispy_field }}
+                                </td>
+                            {% endif %}
+                        </tr>
+                        <tr class="center">
+                            <td class="table-danger">
+                                {% if missione.modulimissione.anticipo_file %}
+                                    <a class="download"
+                                       href="{% url 'RimborsiApp:download' missione.id 'anticipo_file' %}"> <i
+                                            class="fa fa-file-word-o fa-2x"></i> Richiesta Anticipo</a>
+                                {% else %}
+                                    <p>Richiesta Anticipo</p>
                                 {% endif %}
-
-                                <div class="col-12">
-                                    <div class="table-info p-4">
-                                        {{ moduli_missione_form.atto_notorio|as_crispy_field }}
-                                        {{ moduli_missione_form.dichiarazione_check_std|as_crispy_field }}
-                                        {{ moduli_missione_form.dichiarazione_check_pers|as_crispy_field }}
-                                        {{ moduli_missione_form.atto_notorio_dichiarazione|as_crispy_field }}
-                                        {% if missione.modulimissione.atto_notorio_file %}
-                                            <a class="download" href="{% url 'RimborsiApp:download' missione.id 'atto_notorio_file' %}">
-                                                <i class="fa fa-file-pdf-o fa-2x"></i> Atto Notorio
-                                            </a>
-                                        {% else %}
-                                            <p>Atto di notorietà</p>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <input class="btn btn-primary col-10 mt-2 col-md-2 mx-md-0 mx-auto d-block " type="submit" value="Compila PDF">
+                            </td>
+                            <td class="table-primary">
+                                {% if missione.modulimissione.parte_1_file %}
+                                    <a class="download"
+                                       href="{% url 'RimborsiApp:download' missione.id 'parte_1_file' %}"> <i
+                                            class="fa fa-file-pdf-o fa-2x"></i> Missione Parte I</a>
+                                {% else %}
+                                    <p>Missione Parte I</p>
+                                {% endif %}
+                            </td>
+                            <td class="table-secondary">
+                                {% if missione.modulimissione.parte_2_file %}
+                                    <a class="download"
+                                       href="{% url 'RimborsiApp:download' missione.id 'parte_2_file' %}"><i
+                                            class="fa fa-file-word-o fa-2x"></i> Missione Parte II</a>
+                                {% else %}
+                                    <p>Missione Parte II</p>
+                                {% endif %}
+                            </td>
+                            <td class="table-success">
+                                {% if missione.modulimissione.kasko_file %}
+                                    <a class="download" href="{% url 'RimborsiApp:download' missione.id 'kasko_file' %}"
+                                    ><i class="fa fa-file-pdf-o fa-2x"></i> Kasko</a>
+                                {% else %}
+                                    <a class="download" target="_blank"
+                                       href="https://wtr.unimore.it/private/kasko/Richiesta.aspx"><i
+                                            class="fa fa-external-link fa-1x" aria-hidden="true"></i>
+                                        Kasko</a>
+                                {% endif %}
+                            </td>
+                            {% if user.profile.qualifica == 'DOTTORANDO' %}
+                                <td class="table-warning center">
+                                    {% if missione.modulimissione.dottorandi_file %}
+                                        <a class="download"
+                                           href="{% url 'RimborsiApp:download' missione.id 'dottorandi_file' %}"
+                                        ><i class="fa fa-file-pdf-o fa-2x"></i> Autorizzazione
+                                            Dottorando</a>
+                                    {% else %}
+                                        <p>Autorizzazione Dottorando</p>
+                                    {% endif %}
+                                </td>
+                            {% endif %}
+                        </tr>
+                        <tr>
+                            <td class="table-info center">
+                                {{ moduli_missione_form.atto_notorio|as_crispy_field }}
+                            </td>
+                            <td class="table-info" rowspan="2"
+                                colspan=" {% if user.profile.qualifica == 'DOTTORANDO' %}4{% else %}3{% endif %}">
+                                {{ moduli_missione_form.dichiarazione_check_std|as_crispy_field }}
+                                {{ moduli_missione_form.dichiarazione_check_pers|as_crispy_field }}
+                                {{ moduli_missione_form.atto_notorio_dichiarazione|as_crispy_field }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-info center">
+                                {% if missione.modulimissione.atto_notorio_file %}
+                                    <a class="download"
+                                       href="{% url 'RimborsiApp:download' missione.id 'atto_notorio_file' %}"
+                                    ><i class="fa fa-file-pdf-o fa-2x"></i> Atto Notorio</a>
+                                {% else %}
+                                    <p>Atto di notorietà</p>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                    <input class="btn btn-primary" type="submit" value="Compila PDF">
                 </form>
 
-                {% if user.profile.qualifica == 'PO' or user.profile.qualifica == 'PA' or user.profile.qualifica == 'RU' or user.profile.qualifica == 'RTDA' or user.profile.qualifica == 'RTDB' or user.profile.qualifica == 'RTT' %}                    <hr>
+                {% if user.profile.qualifica == 'PO' or user.profile.qualifica == 'PA' or user.profile.qualifica == 'RU' or user.profile.qualifica == 'RTDA' or user.profile.qualifica == 'RTDB' or user.profile.qualifica == 'RTT' %}
+                    <hr>
                     <h3>Autorizzazione missione all'estero</h3>
                     <form action="{% url 'RimborsiApp:invia_email_autorizzazione' id=missione.id %}" method="post"
                           id="autorizzazione_missione_form">{% csrf_token %}
@@ -249,11 +254,17 @@
                                         <button type='button' class='btn btn-danger btn-sm delete'><i
                                                 class='fa fa-trash' aria-hidden='true'></i></button>
                                     </li>
+
                                     <li class='list-group-item py-1' name="aaa">
-                                        monica.zaccarelli@unimore.it
+                                        {% if user.profile.qualifica == 'PO' or user.profile.qualifica == 'PA' or user.profile.qualifica == 'RU' %}
+                                            claudio.malagoni@unimore.it
+                                        {% else %}
+                                            monica.zaccarelli@unimore.it
+                                        {% endif %}
                                         <button type='button' class='btn btn-danger btn-sm delete'><i
                                                 class='fa fa-trash' aria-hidden='true'></i></button>
                                     </li>
+
                                     <li class='list-group-item py-1'>
                                         {{ user.email }}
                                         <button type='button' class='btn btn-danger btn-sm delete'><i
@@ -276,15 +287,13 @@
                                 <label for="textarea-email">Testo e-mail:</label>
                                 <textarea class="form-control" id="textarea-email" name="textarea-email" rows="8">
 Spett.le Dipartimento,
-
 {% if user.profile.sesso == 'M' %}
-il sottoscritto
-{% else %}
-la sottoscritta
-{% endif %}
-{{ user.first_name }} {{ user.last_name }} chiede l'autorizzazione per compiere una missione all'estero dal {{ missione.inizio|date:"d/m/Y" }} al {{ missione.fine|date:"d/m/Y" }} a {{ missione.citta_destinazione }} ({{ missione.stato_destinazione.nome }}).
+il sottoscritto {{ user.first_name }} {{ user.last_name }} chiede l'autorizzazione per compiere una missione all'estero dal {{ missione.inizio|date:"d/m/Y" }} al {{ missione.fine|date:"d/m/Y" }} a {{ missione.citta_destinazione }} ({{ missione.stato_destinazione.nome }}).
 Motivo della missione: {{ missione.motivazione }}.
-
+{% else %}
+la sottoscritta {{ user.first_name }} {{ user.last_name }} chiede l'autorizzazione per compiere una missione all'estero dal {{ missione.inizio|date:"d/m/Y" }} al {{ missione.fine|date:"d/m/Y" }} a {{ missione.citta_destinazione }} ({{ missione.stato_destinazione.nome }}).
+Motivo della missione: {{ missione.motivazione }}.
+{% endif %}
 Cordiali saluti,
 {{ user.first_name }} {{ user.last_name }}</textarea>
                             </div>

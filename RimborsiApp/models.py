@@ -3,6 +3,7 @@ import datetime
 from codicefiscale import codicefiscale
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from RimborsiApp.storage import OverwriteStorage
@@ -199,6 +200,12 @@ MOTIVAZIONE_AUTO_CHOICES = (
     # (7, "Vuoto"),
 )
 
+TIPO_SCONTRINO_CHOICES = (
+    ("PASTO", "PASTO"),
+    ("PERNOTTAMENTO", "PERNOTTAMENTO"),
+    ("ALTRO", "ALTRO"),
+    ("CONVEGNO", "CONVEGNO"),
+)
 
 class Automobile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -235,6 +242,37 @@ class Stato(models.Model):
     class Meta:
         verbose_name_plural = "Stati"
 
+# Media paths differentiated on the type of the "Spesa"
+def profile_type_path(instance, filename):
+    spesa_missione = SpesaMissione.objects.filter(spesa=instance).first()
+    tipo_scontrino = spesa_missione.tipo if spesa_missione else 'GENERICO'
+    user_id = spesa_missione.missione.user.id if spesa_missione else 'unknown_user'
+    id_missione = spesa_missione.missione.id if spesa_missione else 'unknown_mission'
+    return f'users/{user_id}/{id_missione}/{tipo_scontrino}/{filename}'
+
+
+def trasporti_path(instance, filename):
+    user_id = instance.missione.user.id if instance else 'unknown_user'
+    id_missione = instance.missione.id if instance else 'unknown_mission'
+    return f'users/{user_id}/{id_missione}/TRASPORTO/{filename}'
+
+
+def pasti_path(instance, filename):
+    user_id = instance.missione.user.id if instance else 'unknown_user'
+    id_missione = instance.missione.id if instance else 'unknown_mission'
+    return f'users/{user_id}/{id_missione}/PASTO/{filename}'
+
+
+class Spesa(models.Model):
+    data = models.DateField()
+    importo = models.FloatField()
+    valuta = models.CharField(max_length=3, choices=VALUTA_CHOICES, default="EUR")
+    descrizione = models.CharField(max_length=1024, null=True, blank=True)
+    img_scontrino = models.ImageField(upload_to=profile_type_path, null=True, blank=True)
+    class Meta:
+        verbose_name = "Spesa"
+        verbose_name_plural = "Spese"
+
 
 class Missione(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -251,6 +289,11 @@ class Missione(models.Model):
     automobile_altrui = models.CharField(max_length=100, null=True, blank=True)
     tipo = models.CharField(max_length=8, choices=TIPO_MISSIONE_CHOICES, null=True)
     anticipo = models.FloatField(null=True, blank=True, default=0)
+
+    pernottamenti = models.ManyToManyField(Spesa, through='PernottamentoMissione',
+                                           related_name='pernottamenti_missioni')
+    convegni = models.ManyToManyField(Spesa, through='ConvegnoMissione', related_name='convegni_missioni')
+    altre_spese = models.ManyToManyField(Spesa, through='AltreSpeseMissione', related_name='altrespese_missioni')
 
     scontrino = models.TextField(null=True, blank=True)
     pernottamento = models.TextField(null=True, blank=True)
@@ -279,6 +322,52 @@ class Missione(models.Model):
         return f'{self.inizio} - {self.stato_destinazione} - {self.citta_destinazione}'
 
 
+class SpesaMissione(models.Model):
+    missione = models.ForeignKey(Missione, on_delete=models.CASCADE)
+    spesa = models.ForeignKey(Spesa, on_delete=models.CASCADE)
+    tipo = models.CharField(max_length=13, choices=TIPO_SCONTRINO_CHOICES)
+
+    class Meta:
+        verbose_name = "Spesa Missione"
+        verbose_name_plural = "Spese Missione"
+
+
+class PernottamentoMissione(SpesaMissione):
+    class Meta:
+        proxy = True
+
+
+class ConvegnoMissione(SpesaMissione):
+    class Meta:
+        proxy = True
+
+
+class AltreSpeseMissione(SpesaMissione):
+    class Meta:
+        proxy = True
+
+
+class Pasti(models.Model):
+    missione = models.ForeignKey(Missione, on_delete=models.CASCADE)
+    data = models.DateField()
+    importo1 = models.FloatField(null=True, blank=True)
+    valuta1 = models.CharField(max_length=3, choices=VALUTA_CHOICES, default='EUR')
+    descrizione1 = models.CharField(max_length=255, null=True, blank=True)
+    img_scontrino1 = models.ImageField(upload_to=pasti_path, null=True, blank=True)
+    importo2 = models.FloatField(null=True, blank=True)
+    valuta2 = models.CharField(max_length=3, choices=VALUTA_CHOICES, default='EUR')
+    descrizione2 = models.CharField(max_length=255, null=True, blank=True)
+    img_scontrino2 = models.ImageField(upload_to=pasti_path, null=True, blank=True)
+    importo3 = models.FloatField(null=True, blank=True)
+    valuta3 = models.CharField(max_length=3, choices=VALUTA_CHOICES, default='EUR')
+    descrizione3 = models.CharField(max_length=255, null=True, blank=True)
+    img_scontrino3 = models.ImageField(upload_to=pasti_path, null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Pasto"
+        verbose_name_plural = "Pasti"
+
+
 class Trasporto(models.Model):
     missione = models.ForeignKey(Missione, on_delete=models.CASCADE)
     data = models.DateField()
@@ -289,6 +378,7 @@ class Trasporto(models.Model):
     costo = models.FloatField()
     valuta = models.CharField(max_length=3, choices=VALUTA_CHOICES, default="EUR")
     km = models.FloatField(null=True, blank=True)
+    img_scontrino = models.ImageField(upload_to=trasporti_path, null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "Trasporti"

@@ -16,9 +16,10 @@ from django.core.exceptions import ImproperlyConfigured
 
 import sys
 
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 with open(os.path.join(BASE_DIR, 'secrets.json')) as secrets_file:
     secrets = json.load(secrets_file)
@@ -38,9 +39,6 @@ def get_secret(setting, secrets=secrets):
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = get_secret('SECRET_KEY')
 
-MAINTENANCE_MODE = True
-MAINTENANCE_BYPASS_QUERY = get_secret('MAINTENANCE_BYPASS_QUERY')
-
 # SECURITY WARNING: don't run with debug turned on in production!
 runserver = 'runserver' in sys.argv
 if runserver:
@@ -52,7 +50,7 @@ else:
 CRISPY_FAIL_SILENTLY = not DEBUG
 
 ALLOWED_HOSTS = [
-    'localhost', '127.0.0.1', 'turner', 'missioni', 'missioni.ing.unimore.it', 'missioni-dev.ing.unimore.it', 'missioni-dev.ing.unimore.it:8080'
+    'localhost', '127.0.0.1', 'turner', 'missioni', 'missioni-dev.ing.unimore.it'
 ]
 
 # Application definition
@@ -84,7 +82,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'RimborsiApp.middleware.MaintenanceModeMiddleware',
 ]
 
 ROOT_URLCONF = 'Rimborsi.urls'

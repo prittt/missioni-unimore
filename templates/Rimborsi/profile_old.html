@@ -12,21 +12,9 @@
                data-content="Gli utenti nati in un paese estero possono creare un profilo speciale cliccando
                 pulsante 'Profilo Straniero'."><i
             class="fa fa-info-circle fa-1x" aria-hidden="true"></i></a>
-            <a id="profilo_straniero" style="width: 120px; margin-top: 8px" class='btn btn-sm btn-info' href="{% url 'RimborsiApp:foreign_profile'%}">Profilo Straniero</a>
+            <a style="float: right;" value='Profilo Straniero' class='btn btn-sm btn-info' href="{% url 'RimborsiApp:foreign_profile'%}">Profilo Straniero</a>
         </h2>
-
-        <style>
-            @media screen and (max-width: 450px){
-                #profilo_straniero { float: none; display: block; }
-            }
-            @media screen and (min-width: 450px) {
-                #profilo_straniero { float: right; display: inline-block;
-                }
-            }
-        </style>
-
         <div class="rounded">
-            <br>
             {% crispy profile_form %}
         </div>
         <hr>
@@ -61,8 +49,7 @@
                     </tr>
                 {% endfor %}
             </table>
-            <input class="btn btn-primary" style="margin-bottom: 50px" type="submit" value="Aggiorna">
-
+            <input class="btn btn-primary" type="submit" value="Aggiorna">
         </form>
 
         <script src="{% static 'RimborsiApp/formset/jquery_formset.js' %}"></script>

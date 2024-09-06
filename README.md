@@ -9,6 +9,13 @@
 <p align="justify">L'applicazione è disponibile a <a href="https://missioni.ing.unimore.it">missioni.ing.unimore.it</a> ed è accessibile anche all'esterno del dipartimento di Ingegneria "Enzo Ferrari". L'autenticazione avviene mediante shibboleth quindi non è richiesta alcuna registrazione. Enjoy!</p>
 
 # News
+<p align="justify"><b>06/09/2024</b> - Major update!
+    <ul>
+<li>Visualizzazione delle varie pagine compatibile per uso su mobile (tablet e smartphone);</li>
+<li>Possibilità di caricare le immagini delle spese (e.g., scontrini) direttamente sulla piattaforma; a breve verrà aggiunta la possibilità di esportare tutte le immagini in un unico file e, prima o poi, un OCR per popolare in automatico il campo "Importo".</li>
+</ul>
+Attività svolta da Riccardo Masetti durante la prova finale della LT Ingegneria Informatica.
+
 <p align="justify"><b>17/05/2023</b> - Aggiunto modulo per richiesta anticipo.</p>
 <p align="justify"><b>26/11/2019</b> - Possibilità di concludere (archiviare) una missione già rimborsata.</p>
 <p align="justify"><b>26/11/2019</b> - E' stata aggiunta la possibilità di specificare valute diverse dall'euro. Il tasso di cambio      è quello fornito dalla <a href="https://tassidicambio.bancaditalia.it">Banca d'Italia</a> alla data in cui è stata effettuata la spesa (come indicato nel regolamento).</p>

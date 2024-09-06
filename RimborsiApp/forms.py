@@ -1,14 +1,14 @@
 from comuni_italiani import models as comuni_italiani_models
 from crispy_forms.bootstrap import Div, InlineCheckboxes
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Column, Fieldset, Layout, Row, Submit
+from crispy_forms.layout import Column, Fieldset, Layout, Row, Submit, HTML
 from dal import autocomplete
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.forms.models import formset_factory, inlineformset_factory
+from django.forms.models import formset_factory, inlineformset_factory, modelformset_factory
 
 from .models import *
-
+from .widgets import CustomClearableFileInput, PastiCustomClearableFileInput
 
 class ForeignProfileForm(forms.ModelForm):
     nome = forms.CharField(max_length=30, label='Name')
@@ -78,30 +78,39 @@ class ForeignProfileForm(forms.ModelForm):
         self.helper.add_input(Submit('submit', 'Update'))
 
         self.helper.layout = Layout(
-            Row(Column('nome', css_class="col-6"), Column('cognome', css_class="col-6")),
-            Row(Column('data_nascita', css_class="col-3"), Column('luogo_nascita_straniero', css_class="col-3"),
-                Column('cf', css_class="col-3"), Column('sesso', css_class="col-3")),
+            Row(Column('nome', css_class='col-sm-6'), Column('cognome', css_class='col-sm-6')),
+            Row(Column('data_nascita', css_class='col-lg-3 col-sm-6'),
+                Column('luogo_nascita_straniero', css_class='col-lg-3 col-sm-6'),
+                Column('cf', css_class='col-lg-3 col-sm-6'), Column('sesso', css_class='col-lg-3 col-sm-6')),
+
+            HTML('<br>'),
+
             Fieldset("Residence", Row(
-                Column('residenza_via', css_class='col-4'),
-                Column('residenza_n', css_class='col-2'),
-                Column('residenza_comune', css_class='col-3'),
-                Column('residenza_provincia', css_class='col-3'), css_id='residenza-row')),
+                Column('residenza_via', css_class='col-lg-4 col-sm-8'),
+                Column('residenza_n', css_class='col-lg-2 col-3'),
+                Column('residenza_comune', css_class='col-lg-3 col-sm-6'),
+                Column('residenza_provincia', css_class='col-lg-3 col-sm-6'), css_id='residenza-row')),
+
+            HTML('<br>'),
 
             Fieldset("Domicile", Row(
-                Column('domicilio_via', css_class='col-4'),
-                Column('domicilio_n', css_class='col-2'),
-                Column('domicilio_comune', css_class='col-3'),
-                Column('domicilio_provincia', css_class='col-3'), css_id='domicilio-row'), css_id='domicilio-fieldset'),
+                Column('domicilio_via', css_class='col-lg-4 col-sm-8'),
+                Column('domicilio_n', css_class='col-lg-2 col-3'),
+                Column('domicilio_comune', css_class='col-lg-3 col-sm-6'),
+                Column('domicilio_provincia', css_class='col-lg-3 col-sm-6'), css_id='domicilio-row'),
+                     css_id='domicilio-fieldset'),
+
+            HTML('<br>'),
 
             Fieldset("Working position",
                      Row(
-                         Column('qualifica', css_class="col-6"),
-                         Column('datore_lavoro', css_class="col-6")),
-                     Row(Column('telefono', css_class="col-6"),
-                         Column('data_fine_rapporto', css_class="col-6")),
-                     Row(Column('tutor', css_class="col-4"),
-                         Column('anno_dottorato', css_class="col-2"),
-                         Column('scuola_dottorato', css_class="col-6"), css_id="dottorando-details"),
+                         Column('qualifica', css_class='col-md-6'),
+                         Column('datore_lavoro', css_class='col-md-6')),
+                     Row(Column('telefono', css_class='col-lg-6'),
+                         Column('data_fine_rapporto', css_class='col-lg-6')),
+                     Row(Column('tutor', css_class='col-lg-4'),
+                         Column('anno_dottorato', css_class='col-lg-2'),
+                         Column('scuola_dottorato', css_class='col-lg-6'), css_id='dottorando-details'),
                      )
         )
 
@@ -191,30 +200,39 @@ class ProfileForm(forms.ModelForm):
         self.helper.add_input(Submit('submit', 'Aggiorna'))
 
         self.helper.layout = Layout(
-            Row(Column('nome', css_class="col-6"), Column('cognome', css_class="col-6")),
-            Row(Column('data_nascita', css_class="col-3"), Column('luogo_nascita', css_class="col-3"),
-                Column('cf', css_class="col-3"), Column('sesso', css_class="col-3")),
+            Row(Column('nome', css_class='col-sm-6'), Column('cognome', css_class='col-sm-6')),
+            Row(Column('data_nascita', css_class='col-lg-3 col-sm-6'),
+                Column('luogo_nascita', css_class='col-lg-3 col-sm-6'),
+                Column('cf', css_class='col-lg-3 col-sm-6'), Column('sesso', css_class='col-lg-3 col-sm-6')),
+
+            HTML('<br>'),
+
             Fieldset("Residenza", Row(
-                Column('residenza_via', css_class='col-4'),
-                Column('residenza_n', css_class='col-2'),
-                Column('residenza_comune', css_class='col-3'),
-                Column('residenza_provincia', css_class='col-3'), css_id='residenza-row')),
+                Column('residenza_via', css_class='col-lg-4 col-sm-8'),
+                Column('residenza_n', css_class='col-lg-2 col-3'),
+                Column('residenza_comune', css_class='col-lg-3 col-sm-6'),
+                Column('residenza_provincia', css_class='col-lg-3 col-sm-6'), css_id='residenza-row')),
+
+            HTML('<br>'),
 
             Fieldset("Domicilio", Row(
-                Column('domicilio_via', css_class='col-4'),
-                Column('domicilio_n', css_class='col-2'),
-                Column('domicilio_comune', css_class='col-3'),
-                Column('domicilio_provincia', css_class='col-3'), css_id='domicilio-row'), css_id='domicilio-fieldset'),
+                Column('domicilio_via', css_class='col-lg-4 col-sm-8'),
+                Column('domicilio_n', css_class='col-lg-2 col-3'),
+                Column('domicilio_comune', css_class='col-lg-3 col-sm-6'),
+                Column('domicilio_provincia', css_class='col-lg-3 col-sm-6'), css_id='domicilio-row'),
+                     css_id='domicilio-fieldset'),
+
+            HTML('<br>'),
 
             Fieldset("Posizione lavorativa",
                      Row(
-                         Column('qualifica', css_class="col-6"),
-                         Column('datore_lavoro', css_class="col-6")),
-                     Row(Column('telefono', css_class="col-6"),
-                         Column('data_fine_rapporto', css_class="col-6")),
-                     Row(Column('tutor', css_class="col-4"),
-                         Column('anno_dottorato', css_class="col-2"),
-                         Column('scuola_dottorato', css_class="col-6"), css_id="dottorando-details"),
+                         Column('qualifica', css_class='col-md-6'),
+                         Column('datore_lavoro', css_class='col-md-6')),
+                     Row(Column('telefono', css_class='col-lg-6'),
+                         Column('data_fine_rapporto', css_class='col-lg-6')),
+                     Row(Column('tutor', css_class='col-lg-4'),
+                         Column('anno_dottorato', css_class='col-lg-2'),
+                         Column('scuola_dottorato', css_class='col-lg-6'), css_id='dottorando-details'),
                      )
         )
 
@@ -239,7 +257,7 @@ class MissioneForm(forms.ModelForm):
     class Meta:
         model = Missione
         fields = '__all__'
-        exclude = ('user', 'scontrino', 'pernottamento', 'altrespese')
+        exclude = ('user', 'scontrino', 'pernottamento', 'pernottamenti', 'altrespese', 'altre_spese', 'convegni' )
 
         widgets = {
             'inizio': forms.DateInput(attrs={'type': 'date'}),
@@ -289,66 +307,122 @@ class MissioneForm(forms.ModelForm):
             self.helper.add_input(Submit('submit', 'Crea'))
 
         self.helper.layout = Layout(
-            Row(Div('citta_destinazione', css_class="col-6"), Div('stato_destinazione', css_class="col-6")),
-            Row(Div('inizio', css_class="col-3"), Div('inizio_ora', css_class="col-3"),
-                Div('fine', css_class="col-3"), Div('fine_ora', css_class="col-3")),
-            Row(Div('fondo', css_class="col-3"), Div('struttura_fondi', css_class="col-3"),
-                Div('tipo', css_class="col-3"), Div('anticipo', css_class="col-3")),
+            Row(Div('citta_destinazione', css_class="col-sm-6"), Div('stato_destinazione', css_class="col-sm-6")),
+            Row(Div('inizio', css_class="col-lg-3 col-sm-6"), Div('inizio_ora', css_class="col-lg-3 col-sm-6"),
+                Div('fine', css_class="col-lg-3 col-sm-6"), Div('fine_ora', css_class="col-lg-3 col-sm-6")),
+            Row(Div('fondo', css_class="col-lg-3 col-sm-6"), Div('struttura_fondi', css_class="col-lg-3 col-sm-6"),
+                Div('tipo', css_class="col-lg-3 col-sm-6"), Div('anticipo', css_class="col-lg-3 col-sm-6")),
             Row(Div('motivazione', css_class="col-12")),
-            Row(Div(InlineCheckboxes('mezzi_previsti'), css_class="col-6"), Div('automobile', css_class="col-6"),
-                Div('automobile_altrui', css_class="col-6")),
+            Row(Div(InlineCheckboxes('mezzi_previsti'), css_class="col-12 m-2 p-2"),
+                Div('automobile', css_class="col-sm-12 col-md-6"),
+                Div('automobile_altrui', css_class="col-12")),
             Row(Div(InlineCheckboxes('motivazione_automobile'), css_class="col-12")),
         )
 
 
-# Pasti
-class ScontrinoForm(forms.Form):
-    data = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control form-control-sm'}))
-    desc_label = 'Descrizione (numero fattura/ricevuta fiscale)'
-    s1 = forms.DecimalField(decimal_places=2, label='Spesa', required=False,
-                            widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', }))
-    v1 = forms.ChoiceField(initial="EUR", choices=VALUTA_CHOICES, required=False, label='Valuta',
-                           widget=forms.Select(
-                               attrs={'class': 'form-control form-control-sm', 'style': 'min-width: 55px;'}))
-    d1 = forms.CharField(required=False, label=desc_label,
-                         widget=forms.TextInput(attrs={'class': 'form-control form-control-sm', }))
+###########################
+# BEGIN: Old Version
+###########################
+# # Pasti
+# class ScontrinoForm(forms.Form):
+#     data = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control form-control-sm'}))
+#     desc_label = 'Descrizione (numero fattura/ricevuta fiscale)'
+#     s1 = forms.DecimalField(decimal_places=2, label='Spesa', required=False,
+#                             widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', }))
+#     v1 = forms.ChoiceField(initial="EUR", choices=VALUTA_CHOICES, required=False, label='Valuta',
+#                            widget=forms.Select(
+#                                attrs={'class': 'form-control form-control-sm', 'style': 'min-width: 55px;'}))
+#     d1 = forms.CharField(required=False, label=desc_label,
+#                          widget=forms.TextInput(attrs={'class': 'form-control form-control-sm', }))
+#
+#     s2 = forms.DecimalField(decimal_places=2, label='Spesa', required=False,
+#                             widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', }))
+#     v2 = forms.ChoiceField(initial="EUR", choices=VALUTA_CHOICES, required=False, label='Valuta',
+#                            widget=forms.Select(
+#                                attrs={'class': 'form-control form-control-sm', 'style': 'min-width: 55px;'}))
+#     d2 = forms.CharField(required=False, label=desc_label,
+#                          widget=forms.TextInput(attrs={'class': 'form-control form-control-sm', }))
+#
+#     s3 = forms.DecimalField(decimal_places=2, label='Spesa', required=False,
+#                             widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', }))
+#     v3 = forms.ChoiceField(initial="EUR", choices=VALUTA_CHOICES, required=False, label='Valuta',
+#                            widget=forms.Select(
+#                                attrs={'class': 'form-control form-control-sm', 'style': 'min-width: 55px;'}))
+#     d3 = forms.CharField(required=False, label=desc_label,
+#                          widget=forms.TextInput(attrs={'class': 'form-control form-control-sm', }))
+#
+#     # def __init__(self, *args, **kwargs):
+#     #     super(ScontrinoForm, self).__init__(*args, **kwargs)
+#     #     self.initial['v1'] = 'EUR'
+#     #     self.initial['v2'] = 'EUR'
+#     #     self.initial['v3'] = 'EUR'
+#
+# # Pernottamenti, iscrizione convegni, altre spese
+# class ScontrinoExtraForm(forms.Form):
+#     data = forms.DateField(
+#         widget=forms.DateInput(
+#             attrs={'type': 'date', 'class': 'form-control form-control-sm', 'required': 'required', }))
+#     desc_label = 'Descrizione (numero fattura/ricevuta fiscale)'
+#     s1 = forms.DecimalField(decimal_places=2, label='Spesa', required=True,
+#                             widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', }))
+#     v1 = forms.ChoiceField(initial="EUR", choices=VALUTA_CHOICES, required=False, label='Valuta',
+#                            widget=forms.Select(
+#                                attrs={'class': 'form-control form-control-sm', 'style': 'min-width: 55px;'}))
+#     d1 = forms.CharField(required=False, label=desc_label,
+#                          widget=forms.TextInput(attrs={'class': 'form-control form-control-sm', }), )
+###########################
+# END: Old Version
+###########################
 
-    s2 = forms.DecimalField(decimal_places=2, label='Spesa', required=False,
-                            widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', }))
-    v2 = forms.ChoiceField(initial="EUR", choices=VALUTA_CHOICES, required=False, label='Valuta',
-                           widget=forms.Select(
-                               attrs={'class': 'form-control form-control-sm', 'style': 'min-width: 55px;'}))
-    d2 = forms.CharField(required=False, label=desc_label,
-                         widget=forms.TextInput(attrs={'class': 'form-control form-control-sm', }))
 
-    s3 = forms.DecimalField(decimal_places=2, label='Spesa', required=False,
-                            widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', }))
-    v3 = forms.ChoiceField(initial="EUR", choices=VALUTA_CHOICES, required=False, label='Valuta',
-                           widget=forms.Select(
-                               attrs={'class': 'form-control form-control-sm', 'style': 'min-width: 55px;'}))
-    d3 = forms.CharField(required=False, label=desc_label,
-                         widget=forms.TextInput(attrs={'class': 'form-control form-control-sm', }))
+class PastiForm(forms.ModelForm):
+    class Meta:
+        model = Pasti
+        fields = '__all__'
+        widgets = {
+            'data': forms.DateInput(attrs={'type': 'date', 'class': 'form-control form-control-sm'}),
+            'importo1': forms.NumberInput(attrs={'class': 'form-control form-control-sm'}),
+            'valuta1': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'descrizione1': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'img_scontrino1': PastiCustomClearableFileInput(attrs={'class': 'form-control form-control-sm'}),
+            'importo2': forms.NumberInput(attrs={'class': 'form-control form-control-sm'}),
+            'valuta2': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'descrizione2': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'img_scontrino2': PastiCustomClearableFileInput(attrs={'class': 'form-control form-control-sm'}),
+            'importo3': forms.NumberInput(attrs={'class': 'form-control form-control-sm'}),
+            'valuta3': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'descrizione3': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'img_scontrino3': PastiCustomClearableFileInput(attrs={'class': 'form-control form-control-sm'}),
+        }
+        labels = {
+            'data': 'Data',
+            'importo1': 'Importo',
+            'valuta1': 'Valuta',
+            'descrizione1': 'Descrizione',
+            'img_scontrino1': 'Immagine Scontrino',
+            'importo2': 'Importo',
+            'valuta2': 'Valuta',
+            'descrizione2': 'Descrizione',
+            'img_scontrino2': 'Immagine Scontrino',
+            'importo3': 'Importo',
+            'valuta3': 'Valuta',
+            'descrizione3': 'Descrizione',
+            'img_scontrino3': 'Immagine Scontrino',
+        }
 
-    # def __init__(self, *args, **kwargs):
-    #     super(ScontrinoForm, self).__init__(*args, **kwargs)
-    #     self.initial['v1'] = 'EUR'
-    #     self.initial['v2'] = 'EUR'
-    #     self.initial['v3'] = 'EUR'
 
-
-# Pernottamenti, iscrizione convegni, altre spese
-class ScontrinoExtraForm(forms.Form):
-    data = forms.DateField(
-        widget=forms.DateInput(
-            attrs={'type': 'date', 'class': 'form-control form-control-sm', 'required': 'required', }))
-    desc_label = 'Descrizione (numero fattura/ricevuta fiscale)'
-    s1 = forms.DecimalField(decimal_places=2, label='Spesa', required=True,
-                            widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', }))
-    v1 = forms.ChoiceField(initial="EUR", choices=VALUTA_CHOICES, required=False, label='Valuta',
-                           widget=forms.Select(
-                               attrs={'class': 'form-control form-control-sm', 'style': 'min-width: 55px;'}))
-    d1 = forms.CharField(required=False, label=desc_label,
-                         widget=forms.TextInput(attrs={'class': 'form-control form-control-sm', }), )
+class SpesaForm(forms.ModelForm):
+    class Meta:
+        model = Spesa
+        fields ='__all__'
+        widgets = {
+            'data': forms.DateInput(attrs={'type': 'date', 'class': 'form-control form-control-sm', 'required': 'required',}),
+            'importo': forms.NumberInput(attrs={'class': 'form-control form-control-sm', 'required': 'required',}),
+            'valuta': forms.Select(attrs={'class': 'form-control form-control-sm'}),
+            'descrizione': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            #'img_scontrino': forms.ClearableFileInput(attrs={'class': 'form-control form-control-sm'}),
+            'img_scontrino': CustomClearableFileInput(attrs={'class': 'form-control form-control-sm', 'id': 'img_scontrino_input'}),
+        }
 
 
 class TrasportoForm(forms.ModelForm):
@@ -368,6 +442,8 @@ class TrasportoForm(forms.ModelForm):
             #     attrs={'class': 'form-control trasporti-costo', 'required': 'required', }),
             'valuta': forms.Select(attrs={'class': 'form-control form-control-sm', 'style': 'min-width: 55px;'}),
             'km': forms.NumberInput(attrs={'class': 'form-control form-control-sm', 'step': 0.01}),
+            'img_scontrino': CustomClearableFileInput(
+                attrs={'class': 'form-control form-control-sm', 'id': 'img_scontrino_input'}),
         }
         labels = {
             'costo': 'Spesa',
@@ -527,5 +603,9 @@ automobile_formset = inlineformset_factory(User, Automobile, AutomobileForm, ext
                                            exclude=('user',), min_num=1)
 trasporto_formset = inlineformset_factory(Missione, Trasporto, TrasportoForm, extra=0, can_delete=True,
                                           fields='__all__', min_num=1)
-scontrino_formset = formset_factory(ScontrinoForm, extra=0)
-scontrino_extra_formset = formset_factory(ScontrinoExtraForm, can_delete=True, extra=0, min_num=1)
+
+# scontrino_formset = formset_factory(ScontrinoForm, extra=0)
+# scontrino_extra_formset = formset_factory(ScontrinoExtraForm, can_delete=True, extra=0, min_num=1)
+spesa_formset = modelformset_factory(Spesa, form=SpesaForm, extra=0, can_delete=True, min_num=1)
+pasto_formset = inlineformset_factory(Missione, Pasti, PastiForm, extra=0, can_delete=True,
+                                       min_num=1)

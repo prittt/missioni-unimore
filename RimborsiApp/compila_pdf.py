@@ -14,7 +14,7 @@ from docx.shared import Cm
 from reportlab.pdfgen import canvas
 
 from .forms import *
-from .views import load_json, money_exchange, resoconto_data
+from .views import money_exchange, resoconto_data
 
 
 @login_required
@@ -350,49 +350,121 @@ def compila_parte_2(request, id):
         table.cell(i, 5).text = costo_str
         table.rows[i].height = Cm(0.61)
 
-    db_dict = {
-        'pernottamento': [],
-        'scontrino': [],  # pasti
-        'convegno': [],
-        'altrespese': [],
+    # Recupero delle altre spese dal database
+    pernottamenti = Spesa.objects.filter(spesamissione__missione=missione, spesamissione__tipo='PERNOTTAMENTO')
+    pasti = Pasti.objects.filter(missione=missione)
+    convegni = Spesa.objects.filter(spesamissione__missione=missione, spesamissione__tipo='CONVEGNO')
+    altre_spese = Spesa.objects.filter(spesamissione__missione=missione, spesamissione__tipo='ALTRO')
+
+    spese_dict = {
+        'pernottamento': pernottamenti,
+        'pasto': pasti,
+        'convegno': convegni,
+        'altro': altre_spese,
     }
 
-    # Load the default values for each field in db_dict
-    for k, _ in db_dict.items():
-        db_dict[k] = load_json(missione, k)
+    ##################################
+    # BEGIN: Old json-based version
+    ##################################
+    # db_dict = {
+    #     'pernottamento': [],
+    #     'scontrino': [],  # pasti
+    #     'convegno': [],
+    #     'altrespese': [],
+    # }
 
-    # TODO Scontrino dovrebbe essere ordinato per data. Potrebbe essere un pacco.
-    r_scontrino = []
-    for row in db_dict['scontrino']:
-        if row['s1'] is not None:
-            r_scontrino.append({'data': row['data'], 's1': row['s1'], 'd1': row['d1'], 'v1': row['v1']})
-        if row['s2'] is not None:
-            r_scontrino.append({'data': row['data'], 's1': row['s2'], 'd1': row['d2'], 'v1': row['v2']})
-        if row['s3'] is not None:
-            r_scontrino.append({'data': row['data'], 's1': row['s3'], 'd1': row['d3'], 'v1': row['v3']})
-    db_dict['scontrino'] = r_scontrino
+    # Load the default values for each field in db_dict
+    # for k, _ in db_dict.items():
+    #     db_dict[k] = load_json(missione, k)
+    #
+    # # TODO Scontrino dovrebbe essere ordinato per data. Potrebbe essere un pacco.
+    # r_scontrino = []
+    # for row in db_dict['scontrino']:
+    #     if row['s1'] is not None:
+    #         r_scontrino.append({'data': row['data'], 's1': row['s1'], 'd1': row['d1'], 'v1': row['v1']})
+    #     if row['s2'] is not None:
+    #         r_scontrino.append({'data': row['data'], 's1': row['s2'], 'd1': row['d2'], 'v1': row['v2']})
+    #     if row['s3'] is not None:
+    #         r_scontrino.append({'data': row['data'], 's1': row['s3'], 'd1': row['d3'], 'v1': row['v3']})
+    # db_dict['scontrino'] = r_scontrino
+
+
+    # # Fill all the remaining tables
+    # for index, (key, value) in enumerate(db_dict.items(), start=1):
+    #     table = document.tables[index]
+    #
+    #     while len(table.rows) <= len(value):
+    #         row = table.add_row()
+    #         # row.height = Cm(0.61)
+    #
+    #     for i, t in enumerate(value, start=1):
+    #         s1 = float(t['s1'])
+    #         valuta = t['v1']
+    #         data = t['data']  #.strftime('%Y-%m-%d')
+    #         costo_str = f'{s1:.2f} {valuta}'
+    #         if valuta != 'EUR':
+    #             costo_in_euro = money_exchange(data, valuta, s1)
+    #             costo_str += f' ({costo_in_euro:.2f} EUR)'
+    #
+    #         table.cell(i, 0).text = t['data'].strftime('%d/%m/%Y')
+    #         table.cell(i, 1).text = t['d1'] if t['d1'] is not None else ''
+    #         table.cell(i, 2).text = costo_str
+    #         table.rows[i].height = Cm(0.61)
+    ##################################
+    # END: Old json-based version
+    ##################################
 
     # Fill all the remaining tables
-    for index, (key, value) in enumerate(db_dict.items(), start=1):
+    for index, (key, queryset) in enumerate(spese_dict.items(), start=1):
         table = document.tables[index]
 
-        while len(table.rows) <= len(value):
-            row = table.add_row()
-            # row.height = Cm(0.61)
+        total_rows = queryset.count()
+        if key == 'pasto':
+            total_rows = sum(1 for spesa in queryset for j in range(1, 4) if getattr(spesa, f'importo{j}'))
 
-        for i, t in enumerate(value, start=1):
-            s1 = float(t['s1'])
-            valuta = t['v1']
-            data = t['data']  #.strftime('%Y-%m-%d')
-            costo_str = f'{s1:.2f} {valuta}'
-            if valuta != 'EUR':
-                costo_in_euro = money_exchange(data, valuta, s1)
-                costo_str += f' ({costo_in_euro:.2f} EUR)'
+        # while len(table.rows) <= total_rows:
+        #     row = table.add_row()
 
-            table.cell(i, 0).text = t['data'].strftime('%d/%m/%Y')
-            table.cell(i, 1).text = t['d1'] if t['d1'] is not None else ''
-            table.cell(i, 2).text = costo_str
-            table.rows[i].height = Cm(0.61)
+        row_index = 1
+        for spesa in queryset:
+            if key == 'pasto':
+                for j in range(1, 4):
+                    importo = getattr(spesa, f'importo{j}')
+                    if importo:
+                        valuta = getattr(spesa, f'valuta{j}')
+                        descrizione = getattr(spesa, f'descrizione{j}')
+                        data = spesa.data
+                        costo_str = f'{importo:.2f} {valuta}'
+                        if valuta != 'EUR':
+                            costo_in_euro = money_exchange(data, valuta, importo)
+                            costo_str += f' ({costo_in_euro:.2f} EUR)'
+
+                        if row_index >= len(table.rows):
+                            table.add_row()
+
+                        table.cell(row_index, 0).text = data.strftime('%d/%m/%Y')
+                        table.cell(row_index, 1).text = descrizione if descrizione else ''
+                        table.cell(row_index, 2).text = costo_str
+                        table.rows[row_index].height = Cm(0.61)
+                        row_index += 1
+            else:
+                importo = spesa.importo
+                valuta = spesa.valuta
+                descrizione = spesa.descrizione
+                data = spesa.data
+                costo_str = f'{importo:.2f} {valuta}'
+                if valuta != 'EUR':
+                    costo_in_euro = money_exchange(data, valuta, importo)
+                    costo_str += f' ({costo_in_euro:.2f} EUR)'
+
+                if row_index >= len(table.rows):
+                    table.add_row()
+
+                table.cell(row_index, 0).text = data.strftime('%d/%m/%Y')
+                table.cell(row_index, 1).text = descrizione if descrizione else ''
+                table.cell(row_index, 2).text = costo_str
+                table.rows[row_index].height = Cm(0.61)
+                row_index += 1
 
     output_name_tmp = os.path.join(moduli_output_path, f'Missione_{missione.id}_parte_2_tmp.docx')
     output_name = f'Missione_{missione.id}_parte_2.docx'

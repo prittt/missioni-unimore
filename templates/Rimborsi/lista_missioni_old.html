@@ -13,39 +13,56 @@
         {% if user.is_authenticated %}
             <h3>Attive:</h3>
             {% if missioni_attive %}
-
-                <div class="container-fluid px-0">
+                <table class="table table-striped">
+                    <tbody>
                     {% for m in missioni_attive %}
-                        <div class="card mb-3 mx-0" style="background-color: whitesmoke; width: 100%;">
-                            <div class="card-body d-flex flex-column flex-md-row flex-wrap align-items-center align-items-md-center justify-content-between">
-                                <h5 class="card-title mb-2 mb-md-0">
-                                    {{ m.inizio|date:"d/m/Y" }} - {{ m.stato_destinazione }} - {{ m.citta_destinazione }}
-                                </h5>
-                                <div class="btn-group flex-wrap justify-content-center align-items-center">
-                                    <a class="btn btn-primary btn-md mb-md-0 mb-2 mx-1 rounded"
-                                       href="{% url 'RimborsiApp:resoconto' id=m.id %}"
-                                       role="button">Resoconto</a>
-                                    <a class="btn btn-primary btn-md mb-md-0 mb-2 mx-1 rounded"
-                                       href="{% url 'RimborsiApp:missione' id=m.id %}"
-                                       role="button">Modifica</a>
-                                    <a class="btn btn-primary btn-md mb-md-0 mb-2 mx-1 rounded"
-                                       href="{% url 'RimborsiApp:clona_missione' id=m.id %}"
-                                       role="button">Clona</a>
-                                    <a class="btn btn-success btn-md mb-md-0 mb-2 mx-1 rounded"
-                                       href="#" data-href="{% url 'RimborsiApp:concludi_missione' id=m.id %}"
-                                       data-target="#confirm-concludi"
-                                       data-toggle="modal"
-                                       role="button">Rimborsata</a>
-                                    <a class="btn btn-danger btn-md mb-md-0 mb-2 mx-1 rounded"
-                                       href="#" data-href="{% url 'RimborsiApp:cancella_missione' id=m.id %}"
-                                       data-target="#confirm-delete"
-                                       data-toggle="modal"
-                                       role="button">Cancella</a>
-                                </div>
-                            </div>
-                        </div>
+                        <tr>
+                            <td class="col-9">
+                                <blockquote class="blockquote mb-0">
+                                    {{ m.inizio|date:"d/m/Y" }} - {{ m.stato_destinazione }}
+                                    - {{ m.citta_destinazione }}
+                                </blockquote>
+                                {#                                <btn>Cancella</btn>#}
+                            </td>
+                            <td>
+                                <a class="btn btn-primary"
+                                   href="{% url 'RimborsiApp:resoconto' id=m.id %}"
+                                   role="button">Resoconto</a>
+                            </td>
+                            <td>
+                                <a class="btn btn-primary"
+                                   href="{% url 'RimborsiApp:missione' id=m.id %}"
+                                   role="button">Modifica</a>
+                            </td>
+                            <td>
+                                <a class="btn btn-primary"
+                                   href="{% url 'RimborsiApp:clona_missione' id=m.id %}"
+                                   role="button">Clona
+                                    {#<i class="fa fa-clone" aria-hidden="true"></i>#}
+                                </a>
+                            </td>
+                            <td>
+                                <a class="btn btn-success"
+                                   href="#"
+                                   data-href="{% url 'RimborsiApp:concludi_missione' id=m.id %}"
+                                   data-target="#confirm-concludi"
+                                   data-toggle="modal"
+                                   role="button">Rimborsata
+                                    {#<i class="fa fa-clone" aria-hidden="true"></i>#}
+                                </a>
+                            </td>
+                            <td>
+                                <a class="btn btn-danger"
+                                   href="#"
+                                   data-href="{% url 'RimborsiApp:cancella_missione' id=m.id %}"
+                                   data-target="#confirm-delete"
+                                   data-toggle="modal"
+                                   role="button">Cancella</a>
+                            </td>
+                        </tr>
                     {% endfor %}
-                </div>
+                    </tbody>
+                </table>
 
                 <div id="confirm-delete" class="modal" tabindex="-1" role="dialog">
                     <div class="modal-dialog" role="document">
@@ -102,38 +119,46 @@
 
             <h3>Concluse:</h3>
             {% if missioni_concluse %}
-                <div class="container-fluid px-0">
+                <table class="table table-striped">
                     <tbody>
                     {% for m in missioni_concluse %}
-
-                        <div class="card mb-3 mx-0" style="background-color: whitesmoke; width: 100%;">
-                            <div class="card-body d-flex flex-column flex-md-row flex-wrap align-items-center align-items-md-center justify-content-between">
-                                <h5 class="card-title mb-2 mb-md-0">
+                        <tr>
+                            <td class="col-9">
+                                <blockquote class="blockquote mb-0">
                                     {{ m.inizio|date:"d/m/Y" }} - {{ m.stato_destinazione }}
                                     - {{ m.citta_destinazione }}
-                                </h5>
-                                <div class="btn-group flex-wrap justify-content-center align-items-center">
-                                    <a class="btn btn-primary btn-md mb-md-0 mb-2 mx-1 rounded"
-                                       href="{% url 'RimborsiApp:resoconto' id=m.id %}"
-                                       role="button">Resoconto</a>
-
-                                    <a class="btn btn-primary btn-md mb-md-0 mb-2 mx-1 rounded"
-                                       href="{% url 'RimborsiApp:clona_missione' id=m.id %}"
-                                       role="button">Clona</a>
-
-                                    <a class="btn btn-danger btn-md mb-md-0 mb-2 mx-1 rounded"
-                                       href="#"
-                                       data-href="{% url 'RimborsiApp:cancella_missione' id=m.id %}"
-                                       data-target="#confirm-delete"
-                                       data-toggle="modal"
-                                       role="button">Cancella</a>
-                                </div>
-                            </div>
-                        </div>
-
+                                </blockquote>
+                                {#                                <btn>Cancella</btn>#}
+                            </td>
+                            <td>
+                                <a class="btn btn-primary"
+                                   href="{% url 'RimborsiApp:resoconto' id=m.id %}"
+                                   role="button">Resoconto</a>
+                            </td>
+                            {#                            <td>#}
+                            {#                                <a class="btn btn-primary"#}
+                            {#                                   href="{% url 'RimborsiApp:missione' id=m.id %}"#}
+                            {#                                   role="button">Modifica</a>#}
+                            {#                            </td>#}
+                            <td>
+                                <a class="btn btn-primary"
+                                   href="{% url 'RimborsiApp:clona_missione' id=m.id %}"
+                                   role="button">Clona
+                                    {#<i class="fa fa-clone" aria-hidden="true"></i>#}
+                                </a>
+                            </td>
+                            <td>
+                                <a class="btn btn-danger"
+                                   href="#"
+                                   data-href="{% url 'RimborsiApp:cancella_missione' id=m.id %}"
+                                   data-target="#confirm-delete"
+                                   data-toggle="modal"
+                                   role="button">Cancella</a>
+                            </td>
+                        </tr>
                     {% endfor %}
                     </tbody>
-                </div>
+                </table>
 
                 <div id="confirm-delete" class="modal" tabindex="-1" role="dialog">
                     <div class="modal-dialog" role="document">

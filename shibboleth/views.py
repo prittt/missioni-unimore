@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate, logout
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import HttpResponseRedirect, resolve_url
+from django.shortcuts import HttpResponseRedirect, resolve_url, render
 from django.conf import settings
 from codicefiscale import codicefiscale
 from comuni_italiani.models import *
