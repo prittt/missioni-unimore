@@ -63,12 +63,9 @@
                     // insert an <li> after the last list item:
                     row.append('<li><a class="' + options.deleteCssClass + '" href="javascript:void(0)">' + options.deleteText + '</a></li>');
                 } else {
-                    var deleteButton = $('<a class="' + options.deleteCssClass + ' btn btn-danger" href="javascript:void(0)">' + options.deleteText + '</a>');
-                    // Createing a container for delete button
-                    var deleteContainer = $('<div class="mx-1" style="margin-top: 28px"></div>');
-                    deleteContainer.append(deleteButton);
-                    // Add the delete button to the form's row
-                    row.find('.card-body').append(deleteContainer);
+                    // Otherwise, just insert the remove button as the
+                    // last child element of the form's container:
+                    row.append('<a class="' + options.deleteCssClass + '" href="javascript:void(0)">' + options.deleteText + '</a>');
                 }
                 // Check if we're under the minimum number of forms - not to display delete link at rendering
                 // if (!showDeleteLinks()) {
@@ -80,7 +77,6 @@
                         del = row.find('input:hidden[id $= "-DELETE"]'),
                         buttonRow = row.siblings("a." + addCssSelector + ', .' + options.formCssClass + '-add'),
                         forms;
-
                     if (del.length) {
                         // We're dealing with an inline formset.
                         // Rather than remove this form from the DOM, we'll mark it as deleted
@@ -119,7 +115,6 @@
                 });
             };
 
-
         $$.each(function (i) {
             var row = $(this),
                 del = row.find('input:checkbox[id $= "-DELETE"]');
@@ -154,7 +149,7 @@
             var hideAddButton = !showAddButton(),
                 addButton, template;
             if (options.formTemplate) {
-                // If a form template was specified, we'll clone it t   o generate new form instances:
+                // If a form template was specified, we'll clone it to generate new form instances:
                 template = (options.formTemplate instanceof $) ? options.formTemplate : $(options.formTemplate);
                 template.removeAttr('id').addClass(options.formCssClass + ' formset-custom-template');
                 template.find(childElementSelector).each(function () {
@@ -173,17 +168,10 @@
                     // This fixes Issue 1, reported by Wilson.Andrew.J:
                     if (elem.is('input:checkbox') || elem.is('input:radio')) {
                         elem.attr('checked', false);
-                    } else if (elem.is('input:file')) {
-                        //remove template elements.
-                        elem.val('');
-                        elem.siblings('.file-name').text('No Selected File');
-                        elem.siblings('a').remove();
-                        elem.siblings('.delete-button').remove();
                     } else {
                         elem.val('');
                     }
                 });
-
             }
             // FIXME: Perhaps using $.data would be a better idea?
             options.formTemplate = template;
@@ -214,7 +202,6 @@
                     updateElementIndex($(this), options.prefix, formCount);
                 });
                 totalForms.val(formCount + 1);
-                updateFileInputHandlers();
                 // Check if we're above the minimum allowed number of forms -> show all delete link(s)
                 // if (showDeleteLinks()) {
                 //     $('a.' + delCssSelector).each(function () {
@@ -247,23 +234,4 @@
         removed: null,                   // Function called each time a form is deleted
         ifdelete: true,
     };
-
-    function updateFileInputHandlers() {
-            document.querySelectorAll('.fileInput').forEach((input, index) => {
-                const label = input.nextElementSibling;
-                const fileNameDisplay = label.nextElementSibling;
-
-                input.id = `fileInput${index}`;
-                label.setAttribute('for', input.id);
-
-                input.removeEventListener('change', handleFileInputChange);
-                input.addEventListener('change', handleFileInputChange);
-            });
-        }
-
-        function handleFileInputChange() {
-            var fileName = this.files[0].name;
-            this.nextElementSibling.nextElementSibling.textContent = fileName;
-        }
 })(jQuery);
-
