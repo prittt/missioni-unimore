@@ -38,7 +38,7 @@ def get_secret(setting, secrets=secrets):
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = get_secret('SECRET_KEY')
 
-MAINTENANCE_MODE = True
+MAINTENANCE_MODE = False
 MAINTENANCE_BYPASS_QUERY = get_secret('MAINTENANCE_BYPASS_QUERY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
