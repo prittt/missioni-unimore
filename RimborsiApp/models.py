@@ -268,7 +268,7 @@ class Spesa(models.Model):
     importo = models.FloatField()
     valuta = models.CharField(max_length=3, choices=VALUTA_CHOICES, default="EUR")
     descrizione = models.CharField(max_length=1024, null=True, blank=True)
-    img_scontrino = models.ImageField(upload_to=profile_type_path, null=True, blank=True)
+    img_scontrino = models.FileField(upload_to=profile_type_path, null=True, blank=True)
     class Meta:
         verbose_name = "Spesa"
         verbose_name_plural = "Spese"
@@ -353,15 +353,15 @@ class Pasti(models.Model):
     importo1 = models.FloatField(null=True, blank=True)
     valuta1 = models.CharField(max_length=3, choices=VALUTA_CHOICES, default='EUR')
     descrizione1 = models.CharField(max_length=255, null=True, blank=True)
-    img_scontrino1 = models.ImageField(upload_to=pasti_path, null=True, blank=True)
+    img_scontrino1 = models.FileField(upload_to=pasti_path, null=True, blank=True)
     importo2 = models.FloatField(null=True, blank=True)
     valuta2 = models.CharField(max_length=3, choices=VALUTA_CHOICES, default='EUR')
     descrizione2 = models.CharField(max_length=255, null=True, blank=True)
-    img_scontrino2 = models.ImageField(upload_to=pasti_path, null=True, blank=True)
+    img_scontrino2 = models.FileField(upload_to=pasti_path, null=True, blank=True)
     importo3 = models.FloatField(null=True, blank=True)
     valuta3 = models.CharField(max_length=3, choices=VALUTA_CHOICES, default='EUR')
     descrizione3 = models.CharField(max_length=255, null=True, blank=True)
-    img_scontrino3 = models.ImageField(upload_to=pasti_path, null=True, blank=True)
+    img_scontrino3 = models.FileField(upload_to=pasti_path, null=True, blank=True)
 
     class Meta:
         verbose_name = "Pasto"
@@ -378,7 +378,7 @@ class Trasporto(models.Model):
     costo = models.FloatField()
     valuta = models.CharField(max_length=3, choices=VALUTA_CHOICES, default="EUR")
     km = models.FloatField(null=True, blank=True)
-    img_scontrino = models.ImageField(upload_to=trasporti_path, null=True, blank=True)
+    img_scontrino = models.FileField(upload_to=trasporti_path, null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "Trasporti"
