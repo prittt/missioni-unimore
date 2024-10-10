@@ -485,6 +485,8 @@ class ModuliMissione(models.Model):
 
     atto_notorio_dichiarazione = models.TextField(null=True, blank=True)
 
+    prove_acquisto_file = models.FileField(upload_to='moduli/', storage=OverwriteStorage(), null=True, blank=True)
+
     def is_user_allowed(self, user):
         return self.missione.user == user
 

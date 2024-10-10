@@ -15,7 +15,7 @@ from reportlab.pdfgen import canvas
 
 from .forms import *
 from .views import money_exchange, resoconto_data
-
+from PIL import Image
 
 @login_required
 def genera_pdf(request, id):
@@ -44,9 +44,93 @@ def genera_pdf(request, id):
         if request.user.profile.qualifica == 'DOTTORANDO':
             compila_autorizz_dottorandi(request, id)
         compila_atto_notorio(request, id, dichiarazione_check_std, dichiarazione_check_pers)
+
+        genera_report_scontrini(request, id)
+
         return redirect('RimborsiApp:resoconto', id)
     else:
         return HttpResponseBadRequest()
+
+
+def add_new_pdf(pdf_writer, img_obj):
+
+    # Get path
+    try:
+        filename = img_obj.path
+    except:
+        # No file associated with the current object
+        return
+
+    if filename.endswith('.pdf'):
+        # It's a PDF file
+        pdf_reader = PdfFileReader(filename)
+        for page_num in range(pdf_reader.getNumPages()):
+            page = pdf_reader.getPage(page_num)
+            pdf_writer.addPage(page)
+    else:
+        # Assume it's an image file
+        try:
+            image = Image.open(filename)
+        except IOError:
+            return
+
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
+
+        # Convert the image to a PDF page in memory
+        image_pdf_bytes = io.BytesIO()
+        image.save(image_pdf_bytes, format='PDF')
+        image_pdf_bytes.seek(0)
+
+        # Read the PDF page and add it to the writer
+        image_pdf_reader = PdfFileReader(image_pdf_bytes)
+        page = image_pdf_reader.getPage(0)
+        pdf_writer.addPage(page)
+
+
+def genera_report_scontrini(request, id):
+    moduli_output_path = os.path.join(settings.MEDIA_ROOT, 'moduli')
+
+    missione = Missione.objects.get(user=request.user, id=id)
+    profile = Profile.objects.get(user=request.user)
+    trasporti = Trasporto.objects.filter(missione=missione).order_by('data')
+    pasti = Pasti.objects.filter(missione=missione).order_by('data')
+    spese = SpesaMissione.objects.filter(missione=missione).order_by('spesa__data')
+
+    pdf_writer = PdfFileWriter()
+    prev_date = None
+    for pasti_del_giorno in pasti:
+        if pasti_del_giorno.data != prev_date:
+            pass
+
+        add_new_pdf(pdf_writer, pasti_del_giorno.img_scontrino1)
+        add_new_pdf(pdf_writer, pasti_del_giorno.img_scontrino2)
+        add_new_pdf(pdf_writer, pasti_del_giorno.img_scontrino3)
+
+    for trasporto in trasporti:
+        add_new_pdf(pdf_writer, trasporto.img_scontrino)
+
+    for spesa in spese:
+        add_new_pdf(pdf_writer, spesa.spesa.img_scontrino)
+
+    # Write the combined PDF to a BytesIO object
+    output_pdf_bytes = io.BytesIO()
+    pdf_writer.write(output_pdf_bytes)
+    output_pdf_bytes.seek(0)
+
+    output_name_tmp = os.path.join(moduli_output_path, f'Missione_{missione.id}_prove_di_acquisto_tmp.pdf')
+    outputStream = open(output_name_tmp, "wb")
+    pdf_writer.write(outputStream)
+    outputStream.close()
+
+    # Salvo il pdf appena creato dentro a un FileField
+    output_name = f'Missione_{missione.id}_prove_di_acquisto.pdf'
+    outputStream = open(output_name_tmp, "rb")
+    moduli_missione = ModuliMissione.objects.get(missione=missione)
+    moduli_missione.prove_acquisto_file.save(output_name, outputStream)
+
+    # Elimino il file temporaneo
+    os.remove(output_name_tmp)
 
 
 def compila_anticipo(request, id):
