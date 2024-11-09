@@ -13,7 +13,7 @@
 // ==/UserScript==
 
 function autofill() {
-    var data_richiesta =		document.getElementById("ctl00_ContentPlaceHolder1_gvRichieste_efnew_pageControl_DXEditor9_I" ); // Data richiesta
+    var data_richiesta =		document.getElementById("ctl00_ContentPlaceHolder1_gvRichieste_efnew_pageControl_DXEditor9" ); // Data richiesta
     var autorizzato_da =		document.getElementById("ctl00_ContentPlaceHolder1_gvRichieste_efnew_pageControl_DXEditor10_I"); // Autorizzato da
     var luogo_missione =		document.getElementById("ctl00_ContentPlaceHolder1_gvRichieste_efnew_pageControl_DXEditor11_I"); // Luogo missione
     var km_percorsi =			document.getElementById("ctl00_ContentPlaceHolder1_gvRichieste_efnew_pageControl_DXEditor12_I"); // Km percorsi
