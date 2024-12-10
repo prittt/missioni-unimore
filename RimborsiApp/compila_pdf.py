@@ -45,7 +45,10 @@ def genera_pdf(request, id):
             compila_autorizz_dottorandi(request, id)
         compila_atto_notorio(request, id, dichiarazione_check_std, dichiarazione_check_pers)
 
-        genera_report_scontrini(request, id)
+        try:
+            genera_report_scontrini(request, id)
+        except Exception as e:
+            print(e)
 
         return redirect('RimborsiApp:resoconto', id)
     else:
@@ -64,6 +67,19 @@ def add_new_pdf(pdf_writer, img_obj):
     if filename.endswith('.pdf'):
         # It's a PDF file
         pdf_reader = PdfFileReader(filename)
+
+        # Check whether the pdf id actually fine (it should be improved)
+        try:
+            reader = PdfFileReader(filename)
+            print("Opening '{}', pages={}".format(filename, reader.getNumPages()))
+            # Try to write it into an dummy ByteIO stream to check whether pdf is broken
+            writer = PdfFileWriter()
+            writer.addPage(reader.getPage(0))
+            writer.write(io.BytesIO())
+        except:
+            print("Error reading '{}".format(filename))
+            return
+
         for page_num in range(pdf_reader.getNumPages()):
             page = pdf_reader.getPage(page_num)
             pdf_writer.addPage(page)
@@ -81,6 +97,18 @@ def add_new_pdf(pdf_writer, img_obj):
         image_pdf_bytes = io.BytesIO()
         image.save(image_pdf_bytes, format='PDF')
         image_pdf_bytes.seek(0)
+
+        # Check whether the pdf id actually fine (it should be improved)
+        try:
+            reader = PdfFileReader(image_pdf_bytes)
+            print("Opening '{}', pages={}".format(filename, reader.getNumPages()))
+            # Try to write it into an dummy ByteIO stream to check whether pdf is broken
+            writer = PdfFileWriter()
+            writer.addPage(reader.getPage(0))
+            writer.write(io.BytesIO())
+        except:
+            print("Error reading '{}".format(filename))
+            return
 
         # Read the PDF page and add it to the writer
         image_pdf_reader = PdfFileReader(image_pdf_bytes)
@@ -365,8 +393,9 @@ def compila_parte_2(request, id):
     trasporto = Trasporto.objects.filter(missione=missione)
     km_totali = trasporto.filter(mezzo='AUTO').aggregate(Sum('km'))['km__sum'] or 0
 
-    # Remove trasporti that has 0 km
-    trasporto = trasporto.filter(costo__gt=0).order_by("data")
+    # Remove trasporti that has 0 euros
+    # trasporto = trasporto.filter(costo__gt=0).order_by("data")
+    trasporto = trasporto.order_by("data")  # It is better to keep them and specify they are just for km refound
 
     class ParConfig:
         def __init__(self):
@@ -430,6 +459,10 @@ def compila_parte_2(request, id):
         table.cell(i, 1).text = f'da {t.da or ""}'
         table.cell(i, 2).text = f'a {t.a or ""}'
         table.cell(i, 3).text = t.mezzo
+        if t.costo == 0:
+            t.tipo_costo = t.tipo_costo or ''
+            t.tipo_costo += ' + ' if t.tipo_costo != '' else ''
+            t.tipo_costo += f'Rimborso km {t.km}'
         table.cell(i, 4).text = t.tipo_costo or ''
         table.cell(i, 5).text = costo_str
         table.rows[i].height = Cm(0.61)

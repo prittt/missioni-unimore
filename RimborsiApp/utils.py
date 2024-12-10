@@ -151,19 +151,28 @@ def migra_pasti():
                     )
 
 
-def get_prezzo_carburante():
-    # Set the URL you want to webscrape from
-    url = 'https://dgsaie.mise.gov.it/prezzi_carburanti_settimanali.php?lang=it_IT'
-    # Connect to the URL
-    response = requests.get(url)
-    # Parse HTML and save to BeautifulSoup object
-    soup = BeautifulSoup(response.text, "html.parser")
-    prezzo = soup.find('table', class_="table table-sm table-borderless").findAll(
-        'tr', class_="bg-light")[0].find('strong').text
-    prezzo = re.sub('\.+', '', prezzo)
-    prezzo = re.sub(',+', '.', prezzo)
-    prezzo = float(prezzo) / 1000
+# def get_prezzo_carburante():
+#     # Set the URL you want to webscrape from
+#     url = 'https://dgsaie.mise.gov.it/prezzi_carburanti_settimanali.php?lang=it_IT'
+#     # Connect to the URL
+#     response = requests.get(url)
+#     # Parse HTML and save to BeautifulSoup object
+#     soup = BeautifulSoup(response.text, "html.parser")
+#     prezzo = soup.find('table', class_="table table-sm table-borderless").findAll(
+#         'tr', class_="bg-light")[0].find('strong').text
+#     prezzo = re.sub('\.+', '', prezzo)
+#     prezzo = re.sub(',+', '.', prezzo)
+#     prezzo = float(prezzo) / 1000
+#
+#     return prezzo
 
+def get_prezzo_carburante():
+    url = 'https://sisen.mase.gov.it/dgsaie/api/v1/weekly-prices/report/export?format=JSON&lang=it'
+    response = requests.get(url)
+    rilevazioni = response.json()
+    last = rilevazioni[-1]
+    prezzo = last['BENZINA']
+    prezzo = float(prezzo) / 1000
     return prezzo
 
 
