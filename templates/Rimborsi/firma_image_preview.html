@@ -1,0 +1,64 @@
+{% extends "Rimborsi/base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block title %}Profilo{% endblock %}
+
+{% block content %}
+    {% spaceless %}
+        
+
+        <div class="container d-flex justify-content-center align-items-center" style="min-height: 90vh;">
+            <div style="max-width: 800px; text-align: center;">
+                <h1>Preview Image</h1>
+                <img id="firma-image" src="{{ img_url }}" alt="Firma Image" style="width: 500px; height: auto;">
+            
+                <br><br>
+            
+                <button id="rotate-button" class="btn btn-primary btn-lg" style="padding-block: 15px;">Ruota Immagine</button>
+                <button id="save-button" class="btn btn-secondary btn-lg" style="padding-block: 15px;">Salva Immagine</button>
+            </div>
+        </div>
+
+   
+    <script>
+        // Ruotare l'immagine (non salva nel DB)
+        $('#rotate-button').on('click', function () {
+            $.ajax({
+                url: "",  // Usa l'URL corrente
+                type: "POST",
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    rotate: true  
+                },
+                success: function (response) {
+                    if (response.status === 'success') {
+                        // Aggiorna l'immagine per vedere l'anteprima della rotazione
+                        $('#firma-image').attr('src', $('#firma-image').attr('src') + '?' + new Date().getTime());
+                    } else {
+                        alert('Errore: ' + response.message);
+                    }
+                }
+            });
+        });
+
+        // Salvare l'immagine ruotata nel DB
+        $('#save-button').on('click', function () {
+            $.ajax({
+                url: "",  
+                type: "POST",
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    save: true  
+                },
+                success: function (response) {
+                    // Dopo il salvataggio, fai il redirect alla pagina profilo
+                    window.location.href = '/profile';
+                }
+            });
+        });
+    </script>
+   
+
+
+    {% endspaceless %}
+{% endblock %}

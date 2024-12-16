@@ -50,9 +50,16 @@ class SpesaMissioneAdmin(admin.ModelAdmin):
 class PastiAdmin(admin.ModelAdmin):
     list_display = [f.name for f in Pasti._meta.fields]
 
+class FirmaAdmin(admin.ModelAdmin):
+    list_display = [f.name for f in Firma._meta.fields]
+
+class FirmaSharedAdmin(admin.ModelAdmin):
+    list_display = [f.name for f in FirmaShared._meta.fields]
 
 admin_site = admin.site
 
+admin_site.register(FirmaShared, FirmaSharedAdmin)
+admin_site.register(Firma, FirmaAdmin)
 admin_site.register(Profile, ProfileAdmin)
 admin_site.register(Automobile, AutomobileAdmin)
 admin_site.register(Missione, MissioneAdmin)

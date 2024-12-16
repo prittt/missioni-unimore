@@ -10,25 +10,34 @@ from django.db.models import Sum
 from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from docx import Document
-from docx.shared import Cm
+from docx.shared import Cm, Inches
 from reportlab.pdfgen import canvas
 
 from .forms import *
-from .views import money_exchange, resoconto_data
+from .views import money_exchange, resoconto_data, firma
 from PIL import Image
+
+from django.http import Http404
+
+from reportlab.pdfgen import canvas
+from PyPDF2 import PdfFileWriter, PdfFileReader
+import io
 
 @login_required
 def genera_pdf(request, id):
     if request.method == 'POST':
         moduli_missione = get_object_or_404(ModuliMissione, missione_id=id)
         moduli_missione_form = ModuliMissioneForm(request.POST, instance=moduli_missione)
+        firme_form = FirmaChooseForm(request.POST, user_owner=request.user, instance=moduli_missione)
         dichiarazione_check_pers = None
         dichiarazione_check_std = None
-        if moduli_missione_form.is_valid():
+        if moduli_missione_form.is_valid() and firme_form.is_valid():
             moduli_missione_form.save()
             # return redirect('profile')
             dichiarazione_check_pers = moduli_missione_form.cleaned_data['dichiarazione_check_pers']
             dichiarazione_check_std = moduli_missione_form.cleaned_data['dichiarazione_check_std']
+            firme_form.save()
+            #moduli_missione.save()
         else:
             km, indennita, totali = resoconto_data(missione=moduli_missione.missione)
             return render(request, 'Rimborsi/resoconto.html', {'missione': moduli_missione.missione,
@@ -36,14 +45,20 @@ def genera_pdf(request, id):
                                                                'km': km,
                                                                'indennita': indennita,
                                                                'totali': totali,
+                                                               # Firme
+                                                               'firme_form': firme_form,
                                                                })
 
-        compila_anticipo(request, id)
-        compila_parte_1(request, id)
-        compila_parte_2(request, id)
+        # Firme
+        firma_richiedente = moduli_missione.firma_richiedente
+        firma_titolare = moduli_missione.firma_titolare
+
+        compila_anticipo(request, id, firma_richiedente, firma_titolare)
+        compila_parte_1(request, id, firma_richiedente, firma_titolare)
+        compila_parte_2(request, id, firma_richiedente, firma_titolare)
         if request.user.profile.qualifica == 'DOTTORANDO':
             compila_autorizz_dottorandi(request, id)
-        compila_atto_notorio(request, id, dichiarazione_check_std, dichiarazione_check_pers)
+        compila_atto_notorio(request, id, firma_richiedente, dichiarazione_check_std, dichiarazione_check_pers)
 
         try:
             genera_report_scontrini(request, id)
@@ -161,7 +176,7 @@ def genera_report_scontrini(request, id):
     os.remove(output_name_tmp)
 
 
-def compila_anticipo(request, id):
+def compila_anticipo(request, id, firma_richiedente, firma_titolare):
     moduli_input_path = os.path.join(settings.STATIC_ROOT, 'RimborsiApp', 'moduli')
     moduli_output_path = os.path.join(settings.MEDIA_ROOT, 'moduli')
 
@@ -234,6 +249,8 @@ def compila_anticipo(request, id):
                 par.add_run(text=str)
                 break
 
+    inserisci_firme(document, firma_richiedente, firma_titolare)
+
     output_name_tmp = os.path.join(moduli_output_path, f'Missione_{missione.id}_anticipo_tmp.docx')
     output_name = f'Missione_{missione.id}_anticipo.docx'
     document.save(os.path.join(moduli_output_path, output_name_tmp))
@@ -246,7 +263,7 @@ def compila_anticipo(request, id):
     os.remove(output_name_tmp)
 
 
-def compila_parte_1(request, id):
+def compila_parte_1(request, id, idR, idT):
     moduli_input_path = os.path.join(settings.STATIC_ROOT, 'RimborsiApp', 'moduli')
     moduli_output_path = os.path.join(settings.MEDIA_ROOT, 'moduli')
 
@@ -273,6 +290,11 @@ def compila_parte_1(request, id):
         "targa": [391, 360],
         "data_richiesta": [133, 180],
     }
+
+    # Firma coords
+    firma_coords_richiedente = [180, 150]
+    firma_coords_titolare = [245, 125]
+
     missione = Missione.objects.get(user=request.user, id=id)
     date_richiesta = ModuliMissione.objects.get(missione=missione)
     profile = Profile.objects.get(user=request.user)
@@ -352,6 +374,8 @@ def compila_parte_1(request, id):
                 value_dict[k] = ""
             can.drawString(*v, value_dict[k])
 
+    inserisci_firme_pdf(can, idR, firma_coords_richiedente, idT, firma_coords_titolare)
+
     can.showPage()
     can.save()
     buffer.seek(0)
@@ -381,7 +405,7 @@ def compila_parte_1(request, id):
     os.remove(output_name_tmp)
 
 
-def compila_parte_2(request, id):
+def compila_parte_2(request, id, firma_richiedente, firma_titolare):
     moduli_input_path = os.path.join(settings.STATIC_ROOT, 'RimborsiApp', 'moduli')
     moduli_output_path = os.path.join(settings.MEDIA_ROOT, 'moduli')
 
@@ -583,6 +607,8 @@ def compila_parte_2(request, id):
                 table.rows[row_index].height = Cm(0.61)
                 row_index += 1
 
+    inserisci_firme(document, firma_richiedente, firma_titolare)       # sezione aggiunta firma richiedente e titolare
+
     output_name_tmp = os.path.join(moduli_output_path, f'Missione_{missione.id}_parte_2_tmp.docx')
     output_name = f'Missione_{missione.id}_parte_2.docx'
     document.save(os.path.join(moduli_output_path, output_name_tmp))
@@ -685,7 +711,7 @@ def set_need_appearances_writer(writer):
     return writer
 
 
-def compila_atto_notorio(request, id, dichiarazione_check_std=False, dichiarazione_check_pers=False):
+def compila_atto_notorio(request, id, firma_richiedente, dichiarazione_check_std=False, dichiarazione_check_pers=False):
     moduli_input_path = os.path.join(settings.STATIC_ROOT, 'RimborsiApp', 'moduli')
     moduli_output_path = os.path.join(settings.MEDIA_ROOT, 'moduli')
     missione = Missione.objects.get(user=request.user, id=id)
@@ -755,6 +781,18 @@ def compila_atto_notorio(request, id, dichiarazione_check_std=False, dichiarazio
     page = pdf_writer.getPage(0)
     pdf_writer.updatePageFormFieldValues(page, data_dict)
 
+    # Sezione firma
+    if firma_richiedente:
+        try:
+            firma_richiedente_img_path = firma_richiedente.img_firma.path
+            firma_pdf = crea_firma_pdf(firma_richiedente_img_path)
+            # Unisci la pagina della firma con il PDF originale
+            page = pdf_writer.getPage(0)
+            page.mergePage(firma_pdf.getPage(0))  # Sovrapponi la pagina della firma
+        except Http404:
+            print(f"Firma del richiedente {firma_richiedente} non trovata.")
+            # TODO error handling should be rethought in the following functions
+
     # Disable the fillable fields
     # for j in range(0, len(page['/Annots'])):
     #     writer_annot = page['/Annots'][j].getObject()
@@ -772,3 +810,82 @@ def compila_atto_notorio(request, id, dichiarazione_check_std=False, dichiarazio
 
     # Elimino il file temporaneo
     os.remove(output_name_tmp)
+
+# TODO error handling should be rethought in the following functions
+def inserisci_firme(document, firma_richiedente, firma_titolare):
+
+    if firma_richiedente:
+        try:
+            firma_richiedente_img_path = firma_richiedente.img_firma.path
+            inserisci_firma( firma_richiedente_img_path, document , "Firma del richiedente") # Inserisce la firma del richiedente nel documento
+            if os.path.exists(firma_richiedente_img_path):                                       # Verifica se il file esiste
+                inserisci_firma(firma_richiedente_img_path, document, "Firma del richiedente")
+            else:
+                print(f"Firma del richiedente non trovata nel percorso: {firma_richiedente_img_path}")
+
+        except Http404:
+            print(f"Firma del richiedente {firma_richiedente} non trovata.")
+
+    if firma_titolare:
+        try:
+            firma_titolare_img_path = firma_titolare.img_firma.path                                             # Firma_Shared non ha img-firma !
+            inserisci_firma( firma_titolare_img_path, document, "Firma del titolare dei fondi/progetto" )         # Inserisce la firma del titolare nel documento
+            if os.path.exists(firma_titolare_img_path):                                                               # Verifica se il file esiste
+                inserisci_firma(firma_titolare_img_path, document, "Firma del titolare dei fondi/progetto")
+            else:
+                print(f"Firma del titolare non trovata nel percorso: {firma_titolare_img_path}")
+
+        except Http404:
+            print(f"Firma del titolare {firma_titolare} non trovata.")
+
+
+def inserisci_firma(firma_img_path, document, str):
+    for par in document.paragraphs:
+        if str in par.text:
+
+            match = re.search(r"_{3,}", par.text)  # Cerca dove iniziano 3 o più sottolineature di fila
+            if match:
+                start_text = par.text[:match.start()] # Testo prima delle linee
+                end_text = par.text[match.end():] # Testo dopo le linee (se esiste)
+
+                for r in par.runs: # Cancella il testo attuale del paragrafo
+                    r.text = ""
+
+                # ricostruzione del paragrafo con :
+                par.add_run(start_text)     #  il testo prima delle linee
+                par.add_run("__")           #  una parte delle sottolineature prima della firma
+                par.add_run().add_picture(firma_img_path, width=Inches(0.8))        #  l'immagine della firma
+                par.add_run("__")           #  la parte finale delle sottolineature dopo la firma
+                par.add_run(end_text)       # il continuo del testo
+            break
+
+
+def inserisci_firme_pdf(can, firma_richiedente, coordR, firma_titolare, coordT):
+    if firma_richiedente:
+        try:
+            firma_richiedente_img_path = firma_richiedente.img_firma.path
+            can.drawImage(firma_richiedente_img_path, coordR[0], coordR[1], width=75, height=20,mask='auto')
+        except Http404:
+            print(f"Firma del richiedente {firma_richiedente} non trovata.")
+
+    if firma_titolare:
+        try:
+            firma_titolare_img_path = firma_titolare.img_firma.path
+            can.drawImage(firma_titolare_img_path, coordT[0], coordT[1], width=75, height=20, mask='auto')
+        except Http404:
+            print(f"Firma del titolare {firma_titolare} non trovata.")
+
+
+def crea_firma_pdf(firma_path, firma_coords=[380, 150], firma_size=(100, 100)):
+    """
+    Crea un PDF temporaneo con l'immagine della firma.
+
+    :return: PdfFileReader oggetto con il PDF contenente la firma
+    """
+    buffer = io.BytesIO()
+    can = canvas.Canvas(buffer)
+    can.drawImage(firma_path, firma_coords[0], firma_coords[1], width=firma_size[0], height=firma_size[1], mask='auto')
+    can.showPage()
+    can.save()
+    buffer.seek(0)
+    return PdfFileReader(buffer)

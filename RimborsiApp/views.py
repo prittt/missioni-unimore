@@ -9,6 +9,8 @@ from django.db.models import Sum
 from django.http import Http404, HttpResponseBadRequest, HttpResponseNotFound, HttpResponseServerError
 from django.shortcuts import redirect, render, reverse, get_object_or_404
 from django.core.mail import send_mail
+from django.views.decorators.http import require_POST
+
 from .forms import *
 from .models import *
 from .utils import *
@@ -268,6 +270,7 @@ def resoconto(request, id):
             moduli_missione = ModuliMissione.objects.create(missione=missione, anticipo=anticipo, parte_1=parte_1, parte_2=parte_2,
                                                             kasko=parte_1, dottorandi=parte_1, atto_notorio=parte_2)
 
+        firme_form = FirmaChooseForm(user_owner=request.user, instance=moduli_missione)
         moduli_missione_form = ModuliMissioneForm(instance=moduli_missione)
 
         km, indennita, totali, = resoconto_data(missione)
@@ -278,6 +281,8 @@ def resoconto(request, id):
                                                            'indennita': indennita,
                                                            'totali': totali,
                                                            'anticipo': -missione.anticipo,
+                                                            # Firme
+                                                           'firme_form': firme_form,
                                                            })
         # else:
         #     return render(request, 'Rimborsi/resoconto.html')
@@ -287,8 +292,22 @@ def general_profile(request, profile_form, page, is_straniero):
         automobili = Automobile.objects.filter(user=request.user)
 
         afs = automobile_formset(instance=request.user, queryset=automobili)
+
+        firme_formset = firma_formset(instance=request.user, queryset=Firma.objects.filter(user_owner=request.user),
+                                      prefix='firme_prefix')
+        firme_shared = Firme_Shared_Form(user=request.user)
+
+        firme_received_formset = firma_recived_formset(queryset=FirmaShared.objects.filter(user_guest=request.user))
+        firme_received_visual = firma_received_visualization_formset(
+            queryset=FirmaShared.objects.filter(firma__in=Firma.objects.filter(user_owner=request.user)))
+
         return render(request, page, {'profile_form': profile_form,
-                                      'automobili_formset': afs})
+                                      'automobili_formset': afs,
+                                      'firme_formset': firme_formset,
+                                      'firme_shared': firme_shared,
+                                      'firme_received_formset': firme_received_formset,
+                                      'firme_received_visual': firme_received_visual,
+                                      })
 
     elif request.method == 'POST':
         #profile_form = ProfileForm(request.POST, instance=profile)
@@ -412,7 +431,6 @@ def crea_missione(request):
             return render(request, 'Rimborsi/crea_missione.html', response)
     else:
         raise Http404
-
 
 @login_required
 def clona_missione(request, id):
@@ -901,3 +919,88 @@ def statistiche(request):
     return render(request, 'Rimborsi/statistiche.html', {
         'missioni_ricerca': missioni_ricerca,
         'missioni_progetto': missioni_progetto})
+
+
+@login_required
+def firma(request):
+    if request.method == 'POST':
+        firme_formset = firma_formset(request.POST, request.FILES, instance=request.user, prefix='firme_prefix')
+
+        print(request.POST)
+
+        if firme_formset.is_valid():
+            instances = firme_formset.save(commit=False)
+            for instance in instances:
+                instance.user_owner = request.user
+                instance.save()
+
+            # Gestisce le eliminazioni
+            for obj in firme_formset.deleted_objects:
+                obj.delete()
+        else:
+            return HttpResponseServerError('Form non valido')
+            # Per debug
+            # print("Errori nel formset:", firme_formset.errors)
+            # print("Errori non legati ai form:", firme_formset.non_form_errors())
+
+        return redirect('RimborsiApp:profile')
+
+    return HttpResponseBadRequest()
+
+
+# Gestione firme condivise con altri
+@login_required
+def firma_shared(request):
+    if request.method == 'GET':
+        redirect('RimborsiApp:profile')
+    elif request.method == 'POST':
+        # Per condividere firme
+        firme_shared = Firme_Shared_Form(request.POST)
+
+        if firme_shared.is_valid():
+            firme_shared.save()
+
+            return redirect('RimborsiApp:profile')
+        else:
+            # Per debug
+            print("Errori nel formset:", firme_shared.errors)
+            print("Errori non legati ai form:", firme_shared.non_form_errors())
+
+            return render(request, 'Rimborsi/firma')
+    else:
+        return HttpResponseBadRequest()
+
+@login_required
+def firma_received_visualization(request):
+    if request.method == 'GET':
+        return redirect('RimborsiApp:profile')
+
+    elif request.method == 'POST':
+        if request.content_type == "application/json" or request.content_type.startswith("application/json"):
+            #datas = json.loads(request.body).get('data', [])
+            data= json.loads(request.body)
+            form_id = data.get('formId')
+
+            if not form_id:
+                return HttpResponseBadRequest("ID della firma condivisa non fornito.")
+            try:
+                firme_condivise = FirmaShared.objects.get(id=form_id)
+                firme_condivise.delete()
+
+                return JsonResponse({"message": "Dati eliminati correttamente", "deleted_rows": '1'},status=200)
+
+
+            except Exception as e:
+                return HttpResponseBadRequest(f"Errore nel salvataggio della spesa: {str(e)}")
+
+
+        else :
+            firme_recived_formset = firma_received_visualization_formset(request.POST)
+
+            if firme_recived_formset.is_valid():
+                firme_recived_formset.save()
+
+            return redirect('RimborsiApp:profile')
+
+    return HttpResponseBadRequest()
+

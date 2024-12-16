@@ -3,10 +3,13 @@ import datetime
 from codicefiscale import codicefiscale
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import ForeignKey
 from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from RimborsiApp.storage import OverwriteStorage
+
+from polymorphic.models import PolymorphicModel
 
 from django.core.files.storage import FileSystemStorage
 from Rimborsi import settings
@@ -242,6 +245,15 @@ class Stato(models.Model):
     class Meta:
         verbose_name_plural = "Stati"
 
+def profile_type_path_firma(instance, filename):
+    if instance.user_owner is None:
+        user = instance.user
+    else:
+        user = instance.user_owner
+
+    user_id = user.id if user else 'unknown_user'
+    return f'users/{user_id}/{filename}'
+
 # Media paths differentiated on the type of the "Spesa"
 def profile_type_path(instance, filename):
     spesa_missione = SpesaMissione.objects.filter(spesa=instance).first()
@@ -466,6 +478,31 @@ def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
 
 
+class Firma(models.Model):
+   user_owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_owner')
+   descrizione = models.CharField(max_length=1024, null= True, blank=True)
+   img_firma = models.ImageField(upload_to=profile_type_path_firma , null=True, blank=False)
+
+   class Meta:
+       verbose_name = "Firma"
+       verbose_name_plural = "Firme"
+
+   def __str__(self):
+       return f'{self.descrizione}'
+
+
+class FirmaShared(models.Model):
+    user_guest = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_owner_shared')
+    firma = models.ForeignKey(Firma, on_delete=models.CASCADE, related_name='firma_shared')
+
+    class Meta:
+        verbose_name = "Firma condivisa"
+        verbose_name_plural = "Firme condivise"
+
+    def __str__(self):
+        return f'{self.user_guest} ha il permesso di usare la firma di {self.firma.user_owner} con descrizione: {self.firma.descrizione}'
+
+
 class ModuliMissione(models.Model):
     missione = models.OneToOneField(Missione, on_delete=models.CASCADE)
 
@@ -486,6 +523,9 @@ class ModuliMissione(models.Model):
     atto_notorio_dichiarazione = models.TextField(null=True, blank=True)
 
     prove_acquisto_file = models.FileField(upload_to='moduli/', storage=OverwriteStorage(), null=True, blank=True)
+
+    firma_richiedente = models.ForeignKey(Firma, on_delete=models.CASCADE, related_name='richiedente', null=True, blank=True)
+    firma_titolare = models.ForeignKey(Firma, on_delete=models.CASCADE, related_name='titolare', null=True, blank=True)
 
     def is_user_allowed(self, user):
         return self.missione.user == user

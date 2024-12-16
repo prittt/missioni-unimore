@@ -224,6 +224,19 @@
                                         {% endif %}
                                     </div>
                                 </div>
+                                <div class="col-12">
+                                    <div class="custom-style-choose p-4 d-flex align-items-center justify-content-center" style="height: 100%;">
+                                        <div class="row w-100">
+                                            <div class="col-md-6 col-12 d-flex align-items-center justify-content-center" style="height: 100%;background-color: rgba(195,234,116,0.34) ; padding-top: 15px ">
+                                                <!-- Contenuto colonna sinistra -->
+                                                {{ firme_form.firma_richiedente|as_crispy_field }}
+                                            </div>
+                                            <div class="col-md-6 col-12 d-flex align-items-center justify-content-center" style="height: 100%;background-color: rgba(211,164,92,0.29) ; padding-top: 15px ">
+                                                {{ firme_form.firma_titolare|as_crispy_field }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -355,6 +368,16 @@ Cordiali saluti,
             });
         </script>
         <style>
+            .custom-style-choose {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100%;
+                border: 1px solid #dee2e6;
+                border-radius: 0.25rem;
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
             a.download {
                 text-decoration: none;
                 color: #212529;

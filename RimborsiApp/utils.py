@@ -14,7 +14,7 @@ import django
 django.setup()
 from bs4 import BeautifulSoup
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden, Http404, FileResponse
+from django.http import HttpResponseForbidden, Http404, FileResponse, JsonResponse
 from django.db.models import Q
 from django.template import RequestContext
 from django.shortcuts import get_object_or_404, render_to_response, HttpResponse, redirect
@@ -27,6 +27,10 @@ from django.utils.http import http_date
 
 from RimborsiApp.models import Spesa, SpesaMissione, Pasti, Trasporto
 
+from RimborsiApp.models import Spesa, SpesaMissione, Pasti, Trasporto, Firma
+from PIL import Image
+import io
+import os
 
 def migra_pernottamenti():
     missioni = Missione.objects.all()
@@ -251,18 +255,94 @@ def trasporto_image_preview(request, id):
     img_name = img_url.split('/')[-1]
     return secure_media(request, trasporto.missione.user.id, trasporto.missione.id, 'TRASPORTO', img_name)
 
+@login_required
+def firma_image_preview(request, id):
+    firma = get_object_or_404(Firma, id=id)
+    # img_field_short_name = img_field_name.split('-')[-1]
+    #
+    # img_url = None
+    # if hasattr(firma, img_field_short_name):
+    #     img_field = getattr(firma, img_field_short_name)
+    #     if img_field and img_field.url:
+    #         img_url = img_field.url
+
+    img_url = None
+    if firma.img_firma and firma.img_firma.url:
+        img_url = firma.img_firma.url
+
+    if not img_url:
+        return HttpResponseForbidden('Image not found or not available.')
+
+    img_name = img_url.split('/')[-1]
+    image_path = os.path.join(settings.MEDIA_ROOT, 'users', str(firma.user_owner.id), img_name)
+
+    if not os.path.exists(image_path):
+        raise Http404('Image not found')
+
+    # TODO The image rotation should have been handled client side instead of server side. This should be changed in the future.
+    # # Rotazione immagine (AJAX)
+    # if request.method == 'POST' and request.is_ajax() and 'rotate' in request.POST:
+    #     try:
+    #         with Image.open(image_path) as img:
+    #             img = img.rotate(90, expand=True)
+    #             img.save(image_path)  # Salva solo in locale senza aggiornare il DB
+    #         return JsonResponse({'status': 'success'})
+    #     except Exception as e:
+    #         return JsonResponse({'status': 'error', 'message': str(e)})
+    #
+    # # Salvataggio immagine nel DB (AJAX con redirect)
+    # if request.method == 'POST' and 'save' in request.POST:
+    #     try:
+    #         # Salva l'immagine ruotata nel modello
+    #         firma.image_rotated.name = os.path.join('users', str(firma.user_owner.id), img_name)
+    #         firma.save()  # Aggiorna il modello nel DB
+    #         return redirect('/Rimborsi/profile')  # Redireziona l'utente
+    #     except Exception as e:
+    #         return JsonResponse({'status': 'error', 'message': str(e)})
+
+    # return secure_media(request, trasporto.missione.user.id, trasporto.missione.id, 'TRASPORTO', img_name)
+    if firma.user_owner != request.user:
+        return HttpResponseForbidden('Sorry, you cannot access this file.')
+
+    return FileResponse(open(image_path, 'rb'))
+
 
 @login_required
 def secure_media(request, id1, id2, field1, field2):
     missione = get_object_or_404(Missione, id=id2)
 
     if missione.user != request.user:
-        return HttpResponseForbidden('Sorry, you cannot access this file')
+        return HttpResponseForbidden('Sorry, you cannot access this file.')
 
     image_path = os.path.join(settings.MEDIA_ROOT, 'users', str(id1), str(id2), field1, field2)
     if not os.path.exists(image_path):
         raise Http404('Image not found')
     return FileResponse(open(image_path, 'rb'))
+
+@login_required
+def serve_signature(request, id):
+    signature = get_object_or_404(Firma, pk=id)
+
+    all_signature_allowed = Firma.objects.filter(
+                Q(user_owner=request.user) | Q(firma_shared__user_guest=request.user)
+            ).distinct()
+
+    user_owner_id = signature.user_owner.pk
+
+    if signature not in all_signature_allowed:
+        return HttpResponseForbidden('Sorry, you cannot access this file.')
+
+    # Split the elements of the path
+    complete_name = signature.img_firma.path
+    path, file_name = os.path.split(complete_name)
+
+    file_path = os.path.join(settings.MEDIA_ROOT, 'users', str(user_owner_id), file_name)
+
+    # Check if the file exists
+    if not os.path.exists(file_path):
+        raise Http404("File not found")
+
+    return FileResponse(open(file_path, 'rb'), content_type='application/octet-stream')
 
 
 if __name__ == "__main__":

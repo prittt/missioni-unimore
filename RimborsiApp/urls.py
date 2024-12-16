@@ -2,8 +2,15 @@ from django.urls import path
 from RimborsiApp import views, compila_pdf, utils
 from django.conf.urls import include
 
+from django.conf.urls.static import static
+from django.conf import settings
+
 app_name = 'RimborsiApp'
 urlpatterns = [
+    path('serve_signature/<int:id>', utils.serve_signature, name='serve_signature'),
+    path('firma_received_visualization/', views.firma_received_visualization, name='firma_received_visualization'),
+    path('firma_shared/', views.firma_shared, name='firma_shared'),
+    path('firma/', views.firma, name='firma'),
     path('profile/', views.profile, name='profile'),
     path('foreign_profile/', views.foreign_profile, name='foreign_profile'),
     path('italian_profile/', views.italian_profile, name='italian_profile'),
@@ -39,6 +46,10 @@ urlpatterns = [
 
     path('trasporti_image_preview/<int:id>', utils.trasporto_image_preview, name='trasporti_image_preview'),
     path('pasto_image_preview/<int:id>/<str:img_field_name>/', utils.pasto_image_preview, name='pasto_image_preview'),
-
+    path('firma_image_preview/<int:id>/', utils.firma_image_preview, name='firma_image_preview'),
+    path('rotate_image/', utils.firma_image_preview, name='firma_image_preview'),
     path('statistiche', views.statistiche, name='statistiche'),
+
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,140 @@
+
+<head>
+    <!-- Altri tag head -->
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+</head>
+
+<div class="custom-file-input-container">
+    <input type="file" class="fileInput" name="{{ widget.name }}" id="firmaFileInput0" style="display: none; " data-file-input>   <!-- data-file-input is a custom attribute collega lo script javascript associato a questo campo --> <!-- id="{ widget.attrs.id }}" -->
+    <label class="file-label" for="firmaFileInput0">
+       <i class="fa fa-upload"></i>                                                  <!-- Font Awesome icon -->
+    </label>
+
+    <span class="firme-file-name" data-file-name>No selected Img</span> <!-- data-file-name is a custom attribute -->
+    {% if widget.is_initial %} <!-- se è già stato caricato un file per questo campo -->
+        {% if widget.value %}  <!-- se il campo è già stato valorizzato,viene generato un link che punta all'anteprima dell'immagine -->
+            <a href="{% url 'RimborsiApp:firma_image_preview' id=widget.value.instance.id %}" target="_blank" class="centered-icon">
+                <i class="fa fa-picture-o" style="font-size:28px;"></i>
+            </a>
+        {% endif %}
+{#        <button type="submit" name="{{ widget.checkbox_name }}" value="on" class="delete-button">#}
+{#           <i class="fa fa-trash"></i>#}
+{#        </button>#}
+    {% endif %}
+
+</div>
+
+<style>
+
+.centered-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
+.file-label {
+    background-color: #007bff;
+    color: white;
+    padding: 5px 10px;
+    padding-top: 7px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    height: 31px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: auto;
+}
+
+    .firme-file-name {
+    font-size: 14px;
+    color: #111;
+    white-space: nowrap;
+    margin-top: 7px;
+    align-self: end;
+    width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+}
+
+.file-label:hover {
+    background-color: #0056b3;
+}
+
+.firme-file-name:hover::after {
+    content: attr(data-file-name);
+    position: absolute;
+    left: 0;
+    bottom: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding: 5px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 12px;
+    z-index: 1;
+}
+
+.custom-file-input-container {
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+    grid-gap: 10px;
+    margin-top: 0px;
+}
+
+.delete-button {
+    background-color: transparent;
+    color: #f30000;
+    border: 1px solid #ef0000;
+    cursor: pointer;
+    border-radius: 3px;
+    height: 32px;          
+    width: 32px;
+    align-self: end;
+    display: flex;         /* flexbox per centrare l'icona */
+    justify-content: center;
+    align-items: center;
+    padding: 0;           
+    position: relative;    /* per posizionamento preciso */
+}
+
+.delete-button i.fa-trash {
+    font-size: 16px;      
+    line-height: 1;       /* rimuove spazio extra */
+    display: block;       /* rimuove comportamenti inline non voluti */
+}
+
+.delete-button:hover {
+    background-color: #808080;
+    color: white;
+}
+
+.delete-button:hover {
+    background-color: #808080;
+    color: white;
+}
+</style>
+<script>
+ document.querySelectorAll('.fileInput').forEach((input, index) => {
+        const label = input.nextElementSibling;
+        const fileNameDisplay = label.nextElementSibling;
+
+        {# input.id = `firmaFileInput${index}`; #}
+        label.setAttribute('for',`firmaFileInput${index}`);
+        input.id = `firmaFileInput${index}`;
+
+        fileNameDisplay.title = 'No Selected Img';
+
+        input.addEventListener('change', function() {
+            var fileName = this.files[0].name;
+            fileNameDisplay.textContent = fileName;
+            fileNameDisplay.title = fileName;
+        });
+    });
+</script>
+
+

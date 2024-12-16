@@ -1,0 +1,48 @@
+<!-- Rimborsi/firma_image_preview_modal.html -->
+<img id="firma-image" src="{{ img_url }}" alt="Firma Image" style="width: 300px; height: auto;">
+
+<br><br>
+
+<button id="rotate-button">Ruota Immagine</button>
+<button id="save-button">Salva Immagine</button>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script>
+    $('#rotate-button').on('click', function () {
+    $.ajax({
+        url: "",  // Usa l'URL corrente (ovvero la vista che stai richiamando)
+        type: "POST",
+        data: {
+            csrfmiddlewaretoken: '{{ csrf_token }}',
+            rotate: true  // Indica che stiamo ruotando l'immagine
+        },
+        success: function (response) {
+            if (response.status === 'success') {
+                // Aggiorna l'immagine per vedere l'anteprima della rotazione
+                $('#firma-image').attr('src', $('#firma-image').attr('src') + '?' + new Date().getTime());
+            } else {
+                alert('Errore: ' + response.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            console.log('Errore AJAX:', error);
+        }
+    });
+});
+
+
+    $('#save-button').on('click', function () {
+        $.ajax({
+            url: "",  // Usa l'URL corrente
+            type: "POST",
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                save: true  // Indica che vogliamo salvare l'immagine
+            },
+            success: function (response) {
+                window.location.href = '/RimborsiApp/profile';
+            }
+        });
+    });
+</script>
