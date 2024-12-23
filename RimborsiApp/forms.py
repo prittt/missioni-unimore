@@ -695,7 +695,7 @@ class Firme_Received_Form(forms.ModelForm):
             self.fields['user_owner'].widget.attrs['readonly'] = True
             self.fields['desc_firma'].widget.attrs['readonly'] = True
 
-firma_recived_formset = modelformset_factory(
+firma_received_formset = modelformset_factory(
     FirmaShared,
     form=Firme_Received_Form,
     extra=0,

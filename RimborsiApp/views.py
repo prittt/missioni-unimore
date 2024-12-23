@@ -297,7 +297,7 @@ def general_profile(request, profile_form, page, is_straniero):
                                       prefix='firme_prefix')
         firme_shared = Firme_Shared_Form(user=request.user)
 
-        firme_received_formset = firma_recived_formset(queryset=FirmaShared.objects.filter(user_guest=request.user))
+        firme_received_formset = firma_received_formset(queryset=FirmaShared.objects.filter(user_guest=request.user))
         firme_received_visual = firma_received_visualization_formset(
             queryset=FirmaShared.objects.filter(firma__in=Firma.objects.filter(user_owner=request.user)))
 
@@ -962,9 +962,9 @@ def firma_shared(request):
 
             return redirect('RimborsiApp:profile')
         else:
-            # Per debug
-            print("Errori nel formset:", firme_shared.errors)
-            print("Errori non legati ai form:", firme_shared.non_form_errors())
+            # # Per debug
+            # print("Errori nel formset:", firme_shared.errors)
+            # print("Errori non legati ai form:", firme_shared.non_form_errors())
 
             return render(request, 'Rimborsi/firma')
     else:

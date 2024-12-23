@@ -144,8 +144,8 @@
                         {% csrf_token %}
                         <div class="table-responsive mb-0">
                             <table class="table table-striped table-bordered">
-                                {{ firme_recived_visual.management_form }}
-                                {% for form in firme_recived_visual.forms %}
+                                {{ firme_received_visual.management_form }}
+                                {% for form in firme_received_visual.forms %}
                                     {% if forloop.first %}
                                         <thead class="custom-header">
                                         <tr>
