@@ -84,7 +84,7 @@ def money_exchange(data, valuta, cifra):
     def get_tasso_di_cambio(data, valuta):
 
         if data >= data.today():
-            data = data.today() - datetime.timedelta(days=data.weekday() - 1)
+            data = data.today() - datetime.timedelta(days=1)
 
         url = 'https://tassidicambio.bancaditalia.it/terzevalute-wf-web/rest/v1.0/dailyTimeSeries'
         valid_data = data
