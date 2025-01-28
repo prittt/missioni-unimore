@@ -26,6 +26,10 @@
                 <li><a class="nav-link" target="_blank" href="https://github.com/prittt/missioni-unimore"><i
                         class="fa fa-github" aria-hidden="true"></i> GitHub</a>
                 </li>
+                <li><a class="nav-link" href="{% url 'RimborsiApp:collaboratori' %}"><i
+                        aria-hidden="true"></i> Contributors </a>
+                </li>
+
                 {% if user|has_group:"AIRI" %}
 
                     {% if user.is_authenticated %}
