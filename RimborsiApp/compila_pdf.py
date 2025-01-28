@@ -12,6 +12,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from docx import Document
 from docx.shared import Cm, Inches
 from reportlab.pdfgen import canvas
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from reportlab.lib.pagesizes import A4
 
 from .forms import *
 from .views import money_exchange, resoconto_data, firma
@@ -60,120 +62,251 @@ def genera_pdf(request, id):
             compila_autorizz_dottorandi(request, id)
         compila_atto_notorio(request, id, firma_richiedente, dichiarazione_check_std, dichiarazione_check_pers)
 
+        # BRUNA
         try:
-            genera_report_scontrini(request, id)
+            genera_resoconto_ricevute(request, id)
         except Exception as e:
             print(e)
+
+        # BOLELLI
+        # try:
+        #     genera_report_scontrini(request, id)
+        # except Exception as e:
+        #     print(e)
 
         return redirect('RimborsiApp:resoconto', id)
     else:
         return HttpResponseBadRequest()
 
-
-def add_new_pdf(pdf_writer, img_obj):
-
-    # Get path
-    try:
-        filename = img_obj.path
-    except:
-        # No file associated with the current object
-        return
-
-    if filename.endswith('.pdf'):
-        # It's a PDF file
-        pdf_reader = PdfFileReader(filename)
-
-        # Check whether the pdf id actually fine (it should be improved)
-        try:
-            reader = PdfFileReader(filename)
-            print("Opening '{}', pages={}".format(filename, reader.getNumPages()))
-            # Try to write it into an dummy ByteIO stream to check whether pdf is broken
-            writer = PdfFileWriter()
-            writer.addPage(reader.getPage(0))
-            writer.write(io.BytesIO())
-        except:
-            print("Error reading '{}".format(filename))
-            return
-
-        for page_num in range(pdf_reader.getNumPages()):
-            page = pdf_reader.getPage(page_num)
-            pdf_writer.addPage(page)
-    else:
-        # Assume it's an image file
-        try:
-            image = Image.open(filename)
-        except IOError:
-            return
-
-        if image.mode != 'RGB':
-            image = image.convert('RGB')
-
-        # Convert the image to a PDF page in memory
-        image_pdf_bytes = io.BytesIO()
-        image.save(image_pdf_bytes, format='PDF')
-        image_pdf_bytes.seek(0)
-
-        # Check whether the pdf id actually fine (it should be improved)
-        try:
-            reader = PdfFileReader(image_pdf_bytes)
-            print("Opening '{}', pages={}".format(filename, reader.getNumPages()))
-            # Try to write it into an dummy ByteIO stream to check whether pdf is broken
-            writer = PdfFileWriter()
-            writer.addPage(reader.getPage(0))
-            writer.write(io.BytesIO())
-        except:
-            print("Error reading '{}".format(filename))
-            return
-
-        # Read the PDF page and add it to the writer
-        image_pdf_reader = PdfFileReader(image_pdf_bytes)
-        page = image_pdf_reader.getPage(0)
-        pdf_writer.addPage(page)
-
-
-def genera_report_scontrini(request, id):
-    moduli_output_path = os.path.join(settings.MEDIA_ROOT, 'moduli')
-
+# BRUNA
+def genera_resoconto_ricevute(request, id):
     missione = Missione.objects.get(user=request.user, id=id)
-    profile = Profile.objects.get(user=request.user)
-    trasporti = Trasporto.objects.filter(missione=missione).order_by('data')
     pasti = Pasti.objects.filter(missione=missione).order_by('data')
-    spese = SpesaMissione.objects.filter(missione=missione).order_by('spesa__data')
+    trasporti = Trasporto.objects.filter(missione=missione).order_by('data')
+    pernottamenti = Spesa.objects.filter(spesamissione__missione=missione,
+                                         spesamissione__tipo='PERNOTTAMENTO').order_by('data')
+    convegni = Spesa.objects.filter(spesamissione__missione=missione, spesamissione__tipo='CONVEGNO').order_by('data')
+    altro = Spesa.objects.filter(spesamissione__missione=missione, spesamissione__tipo='ALTRO').order_by('data')
 
-    pdf_writer = PdfFileWriter()
-    prev_date = None
-    for pasti_del_giorno in pasti:
-        if pasti_del_giorno.data != prev_date:
-            pass
+    # creo una lista delle etichette con le relative immagini e descrizioni in modo da iterare sulla lista
+    etichetta_con_immagine = [
+        ('Colazione', 'img_scontrino1', 'descrizione1'),
+        ('Pranzo', 'img_scontrino2', 'descrizione2'),
+        ('Cena', 'img_scontrino3', 'descrizione3')
+    ]
+    # utilizzo una lista di categorie cosi da comprimere tutto in un unico for iterando sulle categorie
+    categorie = [
+        ('Ricevute dei Trasporti:', trasporti),
+        ('Ricevute dei Pernottamenti:', pernottamenti),
+        ('Ricevute dei Convegni:', convegni),
+        ('Ricevute di altre spese:', altro)
+    ]
 
-        add_new_pdf(pdf_writer, pasti_del_giorno.img_scontrino1)
-        add_new_pdf(pdf_writer, pasti_del_giorno.img_scontrino2)
-        add_new_pdf(pdf_writer, pasti_del_giorno.img_scontrino3)
+    larghezza_pag, altezza_pag = (595.27, 841.89)  # Dimensioni A4 in punti
+    larghezza_immagine = larghezza_pag / 3 - 20
+    altezza_immagine = larghezza_immagine
+    margine_sup = 30
+    margine_lat = 10
+    spazio_vert = 10
+    spazio_didascalia = 15
+    x = margine_lat
+    y = altezza_pag - margine_sup
 
-    for trasporto in trasporti:
-        add_new_pdf(pdf_writer, trasporto.img_scontrino)
+    buffer = io.BytesIO()
+    can = canvas.Canvas(buffer, pagesize=A4)
+    can.setFont("Times-Roman", 24)
+    can.drawString(x, y, 'Resoconto ricevute della missione')
+    y -= 30
 
-    for spesa in spese:
-        add_new_pdf(pdf_writer, spesa.spesa.img_scontrino)
+    # Pasti
+    can.setFont("Times-Roman", 18)
+    can.drawString(x, y, 'Ricevute dei Pasti:')
+    y -= 15
+    can.setFont("Times-Roman", 14)
 
-    # Write the combined PDF to a BytesIO object
-    output_pdf_bytes = io.BytesIO()
-    pdf_writer.write(output_pdf_bytes)
-    output_pdf_bytes.seek(0)
+    for s in pasti:
+        if s.img_scontrino1 or s.img_scontrino2 or s.img_scontrino3:
+            can.drawString(x, y, 'Data: ' + s.data.strftime('%d/%m/%Y'))
 
-    output_name_tmp = os.path.join(moduli_output_path, f'Missione_{missione.id}_prove_di_acquisto_tmp.pdf')
-    outputStream = open(output_name_tmp, "wb")
-    pdf_writer.write(outputStream)
-    outputStream.close()
+        for etichetta, immagine, descrizione in etichetta_con_immagine:
+            # gettattr prende il valore dell'attributo dell'oggetto in modo dinamico
+            # in questo caso restituisce il path dell'immagine
+            img = getattr(s, immagine)
+            desc = getattr(s, descrizione)
 
-    # Salvo il pdf appena creato dentro a un FileField
-    output_name = f'Missione_{missione.id}_prove_di_acquisto.pdf'
-    outputStream = open(output_name_tmp, "rb")
+            if img:
+
+                if desc:
+                    can.drawString(x, y - spazio_didascalia, 'Descrizione: ')
+                    can.drawString(x, y - spazio_didascalia * 2, desc)
+
+                can.drawImage(img.path, x, (y - altezza_immagine - (spazio_didascalia * 3)), larghezza_immagine,
+                              altezza_immagine)
+                x += larghezza_immagine + margine_lat
+
+        x = margine_lat
+        y -= altezza_immagine + spazio_vert + 3 * spazio_didascalia + 15
+
+        # controllo per lo spazio, nel caso non sia sufficiente aggiunge una nuova pagina
+        if y - altezza_immagine < 0:
+            can.showPage()
+            y = altezza_pag - margine_sup
+
+    for titolo, scontr in categorie:
+        can.setFont("Times-Roman", 18)
+        can.drawString(x, y, titolo)
+        y -= 20
+        i = 0
+        can.setFont("Times-Roman", 14)
+
+        for s in scontr:
+            if s.img_scontrino:
+                can.drawString(x, y, 'Data: ' + s.data.strftime('%d/%m/%Y'))
+                if titolo != "Ricevute dei Trasporti:" and s.descrizione:
+                    can.drawString(x, y - spazio_didascalia, 'Descrizione: ')
+                    can.drawString(x, y - spazio_didascalia * 2, s.descrizione)
+                can.drawImage(s.img_scontrino.path, x, y - altezza_immagine - spazio_didascalia * 3, larghezza_immagine,
+                              altezza_immagine)
+                x += larghezza_immagine + margine_lat
+                i += 1
+                if i == 2:
+                    y -= altezza_immagine + spazio_vert + 3 * spazio_didascalia + 15
+                    x = margine_lat
+                    i = 0
+            if y - altezza_immagine < 0:
+                can.showPage()
+                y = altezza_pag - margine_sup
+                x = margine_lat
+                i = 0
+
+        if i == 1:
+            y -= altezza_immagine + spazio_vert + 3 * spazio_didascalia + 15
+            if y - altezza_immagine < 0:
+                can.showPage()
+                y = altezza_pag - margine_sup
+                x = margine_lat
+                i = 0
+        x = margine_lat
+
+    # finalizzo il pdf
+    can.showPage()
+    can.save()
+    buffer.seek(0)
+
+    # Salvo il PDF appena creato dentro a un FileField
+    output_name = f'Missione_{missione.id}_resoconto_ricevute.pdf'
+    pdf_file = InMemoryUploadedFile(buffer, 'resoconto_ricevute', output_name, 'application/pdf',
+                                    buffer.getbuffer().nbytes, None)
+
     moduli_missione = ModuliMissione.objects.get(missione=missione)
-    moduli_missione.prove_acquisto_file.save(output_name, outputStream)
+    moduli_missione.resoconto_ricevute.save(output_name, pdf_file)
+    moduli_missione.save()
 
-    # Elimino il file temporaneo
-    os.remove(output_name_tmp)
+# BOLELLI
+# def add_new_pdf(pdf_writer, img_obj):
+#
+#     # Get path
+#     try:
+#         filename = img_obj.path
+#     except:
+#         # No file associated with the current object
+#         return
+#
+#     if filename.endswith('.pdf'):
+#         # It's a PDF file
+#         pdf_reader = PdfFileReader(filename)
+#
+#         # Check whether the pdf id actually fine (it should be improved)
+#         try:
+#             reader = PdfFileReader(filename)
+#             print("Opening '{}', pages={}".format(filename, reader.getNumPages()))
+#             # Try to write it into an dummy ByteIO stream to check whether pdf is broken
+#             writer = PdfFileWriter()
+#             writer.addPage(reader.getPage(0))
+#             writer.write(io.BytesIO())
+#         except:
+#             print("Error reading '{}".format(filename))
+#             return
+#
+#         for page_num in range(pdf_reader.getNumPages()):
+#             page = pdf_reader.getPage(page_num)
+#             pdf_writer.addPage(page)
+#     else:
+#         # Assume it's an image file
+#         try:
+#             image = Image.open(filename)
+#         except IOError:
+#             return
+#
+#         if image.mode != 'RGB':
+#             image = image.convert('RGB')
+#
+#         # Convert the image to a PDF page in memory
+#         image_pdf_bytes = io.BytesIO()
+#         image.save(image_pdf_bytes, format='PDF')
+#         image_pdf_bytes.seek(0)
+#
+#         # Check whether the pdf id actually fine (it should be improved)
+#         try:
+#             reader = PdfFileReader(image_pdf_bytes)
+#             print("Opening '{}', pages={}".format(filename, reader.getNumPages()))
+#             # Try to write it into an dummy ByteIO stream to check whether pdf is broken
+#             writer = PdfFileWriter()
+#             writer.addPage(reader.getPage(0))
+#             writer.write(io.BytesIO())
+#         except:
+#             print("Error reading '{}".format(filename))
+#             return
+#
+#         # Read the PDF page and add it to the writer
+#         image_pdf_reader = PdfFileReader(image_pdf_bytes)
+#         page = image_pdf_reader.getPage(0)
+#         pdf_writer.addPage(page)
+#
+#
+# def genera_report_scontrini(request, id):
+#     moduli_output_path = os.path.join(settings.MEDIA_ROOT, 'moduli')
+#
+#     missione = Missione.objects.get(user=request.user, id=id)
+#     profile = Profile.objects.get(user=request.user)
+#     trasporti = Trasporto.objects.filter(missione=missione).order_by('data')
+#     pasti = Pasti.objects.filter(missione=missione).order_by('data')
+#     spese = SpesaMissione.objects.filter(missione=missione).order_by('spesa__data')
+#
+#     pdf_writer = PdfFileWriter()
+#     prev_date = None
+#     for pasti_del_giorno in pasti:
+#         if pasti_del_giorno.data != prev_date:
+#             pass
+#
+#         add_new_pdf(pdf_writer, pasti_del_giorno.img_scontrino1)
+#         add_new_pdf(pdf_writer, pasti_del_giorno.img_scontrino2)
+#         add_new_pdf(pdf_writer, pasti_del_giorno.img_scontrino3)
+#
+#     for trasporto in trasporti:
+#         add_new_pdf(pdf_writer, trasporto.img_scontrino)
+#
+#     for spesa in spese:
+#         add_new_pdf(pdf_writer, spesa.spesa.img_scontrino)
+#
+#     # Write the combined PDF to a BytesIO object
+#     output_pdf_bytes = io.BytesIO()
+#     pdf_writer.write(output_pdf_bytes)
+#     output_pdf_bytes.seek(0)
+#
+#     output_name_tmp = os.path.join(moduli_output_path, f'Missione_{missione.id}_prove_di_acquisto_tmp.pdf')
+#     outputStream = open(output_name_tmp, "wb")
+#     pdf_writer.write(outputStream)
+#     outputStream.close()
+#
+#     # Salvo il pdf appena creato dentro a un FileField
+#     output_name = f'Missione_{missione.id}_prove_di_acquisto.pdf'
+#     outputStream = open(output_name_tmp, "rb")
+#     moduli_missione = ModuliMissione.objects.get(missione=missione)
+#     moduli_missione.prove_acquisto_file.save(output_name, outputStream)
+#
+#     # Elimino il file temporaneo
+#     os.remove(output_name_tmp)
 
 
 def compila_anticipo(request, id, firma_richiedente, firma_titolare):
