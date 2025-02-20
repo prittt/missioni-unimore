@@ -18,6 +18,7 @@ urlpatterns = [
     path('regolamento/', views.regolamento, name='regolamento'),
     path('crea_missione/', views.crea_missione, name='crea_missione'),
     path('lista_missioni/', views.lista_missioni, name='lista_missioni'),
+    path('collaboratori/', views.collaboratori, name='collaboratori'),
     path('missione/<int:id>', views.missione, name='missione'),
     path('clona_missione/<int:id>', views.clona_missione, name='clona_missione'),
     path('concludi_missione/<int:id>', views.concludi_missione, name='concludi_missione'),

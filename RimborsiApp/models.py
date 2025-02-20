@@ -524,6 +524,8 @@ class ModuliMissione(models.Model):
 
     prove_acquisto_file = models.FileField(upload_to='moduli/', storage=OverwriteStorage(), null=True, blank=True)
 
+    resoconto_ricevute = models.FileField(upload_to='moduli/', storage=OverwriteStorage(), null=True, blank=True)
+
     firma_richiedente = models.ForeignKey(Firma, on_delete=models.CASCADE, related_name='richiedente', null=True, blank=True)
     firma_titolare = models.ForeignKey(Firma, on_delete=models.CASCADE, related_name='titolare', null=True, blank=True)
 

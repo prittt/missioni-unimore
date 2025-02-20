@@ -12,6 +12,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from docx import Document
 from docx.shared import Cm, Inches
 from reportlab.pdfgen import canvas
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from reportlab.lib.pagesizes import A4
 
 from .forms import *
 from .views import money_exchange, resoconto_data, firma
@@ -62,6 +64,13 @@ def genera_pdf(request, id):
             compila_autorizz_dottorandi(request, id)
         compila_atto_notorio(request, id, firma_richiedente, dichiarazione_check_std, dichiarazione_check_pers)
 
+        # BRUNA
+        # try:
+        #     genera_resoconto_ricevute(request, id)
+        # except Exception as e:
+        #     print(e)
+
+        # BOLELLI
         try:
             genera_report_scontrini(request, id)
         except Exception as e:
@@ -71,7 +80,131 @@ def genera_pdf(request, id):
     else:
         return HttpResponseBadRequest()
 
+# BRUNA
+def genera_resoconto_ricevute(request, id):
+    missione = Missione.objects.get(user=request.user, id=id)
+    pasti = Pasti.objects.filter(missione=missione).order_by('data')
+    trasporti = Trasporto.objects.filter(missione=missione).order_by('data')
+    pernottamenti = Spesa.objects.filter(spesamissione__missione=missione,
+                                         spesamissione__tipo='PERNOTTAMENTO').order_by('data')
+    convegni = Spesa.objects.filter(spesamissione__missione=missione, spesamissione__tipo='CONVEGNO').order_by('data')
+    altro = Spesa.objects.filter(spesamissione__missione=missione, spesamissione__tipo='ALTRO').order_by('data')
 
+    # creo una lista delle etichette con le relative immagini e descrizioni in modo da iterare sulla lista
+    etichetta_con_immagine = [
+        ('Colazione', 'img_scontrino1', 'descrizione1'),
+        ('Pranzo', 'img_scontrino2', 'descrizione2'),
+        ('Cena', 'img_scontrino3', 'descrizione3')
+    ]
+    # utilizzo una lista di categorie cosi da comprimere tutto in un unico for iterando sulle categorie
+    categorie = [
+        ('Ricevute dei Trasporti:', trasporti),
+        ('Ricevute dei Pernottamenti:', pernottamenti),
+        ('Ricevute dei Convegni:', convegni),
+        ('Ricevute di altre spese:', altro)
+    ]
+
+    larghezza_pag, altezza_pag = (595.27, 841.89)  # Dimensioni A4 in punti
+    larghezza_immagine = larghezza_pag / 3 - 20
+    altezza_immagine = larghezza_immagine
+    margine_sup = 30
+    margine_lat = 10
+    spazio_vert = 10
+    spazio_didascalia = 15
+    x = margine_lat
+    y = altezza_pag - margine_sup
+
+    buffer = io.BytesIO()
+    can = canvas.Canvas(buffer, pagesize=A4)
+    can.setFont("Times-Roman", 24)
+    can.drawString(x, y, 'Resoconto ricevute della missione')
+    y -= 30
+
+    # Pasti
+    can.setFont("Times-Roman", 18)
+    can.drawString(x, y, 'Ricevute dei Pasti:')
+    y -= 15
+    can.setFont("Times-Roman", 14)
+
+    for s in pasti:
+        if s.img_scontrino1 or s.img_scontrino2 or s.img_scontrino3:
+            can.drawString(x, y, 'Data: ' + s.data.strftime('%d/%m/%Y'))
+
+        for etichetta, immagine, descrizione in etichetta_con_immagine:
+            # gettattr prende il valore dell'attributo dell'oggetto in modo dinamico
+            # in questo caso restituisce il path dell'immagine
+            img = getattr(s, immagine)
+            desc = getattr(s, descrizione)
+
+            if img:
+
+                if desc:
+                    can.drawString(x, y - spazio_didascalia, 'Descrizione: ')
+                    can.drawString(x, y - spazio_didascalia * 2, desc)
+
+                can.drawImage(img.path, x, (y - altezza_immagine - (spazio_didascalia * 3)), larghezza_immagine,
+                              altezza_immagine)
+                x += larghezza_immagine + margine_lat
+
+        x = margine_lat
+        y -= altezza_immagine + spazio_vert + 3 * spazio_didascalia + 15
+
+        # controllo per lo spazio, nel caso non sia sufficiente aggiunge una nuova pagina
+        if y - altezza_immagine < 0:
+            can.showPage()
+            y = altezza_pag - margine_sup
+
+    for titolo, scontr in categorie:
+        can.setFont("Times-Roman", 18)
+        can.drawString(x, y, titolo)
+        y -= 20
+        i = 0
+        can.setFont("Times-Roman", 14)
+
+        for s in scontr:
+            if s.img_scontrino:
+                can.drawString(x, y, 'Data: ' + s.data.strftime('%d/%m/%Y'))
+                if titolo != "Ricevute dei Trasporti:" and s.descrizione:
+                    can.drawString(x, y - spazio_didascalia, 'Descrizione: ')
+                    can.drawString(x, y - spazio_didascalia * 2, s.descrizione)
+                can.drawImage(s.img_scontrino.path, x, y - altezza_immagine - spazio_didascalia * 3, larghezza_immagine,
+                              altezza_immagine)
+                x += larghezza_immagine + margine_lat
+                i += 1
+                if i == 2:
+                    y -= altezza_immagine + spazio_vert + 3 * spazio_didascalia + 15
+                    x = margine_lat
+                    i = 0
+            if y - altezza_immagine < 0:
+                can.showPage()
+                y = altezza_pag - margine_sup
+                x = margine_lat
+                i = 0
+
+        if i == 1:
+            y -= altezza_immagine + spazio_vert + 3 * spazio_didascalia + 15
+            if y - altezza_immagine < 0:
+                can.showPage()
+                y = altezza_pag - margine_sup
+                x = margine_lat
+                i = 0
+        x = margine_lat
+
+    # finalizzo il pdf
+    can.showPage()
+    can.save()
+    buffer.seek(0)
+
+    # Salvo il PDF appena creato dentro a un FileField
+    output_name = f'Missione_{missione.id}_resoconto_ricevute.pdf'
+    pdf_file = InMemoryUploadedFile(buffer, 'resoconto_ricevute', output_name, 'application/pdf',
+                                    buffer.getbuffer().nbytes, None)
+
+    moduli_missione = ModuliMissione.objects.get(missione=missione)
+    moduli_missione.resoconto_ricevute.save(output_name, pdf_file)
+    moduli_missione.save()
+
+#BOLELLI
 def add_new_pdf(pdf_writer, img_obj):
 
     # Get path
@@ -173,6 +306,11 @@ def genera_report_scontrini(request, id):
     outputStream = open(output_name_tmp, "rb")
     moduli_missione = ModuliMissione.objects.get(missione=missione)
     moduli_missione.prove_acquisto_file.save(output_name, outputStream)
+    moduli_missione.resoconto_ricevute.save(output_name, outputStream)
+
+    # moduli_missione = ModuliMissione.objects.get(missione=missione)
+    # moduli_missione.resoconto_ricevute.save(output_name, pdf_file)
+    # moduli_missione.save()
 
     # Elimino il file temporaneo
     os.remove(output_name_tmp)

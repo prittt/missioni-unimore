@@ -193,6 +193,18 @@
                                     </div>
                                 </div>
 
+                                <div class="col-md-6 col-lg-3 d-flex">
+                                    <div class="table-warning p-4 w-100 d-flex flex-column">
+                                            {% if missione.modulimissione.resoconto_ricevute %}
+                                                <a class="mt-auto download" href="{% url 'RimborsiApp:download' missione.id 'resoconto_ricevute' %}">
+                                                    <i class="fa fa-file-pdf-o fa-2x"></i> Resoconto Ricevute
+                                                </a>
+                                             {% else %}
+                                                <p>Resoconto Ricevute</p>
+                                            {% endif %}
+                                    </div>
+                                </div>
+
                                 {% if user.profile.qualifica == 'DOTTORANDO' %}
 
                                 <div class="col-md-6 col-lg-3 d-flex">

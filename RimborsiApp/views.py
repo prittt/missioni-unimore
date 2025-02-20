@@ -1004,3 +1004,7 @@ def firma_received_visualization(request):
 
     return HttpResponseBadRequest()
 
+
+def collaboratori(request):
+    if request.method == 'GET':
+        return render(request, 'Rimborsi/collaboratori.html')
