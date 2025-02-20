@@ -49,6 +49,8 @@ else:
     # Settings per Proxy neuralstory-host
     DEBUG = False
 
+# DEBUG = True
+
 CRISPY_FAIL_SILENTLY = not DEBUG
 
 ALLOWED_HOSTS = [

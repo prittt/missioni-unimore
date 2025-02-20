@@ -23,6 +23,8 @@ from reportlab.pdfgen import canvas
 from PyPDF2 import PdfFileWriter, PdfFileReader
 import io
 
+from django.core.exceptions import ValidationError
+
 @login_required
 def genera_pdf(request, id):
     if request.method == 'POST':
@@ -307,8 +309,11 @@ def compila_parte_1(request, id, idR, idT):
     targa = ""
     motivazione_auto = ""
     if "AUTO" in eval(missione.mezzi_previsti):
-        targa = missione.automobile.targa
-        motivazione_auto = ' + '.join(t.lower() for t in eval(missione.motivazione_automobile))
+        try:
+            targa = missione.automobile.targa
+            motivazione_auto = ' + '.join(t.lower() for t in eval(missione.motivazione_automobile))
+        except:
+            print("Un untente ha selezionato 'AUTO' come mezzo per la missione, ma non hai compilato i dati relativi.")
 
     new_list = eval(missione.mezzi_previsti)
     if "A_ALT" in new_list:
