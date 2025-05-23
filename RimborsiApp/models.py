@@ -405,7 +405,7 @@ class Indirizzo(models.Model):
     provincia_straniero = models.CharField(max_length=100, null=True)
 
     def __str__(self):
-        return f'{self.via} {self.n}, {self.comune.name}, {self.provincia.name} ({self.provincia.codice_targa})'
+        return f'{self.via} {self.n}, ({(self.comune and self.comune.name) or self.comune_straniero}, ({(self.provincia and self.provincia.name) or self.provincia_straniero}  ({self.provincia and self.provincia.codice_targa})'
 
     class Meta:
         verbose_name_plural = "Indirizzi"

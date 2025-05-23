@@ -344,9 +344,9 @@ def compila_anticipo(request, id, firma_richiedente, firma_titolare):
 
     config = ParConfig()
     config.append("Richiedente (Cognome Nome):", [f'{profile.user.last_name} {profile.user.first_name}'])
-    config.append("Nato/a a", [f'{profile.luogo_nascita.name} il {profile.data_nascita.strftime("%d/%m/%Y")}'])
+    config.append("Nato/a a", [f'{(profile.luogo_nascita and profile.luogo_nascita.name) or profile.luogo_nascita_straniero} il {profile.data_nascita.strftime("%d/%m/%Y")}'])
     config.append("Codice fiscale", [f'{profile.cf}'])
-    config.append("Domicilio fiscale", [f'Via {profile.domicilio.via} {profile.domicilio.n}, {profile.domicilio.comune.name} ({profile.domicilio.provincia.codice_targa})'])
+    config.append("Domicilio fiscale", [f'Via {profile.domicilio.via} {profile.domicilio.n}, {(profile.domicilio.comune and profile.domicilio.comune.name) or profile.domicilio.comune_straniero} ({profile.domicilio.provincia or profile.domicilio.provincia.codice_targa})'])
     config.append("Qualifica/Ruolo", [f'{profile.qualifica}'])
     config.append("Datore di lavoro", [f'{profile.datore_lavoro}'])
     config.append("Destinazione missione", [f'{missione.citta_destinazione} - {missione.stato_destinazione.nome}'])

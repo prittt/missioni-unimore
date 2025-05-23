@@ -102,6 +102,10 @@ def money_exchange(data, valuta, cifra):
 
         if content['resultsInfo']['totalRecords'] != 0:
             return float(content['rates'][0]['avgRate'])
+        else:
+            # If the day has no valid exchange we are going to get the first valid exchange of previous days
+            return get_tasso_di_cambio(data - datetime.timedelta(days=1), valuta)
+
 
     tasso_cambio = get_tasso_di_cambio(data, valuta)
     cifra_convertita = cifra / tasso_cambio
