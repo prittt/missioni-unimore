@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Sum
-from django.http import Http404, HttpResponseBadRequest, HttpResponseNotFound, HttpResponseServerError
+from django.http import Http404, HttpResponseBadRequest, HttpResponseNotFound, HttpResponseServerError, JsonResponse
 from django.shortcuts import redirect, render, reverse, get_object_or_404
 from django.core.mail import send_mail
 from django.views.decorators.http import require_POST
@@ -750,13 +750,15 @@ def salva_pasti(request, id):
         pasti_formset = pasto_formset(request.POST, request.FILES, instance=missione)
         if pasti_formset.is_valid():
             pasti_formset.save()
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True})
             return redirect('RimborsiApp:missione', id)
         else:
-            # This is shit, mostrare l'errore vero!
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': pasti_formset.errors}, status=400)
             return HttpResponseServerError('Form non valido')
     else:
         return HttpResponseBadRequest()
-
 
 @login_required
 def salva_pernottamenti(request, id):
@@ -777,12 +779,15 @@ def salva_pernottamenti(request, id):
                     if img_scontrino:
                         instance.img_scontrino = img_scontrino
                         instance.save()
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True})
             return redirect('RimborsiApp:missione', id)
         else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': pernottamenti_formset.errors}, status=400)
             return HttpResponseServerError('Form non valido')
     else:
         return HttpResponseBadRequest()
-
 
 @login_required
 def salva_trasporti(request, id):
@@ -791,12 +796,15 @@ def salva_trasporti(request, id):
         trasporti_formset = trasporto_formset(request.POST, request.FILES, instance=missione)
         if trasporti_formset.is_valid():
             trasporti_formset.save()
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True})
             return redirect('RimborsiApp:missione', id)
         else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': trasporti_formset.errors}, status=400)
             return HttpResponseServerError('Form non valido')
     else:
         return HttpResponseBadRequest()
-
 
 @login_required
 def salva_altrespese(request, id):
@@ -817,12 +825,15 @@ def salva_altrespese(request, id):
                     if img_scontrino:
                         instance.img_scontrino = img_scontrino
                         instance.save()
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True})
             return redirect('RimborsiApp:missione', id)
         else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': altrespese_formset.errors}, status=400)
             return HttpResponseServerError('Form non valido')
     else:
         return HttpResponseBadRequest()
-
 
 @login_required
 def salva_convegni(request, id):
@@ -843,8 +854,12 @@ def salva_convegni(request, id):
                     if img_scontrino:
                         instance.img_scontrino = img_scontrino
                         instance.save()
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True})
             return redirect('RimborsiApp:missione', id)
         else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': convegni_formset.errors}, status=400)
             return HttpResponseServerError('Form non valido')
     else:
         return HttpResponseBadRequest()

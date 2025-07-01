@@ -13,7 +13,7 @@
         {% crispy missione_form %}
 
         <h3>Pasti:</h3>
-        <form action="{% url 'RimborsiApp:salva_pasti' id=missione.id %}" method="post" enctype="multipart/form-data"> {% csrf_token %}
+        <form action="{% url 'RimborsiApp:salva_pasti' id=missione.id %}" method="post" enctype="multipart/form-data" data-section="pasti"> {% csrf_token %}
             {{ pasti_formset.management_form }}
             <div id="pasti-formset-container">
                 {% for form in pasti_formset.forms %}
@@ -38,15 +38,12 @@
                     </div>
                 {% endfor %}
             </div>
-            <div class="text-left-custom" style="text-align: right">
-                <input class="btn btn-primary" type="submit" value="Salva">
-            </div>
         </form>
 
          <hr>
 
         <h3>Pernottamenti:</h3>
-        <form action="{% url 'RimborsiApp:salva_pernottamenti' id=missione.id %}" method="post" enctype="multipart/form-data">{% csrf_token %}
+        <form action="{% url 'RimborsiApp:salva_pernottamenti' id=missione.id %}" method="post" enctype="multipart/form-data" data-section="pernottamenti">{% csrf_token %}
             {{ pernottamenti_formset.management_form }}
             <div id="pernottamenti-formset-container">
                 {% for form in pernottamenti_formset.forms %}
@@ -73,9 +70,6 @@
                     </div>
                 {% endfor %}
             </div>
-            <div class="text-left-custom" style="text-align: right">
-                <input class="btn btn-primary" type="submit" value="Salva">
-            </div>
         </form>
 
         <hr>
@@ -85,7 +79,7 @@
             0. Per le tratte che non devono ricevere un'indennità chilometrica lasciare il campo km vuoto."><i
             class="fa fa-info-circle fa-1x" aria-hidden="true"></i></a> Trasporti:
         </h3>
-        <form action="{% url 'RimborsiApp:salva_trasporti'  id=missione.id %}" method="post" enctype="multipart/form-data">{% csrf_token %}
+        <form action="{% url 'RimborsiApp:salva_trasporti'  id=missione.id %}" method="post" enctype="multipart/form-data" data-section="trasporti">{% csrf_token %}
             {{ trasporti_formset.management_form }}
             <div id="trasporti-formset-container">
                 {% for form in trasporti_formset.forms %}
@@ -112,14 +106,11 @@
                     </div>
                 {% endfor %}
             </div>
-            <div class="text-left-custom" style="text-align: right">
-                <input class="btn btn-primary" type="submit" value="Salva">
-            </div>
         </form>
 
         <hr>
         <h3>Iscrizione Convegni:</h3>
-        <form action="{% url 'RimborsiApp:salva_convegni' id=missione.id %}" method="post" enctype="multipart/form-data">{% csrf_token %}
+        <form action="{% url 'RimborsiApp:salva_convegni' id=missione.id %}" method="post" enctype="multipart/form-data" data-section="convegni">{% csrf_token %}
             {{ convegni_formset.management_form }}
             <div id="convegni-formset-container">
                 {% for form in convegni_formset.forms %}
@@ -146,14 +137,11 @@
                     </div>
                 {% endfor %}
             </div>
-            <div class="text-left-custom" style="text-align: right">
-                <input class="btn btn-primary" type="submit" value="Salva">
-            </div>
         </form>
 
         <hr>
         <h3>Altre Spese:</h3>
-        <form action="{% url 'RimborsiApp:salva_altrespese' id=missione.id %}" method="post" enctype="multipart/form-data">{% csrf_token %}
+        <form action="{% url 'RimborsiApp:salva_altrespese' id=missione.id %}" method="post" enctype="multipart/form-data" data-section="altrespese">{% csrf_token %}
             {{ altrespese_formset.management_form }}
             <div id="altrespese-formset-container">
                 {% for form in altrespese_formset.forms %}
@@ -180,12 +168,60 @@
                     </div>
                 {% endfor %}
             </div>
-            <div class="text-left-custom" style="text-align: right">
-                <input class="btn btn-primary" type="submit" value="Salva">
-            </div>
         </form>
 
     {% endif %}
+
+    <style>
+        .card-unsaved {
+            background-color: #f5f5f5 !important;
+            border: 1.5px solid #ccc !important;
+        }
+        .card-saved {
+            background-color: #f0fff4 !important;
+            border: 1px solid #7be495 !important;
+            box-shadow: 0 0 8px 1px #b2f7c1;
+            transition: background 0.5s, border 0.5s, box-shadow 1s;
+        }
+        .card-error {
+            background-color: #ffeaea !important;
+            border: 1px solid #ff8a8a !important;
+            box-shadow: 0 0 8px 1px #ffb3b3;
+            transition: background 0.5s, border 0.5s, box-shadow 1s;
+        }
+        .card-flare {
+            animation: flare-fade 2s forwards;
+        }
+        @keyframes flare-fade {
+            0% { box-shadow: 0 0 0 0 var(--flare-color, #b2f7c1); }
+            40% { box-shadow: 0 0 8px 1px var(--flare-color, #b2f7c1); }
+            80% { box-shadow: 0 0 0 0 var(--flare-color, #b2f7c1); }
+            100% { box-shadow: 0 0 0 0 var(--flare-color, #b2f7c1); }
+        }
+        .custom-toast {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            min-width: 250px;
+            background: #e74c3c;
+            color: #fff;
+            padding: 16px 24px 16px 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 9999;
+            font-size: 1rem;
+            display: flex;
+            align-items: flex-start;
+            opacity: 0.97;
+        }
+        .custom-toast .close-toast {
+            margin-left: 16px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+    </style>
 
     <script src="{% static 'RimborsiApp/formset/jquery_formset.js' %}"></script>
     <script type="text/javascript">
@@ -266,6 +302,113 @@
         $('.popover-dismiss').popover({
             trigger: 'focus'
         });
+
+
+    // --- AUTOSAVE ---
+    (function() {
+        let autosaveTimer = null;
+        let changedSections = new Set();
+        const DEBOUNCE_MS = 3000;
+        const sectionForms = document.querySelectorAll('form[data-section]');
+        const sectionMap = {};
+        sectionForms.forEach(f => sectionMap[f.getAttribute('data-section')] = f);
+
+        function showToast(msg) {
+            let toast = document.createElement('div');
+            toast.className = 'custom-toast';
+            toast.innerHTML = `<span>${msg}</span><span class="close-toast">&times;</span>`;
+            document.body.appendChild(toast);
+            toast.querySelector('.close-toast').onclick = () => toast.remove();
+            setTimeout(() => { if (toast.parentNode) toast.remove(); }, 5000);
+        }
+
+        function setCardState(form, state, changedElem) {
+            if (changedElem) {
+                const card = changedElem.closest('.card-lg-inline');
+                if (card) {
+                    card.classList.remove('card-unsaved', 'card-saved', 'card-error', 'card-flare');
+                    card.style.removeProperty('--flare-color');
+                    if (state === 'unsaved') card.classList.add('card-unsaved');
+                    if (state === 'saved') {
+                        card.style.setProperty('--flare-color', '#b2f7c1');
+                        card.classList.add('card-saved', 'card-flare');
+                        setTimeout(() => card.classList.remove('card-flare'), 2000);
+                        setTimeout(() => { card.classList.remove('card-saved'); card.style.opacity = '1'; }, 2000);
+                    }
+                    if (state === 'error') {
+                        card.style.setProperty('--flare-color', '#ffb3b3');
+                        card.classList.add('card-error', 'card-flare');
+                        setTimeout(() => card.classList.remove('card-flare'), 2000);
+                        setTimeout(() => { card.classList.remove('card-error'); card.style.opacity = '1'; }, 2000);
+                    }
+                }
+                return;
+            }
+
+            const cards = form.querySelectorAll('.card-lg-inline');
+            cards.forEach(card => {
+                card.classList.remove('card-unsaved', 'card-saved', 'card-error', 'card-flare');
+                card.style.removeProperty('--flare-color');
+                if (state === 'unsaved') card.classList.add('card-unsaved');
+                if (state === 'saved') {
+                    card.style.setProperty('--flare-color', '#b2f7c1');
+                    card.classList.add('card-saved', 'card-flare');
+                    setTimeout(() => card.classList.remove('card-flare'), 2000);
+                    setTimeout(() => { card.classList.remove('card-saved'); card.style.opacity = '1'; }, 2000);
+                }
+                if (state === 'error') {
+                    card.style.setProperty('--flare-color', '#ffb3b3');
+                    card.classList.add('card-error', 'card-flare');
+                    setTimeout(() => card.classList.remove('card-flare'), 2000);
+                    setTimeout(() => { card.classList.remove('card-error'); card.style.opacity = '1'; }, 2000);
+                }
+            });
+        }
+
+        sectionForms.forEach(form => setCardState(form, 'unsaved'));
+        sectionForms.forEach(form => {
+            form.addEventListener('input', (e) => {
+                changedSections.add(form.getAttribute('data-section'));
+                setCardState(form, 'unsaved', e.target);
+                if (autosaveTimer) clearTimeout(autosaveTimer);
+                autosaveTimer = setTimeout(doAutosave, DEBOUNCE_MS);
+                lastChangedElemMap[form.getAttribute('data-section')] = e.target;
+            }, true);
+        });
+
+        let lastChangedElemMap = {};
+
+        function doAutosave() {
+            changedSections.forEach(section => {
+                const form = sectionMap[section];
+                const url = form.getAttribute('action');
+                const formData = new FormData(form);
+                const lastChangedElem = lastChangedElemMap[section];
+                fetch(url, {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    body: formData
+                })
+                .then(async resp => {
+                    if (resp.ok) {
+                        setCardState(form, 'saved', lastChangedElem);
+                    } else {
+                        setCardState(form, 'error', lastChangedElem);
+                        let err = await resp.text();
+                        showToast('Errore nel salvataggio: ' + (err || resp.status));
+                        console.error('Errore salvataggio', section, err, resp);
+                    }
+                })
+                .catch(err => {
+                    setCardState(form, 'error', lastChangedElem);
+                    showToast('Errore di rete nel salvataggio.');
+                    console.error('Errore di rete', section, err);
+                });
+            });
+            changedSections.clear();
+            lastChangedElemMap = {};
+        }
+    })();
     </script>
 
     {#    {% endspaceless %}#}
