@@ -10,7 +10,7 @@
 
     // Configuration
     const CONFIG = {
-        debounceDelay: 1000,
+        debounceDelay: 3000,
         missionId: null,
         endpoints: {
             pasti: '/save-pasto/',
@@ -25,7 +25,7 @@
     function initializeMissionId() {
         const path = window.location.pathname;
         console.log('Current path:', path);
-        
+
         // Try multiple patterns
         let matches = path.match(/\/missione\/(\d+)\//);
         if (!matches) {
@@ -34,7 +34,7 @@
         if (!matches) {
             matches = path.match(/\/(\d+)\/$/);
         }
-        
+
         if (matches) {
             CONFIG.missionId = matches[1];
             console.log('Mission ID found:', CONFIG.missionId);
@@ -76,19 +76,15 @@
 
     // Card state management
     function setCardState(card, state) {
-        // Remove all state classes
         card.removeClass('card-unsaved card-saved card-error card-saving border-left-warning border-left-success border-left-danger');
-        
+        card.css('transition', 'background-color 0.5s ease');
+
         switch(state) {
             case 'saving':
                 card.addClass('card-saving border-left-warning');
                 break;
             case 'saved':
                 card.addClass('card-saved border-left-success');
-                // Add flash effect
-                card.find('.flash-effect').remove();
-                card.css('position', 'relative').append('<div class="flash-effect"></div>');
-                setTimeout(() => card.find('.flash-effect').remove(), 1000);
                 break;
             case 'error':
                 card.addClass('card-error border-left-danger');
@@ -100,24 +96,16 @@
         }
     }
 
-    function showToast(message, type = 'success') {
-        if (typeof toastr !== 'undefined') {
-            toastr[type](message);
-        } else {
-            console.log(`${type.toUpperCase()}: ${message}`);
-        }
-    }
-
     // Check if card has meaningful data
     function hasCardData(card) {
         const inputs = card.find('input, select, textarea').not('[type="hidden"]').not('[name$="-DELETE"]').not('[name$="-id"]');
         let hasData = false;
-        
+
         inputs.each(function() {
             const $input = $(this);
             const value = $input.val();
             const type = $input.attr('type');
-            
+
             // Special handling for file inputs
             if (type === 'file') {
                 if ($input[0].files && $input[0].files[0]) {
@@ -127,14 +115,14 @@
                 }
                 return true; // continue to next input
             }
-            
+
             // Check for meaningful content in other inputs
             if (value && value.trim() !== '' && value !== '0' && value !== '0.0') {
                 hasData = true;
                 return false; // break
             }
         });
-        
+
         console.log(`hasCardData result: ${hasData}`);
         return hasData;
     }
@@ -146,24 +134,24 @@
             console.error('getCardInfo: No card provided');
             return { section: null, cardId: null };
         }
-        
+
         // Find the form with data-section attribute
         const form = card.closest('form[data-section]');
         if (form.length === 0) {
             console.error('getCardInfo: No form with data-section found');
             return { section: null, cardId: null };
         }
-        
+
         const section = form.data('section');
         if (!section) {
             console.error('getCardInfo: No section data found on form');
             return { section: null, cardId: null };
         }
-        
+
         // Find the ID field - try multiple approaches for different formset patterns
         let idField = card.find('[name$="-id"]');
         let cardId = null;
-        
+
         if (idField.length > 0) {
             cardId = idField.val();
             console.log(`getCardInfo: Found ID field with value: ${cardId}`);
@@ -183,7 +171,7 @@
                 // Pattern 5: Any ID field as fallback
                 'input[name$="-id"]'
             ];
-            
+
             for (const pattern of patterns) {
                 idField = card.find(pattern);
                 if (idField.length > 0) {
@@ -193,12 +181,12 @@
                 }
             }
         }
-        
+
         // Validate cardId
         if (cardId && (cardId === '' || cardId === 'undefined' || cardId === 'null')) {
             cardId = null;
         }
-        
+
         console.log('DEBUG getCardInfo:', {
             section: section,
             cardId: cardId,
@@ -206,7 +194,7 @@
             idFieldValue: idField.length > 0 ? idField.val() : 'N/A',
             idFieldName: idField.length > 0 ? idField.attr('name') : 'N/A'
         });
-        
+
         return { section, cardId };
     }
 
@@ -214,14 +202,14 @@
     function serializeCard(card) {
         const data = new FormData();
         const inputs = card.find('input, select, textarea');
-        
+
         inputs.each(function() {
             const $input = $(this);
             const name = $input.attr('name');
             const type = $input.attr('type');
-            
+
             if (!name) return;
-            
+
             // Extract clean field name by removing formset prefix
             // Handle multiple patterns:
             // 1. "pernottamenti-1-data" -> "data" (modelformset with custom prefix)
@@ -229,7 +217,7 @@
             // 3. "pasti_set-0-importo1" -> "importo1" (inlineformset with default prefix)
             // 4. "form-0-data" -> "data" (modelformset with default prefix)
             let cleanName = name;
-            
+
             // Pattern 1: custom_prefix-number-field (e.g., pernottamenti-1-data, convegni-0-importo, altrespese-2-descrizione)
             let prefixMatch = name.match(/^[a-z]+-\d+-(.+)$/);
             if (prefixMatch) {
@@ -260,7 +248,7 @@
                     }
                 }
             }
-            
+
             if (type === 'file') {
                 if ($input[0].files && $input[0].files[0]) {
                     console.log(`DEBUG serializeCard FILE: Adding file ${cleanName} = ${$input[0].files[0].name}`);
@@ -276,26 +264,25 @@
                 data.append(cleanName, $input.val());
             }
         });
-        
+
         // Add CSRF token
         data.append('csrfmiddlewaretoken', getCookie('csrftoken'));
         data.append('mission_id', CONFIG.missionId);
-        
+
         return data;
     }
 
     // Save individual card
     function saveCard(card) {
         const { section, cardId } = getCardInfo(card);
-        
+
         // Validate mission ID
         if (!CONFIG.missionId) {
             console.error('Mission ID not found - cannot save card');
             setCardState(card, 'error');
-            showToast('Errore: ID missione non trovato', 'error');
             return;
         }
-        
+
         if (!section) {
             console.error('No section found for card');
             return;
@@ -308,9 +295,9 @@
         }
 
         console.log(`Saving ${section} card with ID: ${cardId || 'new'}`);
-        
+
         setCardState(card, 'saving');
-        
+
         const endpoint = CONFIG.endpoints[section];
         if (!endpoint) {
             console.error(`No endpoint configured for section: ${section}`);
@@ -320,7 +307,7 @@
 
         const url = endpoint + (cardId ? cardId + '/' : '');
         const formData = serializeCard(card);
-        
+
         $.ajax({
             url: url,
             type: 'POST',
@@ -333,17 +320,15 @@
             success: function(response) {
                 if (response.success) {
                     setCardState(card, 'saved');
-                    
+
                     // Update card ID if it was a new card
                     if (!cardId && response.id) {
                         const idField = card.find('[name$="-id"]');
                         idField.val(response.id);
                     }
-                    
-                    showToast(`${section.charAt(0).toUpperCase() + section.slice(1)} salvato!`, 'success');
+
                 } else {
                     setCardState(card, 'error');
-                    showToast(`Errore nel salvare ${section}: ${response.error || 'Errore sconosciuto'}`, 'error');
                 }
             },
             error: function(xhr, errmsg, err) {
@@ -355,7 +340,6 @@
                 } catch (e) {
                     // Use default error
                 }
-                showToast(`Errore nel salvare ${section}: ${error}`, 'error');
             }
         });
     }
@@ -364,25 +348,23 @@
     function deleteCard(card) {
         // Extract card info FIRST, before any DOM manipulation
         const { section, cardId } = getCardInfo(card);
-        
+
         console.log(`Attempting to delete ${section} card with ID: ${cardId}`);
-        
+
         // Validate mission ID
         if (!CONFIG.missionId) {
             console.error('Mission ID not found - cannot delete card');
             setCardState(card, 'error');
-            showToast('Errore: ID missione non trovato', 'error');
             return;
         }
-        
+
         // Validate section
         if (!section) {
             console.error('Section not found - cannot delete card');
             setCardState(card, 'error');
-            showToast('Errore: sezione non trovata', 'error');
             return;
         }
-        
+
         if (!cardId) {
             // New card that hasn't been saved yet, just remove from DOM
             console.log('Deleting unsaved card from DOM');
@@ -393,19 +375,18 @@
         }
 
         console.log(`Deleting saved ${section} card with ID: ${cardId}`);
-        
+
         setCardState(card, 'saving');
-        
+
         const endpoint = CONFIG.endpoints[section];
         if (!endpoint) {
             console.error(`No endpoint found for section: ${section}`);
             setCardState(card, 'error');
-            showToast(`Errore: endpoint non trovato per ${section}`, 'error');
             return;
         }
-        
+
         const url = endpoint + cardId + '/delete/';
-        
+
         console.log('DEBUG deleteCard:', {
             section: section,
             cardId: cardId,
@@ -413,7 +394,7 @@
             finalUrl: url,
             missionId: CONFIG.missionId
         });
-        
+
         $.ajax({
             url: url,
             type: 'POST',
@@ -429,10 +410,8 @@
                     card.fadeOut(300, function() {
                         $(this).remove();
                     });
-                    showToast(`${section.charAt(0).toUpperCase() + section.slice(1)} eliminato!`, 'success');
                 } else {
                     setCardState(card, 'error');
-                    showToast(`Errore nell'eliminare ${section}: ${response.error || 'Errore sconosciuto'}`, 'error');
                 }
             },
             error: function(xhr, errmsg, err) {
@@ -444,7 +423,6 @@
                 } catch (e) {
                     // Use default error
                 }
-                showToast(`Errore nell'eliminare ${section}: ${error}`, 'error');
             }
         });
     }
@@ -458,7 +436,7 @@
                 const $this = $(this);
                 return $this.text().includes('Elimina') && !$this.hasClass('delete');
             });
-            
+
             if (existingDeleteLinks.length > 0) {
                 console.log('Removing existing formset delete links:', existingDeleteLinks.length);
                 existingDeleteLinks.remove();
@@ -468,7 +446,20 @@
 
     // Initialize autosave and delete functionality
     function initializeCards() {
-        const debouncedSave = debounce(saveCard, CONFIG.debounceDelay);
+        const cardTimeouts = new Map();
+        function debouncedSaveCard(card) {
+            const cardElement = card[0];
+            if (cardTimeouts.has(cardElement)) {
+                clearTimeout(cardTimeouts.get(cardElement));
+            }
+
+            const timeoutId = setTimeout(() => {
+                saveCard(card);
+                cardTimeouts.delete(cardElement);
+            }, CONFIG.debounceDelay);
+            
+            cardTimeouts.set(cardElement, timeoutId);
+        }
 
         // Handle input changes for autosave
         $(document).on('input change', '.formset-card input, .formset-card select, .formset-card textarea', function() {
@@ -480,7 +471,7 @@
                 setCardState(card, 'unsaved');
             }
 
-            debouncedSave(card);
+            debouncedSaveCard(card);
         });
 
         // Handle file uploads immediately (no debounce)
@@ -502,7 +493,7 @@
         $(document).on('click', '.delete', function(e) {
             e.preventDefault();
             e.stopImmediatePropagation(); // Prevent other handlers from firing
-            
+
             const card = $(this).closest('.formset-card');
             if (card.length === 0) {
                 console.error('Delete button click: No .formset-card found');
@@ -558,7 +549,7 @@
                     const card = $(row).find('.formset-card').length > 0 ? $(row).find('.formset-card') : $(row);
                     setCardState(card, 'unsaved');
                     console.log('Added new formset row');
-                    
+
                     // Add manual delete button since we disabled automatic delete
                     addCustomDeleteButton(row);
                 },
@@ -576,11 +567,11 @@
         if (row.find('.delete').length > 0) {
             return;
         }
-        
+
         const deleteButton = $('<a class="delete btn btn-danger" href="javascript:void(0)">Elimina</a>');
         const deleteContainer = $('<div class="mx-1" style="margin-top: 28px"></div>');
         deleteContainer.append(deleteButton);
-        
+
         // Add the delete button to the card body
         const cardBody = row.find('.card-body');
         if (cardBody.length > 0) {
@@ -594,12 +585,12 @@
     // Initialize everything when document is ready
     $(document).ready(function() {
         console.log('Initializing Missione per-card system...');
-        
+
         initializeMissionId();
         cleanupFormsetDeleteLinks(); // Clean up any existing conflicting delete links
         initializeCards();
         initializeFormsets();
-        
+
         console.log('Missione per-card system initialized successfully');
     });
 
