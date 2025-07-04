@@ -29,6 +29,27 @@ urlpatterns = [
     path('salva_convegni/<int:id>', views.salva_convegni, name='salva_convegni'),
     path('salva_altrespese/<int:id>', views.salva_altrespese, name='salva_altrespese'),
 
+    # Per-card save/delete endpoints
+    path('save-pasto/', views.save_pasto, name='save_pasto'),
+    path('save-pasto/<int:item_id>/', views.save_pasto, name='save_pasto_update'),
+    path('save-pasto/<int:item_id>/delete/', views.delete_pasto, name='delete_pasto'),
+
+    path('save-pernottamento/', views.save_pernottamento, name='save_pernottamento'),
+    path('save-pernottamento/<int:item_id>/', views.save_pernottamento, name='save_pernottamento_update'),
+    path('save-pernottamento/<int:item_id>/delete/', views.delete_pernottamento, name='delete_pernottamento'),
+
+    path('save-trasporto/', views.save_trasporto, name='save_trasporto'),
+    path('save-trasporto/<int:item_id>/', views.save_trasporto, name='save_trasporto_update'),
+    path('save-trasporto/<int:item_id>/delete/', views.delete_trasporto, name='delete_trasporto'),
+
+    path('save-convegno/', views.save_convegno, name='save_convegno'),
+    path('save-convegno/<int:item_id>/', views.save_convegno, name='save_convegno_update'),
+    path('save-convegno/<int:item_id>/delete/', views.delete_convegno, name='delete_convegno'),
+
+    path('save-altrespesa/', views.save_altrespesa, name='save_altrespesa'),
+    path('save-altrespesa/<int:item_id>/', views.save_altrespesa, name='save_altrespesa_update'),
+    path('save-altrespesa/<int:item_id>/delete/', views.delete_altrespesa, name='delete_altrespesa'),
+
     path('resoconto/<int:id>', views.resoconto, name='resoconto'),
     path('compila_autorizz_dottorandi/<int:id>', compila_pdf.compila_autorizz_dottorandi,
          name='compila_autorizz_dottorandi'),

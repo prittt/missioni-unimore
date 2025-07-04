@@ -1,0 +1,48 @@
+/* Card state styles for the mission form */
+.card-unsaved {
+    background-color: #f5f5f5 !important;
+    border: 1.5px solid #ccc !important;
+}
+
+.card-saving {
+    background-color: #fff3cd !important;
+    border: 1px solid #ffeaa7 !important;
+}
+
+.card-saved {
+    background-color: #f0fff4 !important;
+    border: 1px solid #7be495 !important;
+}
+
+.card-error {
+    background-color: #ffeaea !important;
+    border: 1px solid #ff8a8a !important;
+}
+
+.formset-card.card-saving {
+    background-color: #fff3cd !important;
+    border-color: #ffeaa7 !important;
+}
+
+.formset-card.card-saved {
+    background-color: #d4edda !important;
+    border-color: #c3e6cb !important;
+}
+
+.formset-card.card-error {
+    background-color: #f8d7da !important;
+    border-color: #f5c6cb !important;
+}
+
+.formset-card.card-unsaved {
+    background-color: whitesmoke !important;
+    border-color: #ccc !important;
+}
+
+.formset-card.card-deleting {
+    background-color: #ffeded !important;
+    border-color: #ff9999 !important;
+    opacity: 0.7;
+    pointer-events: none; /* Prevent further interaction */
+    transition: opacity 0.3s, background-color 0.3s;
+}

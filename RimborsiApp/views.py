@@ -1,5 +1,6 @@
 import decimal
 import json
+import datetime
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -607,6 +608,9 @@ def missione(request, id):
         existing_pasti_dates = {pasto.data for pasto in pasti_qs}
         missing_dates = [date for date in all_dates if date not in existing_pasti_dates]
 
+        if len(missing_dates) > 10:
+            missing_dates = missing_dates[:10]
+
         for date in missing_dates:
             Pasti.objects.create(missione=missione, data=date)
 
@@ -766,19 +770,50 @@ def salva_pernottamenti(request, id):
         missione = Missione.objects.get(user=request.user, id=id)
         pernottamenti_formset = spesa_formset(request.POST, request.FILES, prefix='pernottamenti')
         if pernottamenti_formset.is_valid():
+            # Get existing SpesaMissione entries for this mission and type
+            existing_spese_ids = set(SpesaMissione.objects.filter(
+                missione=missione, 
+                tipo='PERNOTTAMENTO'
+            ).values_list('spesa_id', flat=True))
+            
+            processed_spese_ids = set()
+            
             for form in pernottamenti_formset.forms:
+                if not form.cleaned_data:
+                    continue  # Skip completely empty forms
+                    
                 if form.cleaned_data.get('DELETE'):
-                    form.instance.delete()
-                    SpesaMissione.objects.filter(spesa=form.instance).delete()
-                else:
-                    img_scontrino = form.instance.img_scontrino
-                    form.instance.img_scontrino = None
-                    instance = form.save(commit=False)
-                    instance.save()
-                    SpesaMissione.objects.update_or_create(missione=missione, spesa=instance, tipo='PERNOTTAMENTO')
-                    if img_scontrino:
-                        instance.img_scontrino = img_scontrino
-                        instance.save()
+                    if form.instance.pk:
+                        spesa_pk = form.instance.pk
+                        SpesaMissione.objects.filter(missione=missione, spesa=form.instance).delete()
+                        form.instance.delete()
+                        processed_spese_ids.add(spesa_pk)
+                elif any(form.cleaned_data.get(field) for field in ['data', 'importo', 'descrizione']):
+                    if form.instance.pk:
+                        form.save()
+                        processed_spese_ids.add(form.instance.pk)
+                        SpesaMissione.objects.get_or_create(
+                            missione=missione, 
+                            spesa=form.instance,
+                            defaults={'tipo': 'PERNOTTAMENTO'}
+                        )
+                    else:
+                        instance = form.save()
+                        processed_spese_ids.add(instance.pk)
+                        SpesaMissione.objects.get_or_create(
+                            missione=missione, 
+                            spesa=instance,
+                            defaults={'tipo': 'PERNOTTAMENTO'}
+                        )
+            
+            orphaned_spese = existing_spese_ids - processed_spese_ids
+            if orphaned_spese:
+                SpesaMissione.objects.filter(
+                    missione=missione, 
+                    tipo='PERNOTTAMENTO',
+                    spesa_id__in=orphaned_spese
+                ).delete()
+            
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'success': True})
             return redirect('RimborsiApp:missione', id)
@@ -812,19 +847,51 @@ def salva_altrespese(request, id):
         missione = Missione.objects.get(user=request.user, id=id)
         altrespese_formset = spesa_formset(request.POST, request.FILES, prefix='altrespese')
         if altrespese_formset.is_valid():
+            existing_spese_ids = set(SpesaMissione.objects.filter(
+                missione=missione, 
+                tipo='ALTRO'
+            ).values_list('spesa_id', flat=True))
+
+            processed_spese_ids = set()
+
             for form in altrespese_formset.forms:
+                if not form.cleaned_data:
+                    continue  # Skip completely empty forms
+
                 if form.cleaned_data.get('DELETE'):
-                    form.instance.delete()
-                    SpesaMissione.objects.filter(spesa=form.instance).delete()
-                else:
-                    img_scontrino = form.instance.img_scontrino
-                    form.instance.img_scontrino = None
-                    instance = form.save(commit=False)
-                    instance.save()
-                    SpesaMissione.objects.update_or_create(missione=missione, spesa=instance, tipo='ALTRO')
-                    if img_scontrino:
-                        instance.img_scontrino = img_scontrino
-                        instance.save()
+                    if form.instance.pk:
+                        # Store the pk before deletion
+                        spesa_pk = form.instance.pk
+                        SpesaMissione.objects.filter(missione=missione, spesa=form.instance).delete()
+                        form.instance.delete()
+                        processed_spese_ids.add(spesa_pk)
+                elif any(form.cleaned_data.get(field) for field in ['data', 'importo', 'descrizione']):
+                    if form.instance.pk:
+                        form.save()
+                        processed_spese_ids.add(form.instance.pk)
+                        SpesaMissione.objects.get_or_create(
+                            missione=missione, 
+                            spesa=form.instance,
+                            defaults={'tipo': 'ALTRO'}
+                        )
+                    else:
+                        instance = form.save()
+                        processed_spese_ids.add(instance.pk)
+                        SpesaMissione.objects.get_or_create(
+                            missione=missione, 
+                            spesa=instance,
+                            defaults={'tipo': 'ALTRO'}
+                        )
+            
+            # Clean up orphaned entries
+            orphaned_spese = existing_spese_ids - processed_spese_ids
+            if orphaned_spese:
+                SpesaMissione.objects.filter(
+                    missione=missione, 
+                    tipo='ALTRO',
+                    spesa_id__in=orphaned_spese
+                ).delete()
+            
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'success': True})
             return redirect('RimborsiApp:missione', id)
@@ -841,19 +908,49 @@ def salva_convegni(request, id):
         missione = Missione.objects.get(user=request.user, id=id)
         convegni_formset = spesa_formset(request.POST, request.FILES, prefix='convegni')
         if convegni_formset.is_valid():
+            existing_spese_ids = set(SpesaMissione.objects.filter(
+                missione=missione, 
+                tipo='CONVEGNO'
+            ).values_list('spesa_id', flat=True))
+            
+            processed_spese_ids = set()
+            
             for form in convegni_formset.forms:
+                if not form.cleaned_data:
+                    continue  # Skip completely empty forms
+                    
                 if form.cleaned_data.get('DELETE'):
-                    form.instance.delete()
-                    SpesaMissione.objects.filter(spesa=form.instance).delete()
-                else:
-                    img_scontrino = form.instance.img_scontrino
-                    form.instance.img_scontrino = None
-                    instance = form.save(commit=False)
-                    instance.save()
-                    SpesaMissione.objects.update_or_create(missione=missione, spesa=instance, tipo='CONVEGNO')
-                    if img_scontrino:
-                        instance.img_scontrino = img_scontrino
-                        instance.save()
+                    if form.instance.pk:
+                        spesa_pk = form.instance.pk
+                        SpesaMissione.objects.filter(missione=missione, spesa=form.instance).delete()
+                        form.instance.delete()
+                        processed_spese_ids.add(spesa_pk)
+                elif any(form.cleaned_data.get(field) for field in ['data', 'importo', 'descrizione']):
+                    if form.instance.pk:
+                        form.save()
+                        processed_spese_ids.add(form.instance.pk)
+                        SpesaMissione.objects.get_or_create(
+                            missione=missione, 
+                            spesa=form.instance,
+                            defaults={'tipo': 'CONVEGNO'}
+                        )
+                    else:
+                        instance = form.save()
+                        processed_spese_ids.add(instance.pk)
+                        SpesaMissione.objects.get_or_create(
+                            missione=missione, 
+                            spesa=instance,
+                            defaults={'tipo': 'CONVEGNO'}
+                        )
+            
+            orphaned_spese = existing_spese_ids - processed_spese_ids
+            if orphaned_spese:
+                SpesaMissione.objects.filter(
+                    missione=missione, 
+                    tipo='CONVEGNO',
+                    spesa_id__in=orphaned_spese
+                ).delete()
+            
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'success': True})
             return redirect('RimborsiApp:missione', id)
@@ -945,8 +1042,6 @@ def firma(request):
     if request.method == 'POST':
         firme_formset = firma_formset(request.POST, request.FILES, instance=request.user, prefix='firme_prefix')
 
-        print(request.POST)
-
         if firme_formset.is_valid():
             instances = firme_formset.save(commit=False)
             for instance in instances:
@@ -1027,3 +1122,425 @@ def firma_received_visualization(request):
 def collaboratori(request):
     if request.method == 'GET':
         return render(request, 'Rimborsi/collaboratori.html')
+
+
+# Per-Card Save/Delete Views
+@login_required
+def save_pasto(request, item_id=None):
+    if request.method != 'POST':
+        return HttpResponseBadRequest()
+    
+    mission_id = request.POST.get('mission_id')
+    if not mission_id:
+        return JsonResponse({'success': False, 'error': 'Mission ID required'}, status=400)
+    
+    try:
+        missione = Missione.objects.get(id=mission_id, user=request.user)
+    except Missione.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Mission not found'}, status=404)
+    
+    try:
+        if item_id:
+            pasto = Pasti.objects.get(id=item_id, missione=missione)
+        else:
+            pasto = Pasti(missione=missione)
+        
+        data_str = request.POST.get('data')
+        if data_str and data_str.strip():
+            try:
+                parsed_date = datetime.datetime.strptime(data_str.strip(), '%Y-%m-%d').date()
+                pasto.data = parsed_date
+            except ValueError as e:
+                return JsonResponse({'success': False, 'error': f'Invalid date format "{data_str}": {str(e)}'}, status=400)
+        else:
+            return JsonResponse({'success': False, 'error': 'Date is required'}, status=400)
+            
+        for i in range(1, 4):
+            importo_str = request.POST.get(f'importo{i}')
+            if importo_str and importo_str.strip():
+                try:
+                    setattr(pasto, f'importo{i}', float(importo_str.strip()))
+                except (ValueError, TypeError):
+                    setattr(pasto, f'importo{i}', None)
+            else:
+                setattr(pasto, f'importo{i}', None)
+            
+            setattr(pasto, f'valuta{i}', request.POST.get(f'valuta{i}') or 'EUR')
+            setattr(pasto, f'descrizione{i}', request.POST.get(f'descrizione{i}') or '')
+            
+            img_field_name = f'img_scontrino{i}'
+            if img_field_name in request.FILES:
+                setattr(pasto, img_field_name, request.FILES[img_field_name])
+        
+        pasto.save()
+        
+        return JsonResponse({'success': True, 'id': getattr(pasto, 'id', None)})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def delete_pasto(request, item_id):
+    if request.method != 'POST':
+        return HttpResponseBadRequest()
+    
+    mission_id = request.POST.get('mission_id')
+    if not mission_id:
+        return JsonResponse({'success': False, 'error': 'Mission ID required'}, status=400)
+    
+    try:
+        missione = Missione.objects.get(id=mission_id, user=request.user)
+        pasto = Pasti.objects.get(id=item_id, missione=missione)
+        pasto.delete()
+        
+        return JsonResponse({'success': True})
+        
+    except (Missione.DoesNotExist, Pasti.DoesNotExist):
+        return JsonResponse({'success': False, 'error': 'Not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def save_pernottamento(request, item_id=None):
+    if request.method != 'POST':
+        return HttpResponseBadRequest()
+    
+    mission_id = request.POST.get('mission_id')
+    if not mission_id:
+        return JsonResponse({'success': False, 'error': 'Mission ID required'}, status=400)
+    
+    try:
+        missione = Missione.objects.get(id=mission_id, user=request.user)
+    except Missione.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Mission not found'}, status=404)
+    
+    try:
+        if item_id:
+            spesa = Spesa.objects.get(id=item_id)
+            if not SpesaMissione.objects.filter(spesa=spesa, missione=missione, tipo='PERNOTTAMENTO').exists():
+                return JsonResponse({'success': False, 'error': 'Not found'}, status=404)
+        else:
+            spesa = Spesa()
+        
+        data_str = request.POST.get('data')
+        if data_str and data_str.strip():
+            try:
+                parsed_date = datetime.datetime.strptime(data_str.strip(), '%Y-%m-%d').date()
+                spesa.data = parsed_date
+            except ValueError as e:
+                return JsonResponse({'success': False, 'error': f'Invalid date format "{data_str}": {str(e)}'}, status=400)
+        else:
+            return JsonResponse({'success': False, 'error': 'Date is required'}, status=400)
+            
+        importo_str = request.POST.get('importo')
+        if importo_str and importo_str.strip():
+            try:
+                spesa.importo = float(importo_str.strip())
+            except (ValueError, TypeError):
+                return JsonResponse({'success': False, 'error': f'Invalid amount format: {importo_str}'}, status=400)
+        else:
+            return JsonResponse({'success': False, 'error': 'Amount is required'}, status=400)
+        spesa.valuta = request.POST.get('valuta') or 'EUR'
+        spesa.descrizione = request.POST.get('descrizione') or ''
+        
+        if 'img_scontrino' in request.FILES:
+            spesa.img_scontrino = request.FILES['img_scontrino']
+        
+        spesa.save()
+
+        SpesaMissione.objects.get_or_create(
+            missione=missione,
+            spesa=spesa,
+            defaults={'tipo': 'PERNOTTAMENTO'}
+        )
+        
+        return JsonResponse({'success': True, 'id': getattr(spesa, 'id', None)})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def delete_pernottamento(request, item_id):
+    if request.method != 'POST':
+        return HttpResponseBadRequest()
+    
+    mission_id = request.POST.get('mission_id')
+    if not mission_id:
+        return JsonResponse({'success': False, 'error': 'Mission ID required'}, status=400)
+    
+    try:
+        missione = Missione.objects.get(id=mission_id, user=request.user)
+        spesa = Spesa.objects.get(id=item_id)
+        
+        spesa_missione = SpesaMissione.objects.get(spesa=spesa, missione=missione, tipo='PERNOTTAMENTO')
+        spesa_missione.delete()
+        spesa.delete()
+        
+        return JsonResponse({'success': True})
+        
+    except (Missione.DoesNotExist, Spesa.DoesNotExist, SpesaMissione.DoesNotExist):
+        return JsonResponse({'success': False, 'error': 'Not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def save_trasporto(request, item_id=None):
+    if request.method != 'POST':
+        return HttpResponseBadRequest()
+    
+    mission_id = request.POST.get('mission_id')
+    if not mission_id:
+        return JsonResponse({'success': False, 'error': 'Mission ID required'}, status=400)
+    
+    try:
+        missione = Missione.objects.get(id=mission_id, user=request.user)
+    except Missione.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Mission not found'}, status=404)
+    
+    try:
+        if item_id:
+            trasporto = Trasporto.objects.get(id=item_id, missione=missione)
+        else:
+            trasporto = Trasporto(missione=missione)
+        
+        data_str = request.POST.get('data')
+        if data_str and data_str.strip():
+            try:
+                parsed_date = datetime.datetime.strptime(data_str.strip(), '%Y-%m-%d').date()
+                trasporto.data = parsed_date
+            except ValueError as e:
+                return JsonResponse({'success': False, 'error': f'Invalid date format "{data_str}": {str(e)}'}, status=400)
+        else:
+            return JsonResponse({'success': False, 'error': 'Date is required'}, status=400)
+            
+        costo_str = request.POST.get('costo')
+        if costo_str and costo_str.strip():
+            try:
+                trasporto.costo = float(costo_str.strip())
+            except (ValueError, TypeError):
+                return JsonResponse({'success': False, 'error': f'Invalid cost format: {costo_str}'}, status=400)
+        else:
+            return JsonResponse({'success': False, 'error': 'Cost is required'}, status=400)
+            
+        trasporto.mezzo = request.POST.get('mezzo') or ''
+        trasporto.valuta = request.POST.get('valuta') or 'EUR'
+        trasporto.da = request.POST.get('da') or ''
+        trasporto.a = request.POST.get('a') or ''
+        trasporto.tipo_costo = request.POST.get('tipo_costo') or ''
+        
+        km_str = request.POST.get('km')
+        if km_str and km_str.strip():
+            try:
+                trasporto.km = float(km_str.strip())
+            except (ValueError, TypeError):
+                trasporto.km = None
+        else:
+            trasporto.km = None
+        
+        if 'img_scontrino' in request.FILES:
+            trasporto.img_scontrino = request.FILES['img_scontrino']
+        
+        trasporto.save()
+        
+        return JsonResponse({'success': True, 'id': getattr(trasporto, 'id', None)})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def delete_trasporto(request, item_id):
+    if request.method != 'POST':
+        return HttpResponseBadRequest()
+    
+    mission_id = request.POST.get('mission_id')
+    if not mission_id:
+        return JsonResponse({'success': False, 'error': 'Mission ID required'}, status=400)
+    
+    try:
+        missione = Missione.objects.get(id=mission_id, user=request.user)
+        trasporto = Trasporto.objects.get(id=item_id, missione=missione)
+        trasporto.delete()
+        
+        return JsonResponse({'success': True})
+        
+    except (Missione.DoesNotExist, Trasporto.DoesNotExist):
+        return JsonResponse({'success': False, 'error': 'Not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def save_convegno(request, item_id=None):
+    if request.method != 'POST':
+        return HttpResponseBadRequest()
+    
+    mission_id = request.POST.get('mission_id')
+    if not mission_id:
+        return JsonResponse({'success': False, 'error': 'Mission ID required'}, status=400)
+    
+    try:
+        missione = Missione.objects.get(id=mission_id, user=request.user)
+    except Missione.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Mission not found'}, status=404)
+    
+    try:
+        if item_id:
+            spesa = Spesa.objects.get(id=item_id)
+            if not SpesaMissione.objects.filter(missione=missione, spesa=spesa, tipo='CONVEGNO').exists():
+                return JsonResponse({'success': False, 'error': 'Not found'}, status=404)
+        else:
+            spesa = Spesa()
+        
+        data_str = request.POST.get('data')
+        if data_str and data_str.strip():
+            try:
+                parsed_date = datetime.datetime.strptime(data_str.strip(), '%Y-%m-%d').date()
+                spesa.data = parsed_date
+            except ValueError as e:
+                return JsonResponse({'success': False, 'error': f'Invalid date format "{data_str}": {str(e)}'}, status=400)
+        else:
+            return JsonResponse({'success': False, 'error': 'Date is required'}, status=400)
+            
+        importo_str = request.POST.get('importo')
+        if importo_str and importo_str.strip():
+            try:
+                spesa.importo = float(importo_str.strip())
+            except (ValueError, TypeError):
+                return JsonResponse({'success': False, 'error': f'Invalid amount format: {importo_str}'}, status=400)
+        else:
+            return JsonResponse({'success': False, 'error': 'Amount is required'}, status=400)
+            
+        spesa.valuta = request.POST.get('valuta') or 'EUR'
+        spesa.descrizione = request.POST.get('descrizione') or ''
+        
+        if 'img_scontrino' in request.FILES:
+            spesa.img_scontrino = request.FILES['img_scontrino']
+        
+        spesa.save()
+        
+        SpesaMissione.objects.get_or_create(
+            missione=missione,
+            spesa=spesa,
+            defaults={'tipo': 'CONVEGNO'}
+        )
+        
+        return JsonResponse({'success': True, 'id': getattr(spesa, 'id', None)})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def delete_convegno(request, item_id):
+    if request.method != 'POST':
+        return HttpResponseBadRequest()
+    
+    mission_id = request.POST.get('mission_id')
+    if not mission_id:
+        return JsonResponse({'success': False, 'error': 'Mission ID required'}, status=400)
+    
+    try:
+        missione = Missione.objects.get(id=mission_id, user=request.user)
+        spesa = Spesa.objects.get(id=item_id)
+        
+        spesa_missione = SpesaMissione.objects.get(missione=missione, spesa=spesa, tipo='CONVEGNO')
+        spesa_missione.delete()
+        spesa.delete()
+        
+        return JsonResponse({'success': True})
+        
+    except (Spesa.DoesNotExist, SpesaMissione.DoesNotExist):
+        return JsonResponse({'success': False, 'error': 'Not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def save_altrespesa(request, item_id=None):
+    if request.method != 'POST':
+        return HttpResponseBadRequest()
+    
+    mission_id = request.POST.get('mission_id')
+    if not mission_id:
+        return JsonResponse({'success': False, 'error': 'Mission ID required'}, status=400)
+    
+    try:
+        missione = Missione.objects.get(id=mission_id, user=request.user)
+    except Missione.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Mission not found'}, status=404)
+    
+    try:
+        if item_id:
+            spesa = Spesa.objects.get(id=item_id)
+            if not SpesaMissione.objects.filter(spesa=spesa, missione=missione, tipo='ALTRO').exists():
+                return JsonResponse({'success': False, 'error': 'Not found'}, status=404)
+        else:
+            spesa = Spesa()
+        
+        data_str = request.POST.get('data')
+        if data_str and data_str.strip():
+            try:
+                parsed_date = datetime.datetime.strptime(data_str.strip(), '%Y-%m-%d').date()
+                spesa.data = parsed_date
+            except ValueError as e:
+                return JsonResponse({'success': False, 'error': f'Invalid date format "{data_str}": {str(e)}'}, status=400)
+        else:
+            return JsonResponse({'success': False, 'error': 'Date is required'}, status=400)
+            
+        importo_str = request.POST.get('importo')
+        if importo_str and importo_str.strip():
+            try:
+                spesa.importo = float(importo_str.strip())
+            except (ValueError, TypeError):
+                return JsonResponse({'success': False, 'error': f'Invalid amount format: {importo_str}'}, status=400)
+        else:
+            return JsonResponse({'success': False, 'error': 'Amount is required'}, status=400)
+            
+        spesa.valuta = request.POST.get('valuta') or 'EUR'
+        spesa.descrizione = request.POST.get('descrizione') or ''
+        
+        if 'img_scontrino' in request.FILES:
+            spesa.img_scontrino = request.FILES['img_scontrino']
+        
+        spesa.save()
+        
+        SpesaMissione.objects.get_or_create(
+            missione=missione,
+            spesa=spesa,
+            defaults={'tipo': 'ALTRO'}
+        )
+        
+        return JsonResponse({'success': True, 'id': getattr(spesa, 'id', None)})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def delete_altrespesa(request, item_id):
+    if request.method != 'POST':
+        return HttpResponseBadRequest()
+    
+    mission_id = request.POST.get('mission_id')
+    if not mission_id:
+        return JsonResponse({'success': False, 'error': 'Mission ID required'}, status=400)
+    
+    try:
+        missione = Missione.objects.get(id=mission_id, user=request.user)
+        spesa = Spesa.objects.get(id=item_id)
+
+        spesa_missione = SpesaMissione.objects.get(missione=missione, spesa=spesa, tipo='ALTRO')
+        spesa_missione.delete()
+        spesa.delete()
+        
+        return JsonResponse({'success': True})
+        
+    except (Spesa.DoesNotExist, SpesaMissione.DoesNotExist):
+        return JsonResponse({'success': False, 'error': 'Not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
