@@ -608,11 +608,11 @@ def missione(request, id):
         existing_pasti_dates = {pasto.data for pasto in pasti_qs}
         missing_dates = [date for date in all_dates if date not in existing_pasti_dates]
 
-        if len(missing_dates) > 10:
+        if len(missing_dates) > 10 and len(existing_pasti_dates) == 0:
             missing_dates = missing_dates[:10]
 
-        for date in missing_dates:
-            Pasti.objects.create(missione=missione, data=date)
+            for date in missing_dates:
+                Pasti.objects.create(missione=missione, data=date)
 
         pasti_formset = pasto_formset(instance=missione ,queryset=pasti_qs)
 
