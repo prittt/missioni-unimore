@@ -7,7 +7,7 @@
     window.missioneInitialized = true;
 
     const CONFIG = {
-        debounceDelay: 3000,
+        debounceDelay: 2000,
         missionId: null,
         endpoints: {
             pasti: '/save-pasto/',
@@ -32,21 +32,11 @@
         if (matches) {
             CONFIG.missionId = matches[1];
         } else {
-            console.error('Could not extract mission ID from URL:', path);
             const missionElement = document.querySelector('[data-mission-id]');
             if (missionElement) {
                 CONFIG.missionId = missionElement.getAttribute('data-mission-id');
             }
         }
-    }
-
-    function debounce(func, delay) {
-        let timeout;
-        return function (...args) {
-            const context = this;
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(context, args), delay);
-        };
     }
 
     function getCookie(name) {
@@ -65,18 +55,18 @@
     }
 
     function setCardState(card, state) {
-        card.removeClass('card-unsaved card-saved card-error card-saving border-left-warning border-left-success border-left-danger');
+        card.removeClass('card-unsaved card-saved card-error card-saving');
         card.css('transition', 'background-color 0.5s ease');
 
         switch(state) {
             case 'saving':
-                card.addClass('card-saving border-left-warning');
+                card.addClass('card-saving');
                 break;
             case 'saved':
-                card.addClass('card-saved border-left-success');
+                card.addClass('card-saved');
                 break;
             case 'error':
-                card.addClass('card-error border-left-danger');
+                card.addClass('card-error');
                 break;
             case 'unsaved':
             default:
@@ -113,19 +103,16 @@
 
     function getCardInfo(card) {
         if (!card || card.length === 0) {
-            console.error('getCardInfo: No card provided');
             return { section: null, cardId: null };
         }
 
         const form = card.closest('form[data-section]');
         if (form.length === 0) {
-            console.error('getCardInfo: No form with data-section found');
             return { section: null, cardId: null };
         }
 
         const section = form.data('section');
         if (!section) {
-            console.error('getCardInfo: No section data found on form');
             return { section: null, cardId: null };
         }
 
@@ -236,7 +223,6 @@
 
         const endpoint = CONFIG.endpoints[section];
         if (!endpoint) {
-            console.error(`No endpoint configured for section: ${section}`);
             setCardState(card, 'error');
             return;
         }
@@ -283,13 +269,11 @@
         const { section, cardId } = getCardInfo(card);
 
         if (!CONFIG.missionId) {
-            console.error('Mission ID not found - cannot delete card');
             setCardState(card, 'error');
             return;
         }
 
         if (!section) {
-            console.error('Section not found - cannot delete card');
             setCardState(card, 'error');
             return;
         }
@@ -305,7 +289,6 @@
 
         const endpoint = CONFIG.endpoints[section];
         if (!endpoint) {
-            console.error(`No endpoint found for section: ${section}`);
             setCardState(card, 'error');
             return;
         }
@@ -377,25 +360,8 @@
         $(document).on('input change', '.formset-card input, .formset-card select, .formset-card textarea', function() {
             const card = $(this).closest('.formset-card');
             if (card.length === 0) return;
-
-            if (card.hasClass('card-error')) {
-                setCardState(card, 'unsaved');
-            }
-
+            setCardState(card, 'unsaved');
             debouncedSaveCard(card);
-        });
-
-        $(document).on('change', '.formset-card input[type="file"]', function() {
-            const card = $(this).closest('.formset-card');
-            if (card.length === 0) return;
-
-            const fileName = this.files && this.files[0] ? this.files[0].name : 'No file';
-
-            if (card.hasClass('card-error')) {
-                setCardState(card, 'unsaved');
-            }
-
-            saveCard(card);
         });
 
         $(document).on('click', '.delete', function(e) {
@@ -404,7 +370,6 @@
 
             const card = $(this).closest('.formset-card');
             if (card.length === 0) {
-                console.error('Delete button click: No .formset-card found');
                 return;
             }
 
@@ -448,7 +413,6 @@
                 added: function(row) {
                     const card = $(row).find('.formset-card').length > 0 ? $(row).find('.formset-card') : $(row);
                     setCardState(card, 'unsaved');
-
                     addCustomDeleteButton(row);
                 },
                 removed: function(row) {}
